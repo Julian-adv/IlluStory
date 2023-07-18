@@ -84,15 +84,16 @@
 </script>
 
 {#if scene.id > 0}
-  <div class='dialogue'>
-    <span class='role'>{scene.role}:</span>
-    <Markdown markdown={content} />
+  <div class="mb-10 block max-w-3xl">
+    {#await imageFromSD}
+      <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300"><div>⏳</div></div>
+    {:then image} 
+      <img src={image} alt="scene #{scene.id}" class="float-left mr-5 placeholder">
+    {/await}
+      <!-- <span class='role'>{scene.role}:</span> -->
+        <Markdown markdown={content} />
   </div>
-  {#await imageFromSD}
-    <img src='loading.gif' alt='waiting' width="64" height="64">
-  {:then image} 
-    <img src={image} alt="scene #{scene.id}">
-  {/await}
+  <div class="clear-both"></div>
 {:else}
   <div></div>
 {/if}
@@ -103,7 +104,8 @@
     font-size: 6pt;
   }
 
-  .dialogue {
-    margin-block-start: 0px;
+  .placeholder {
+    width: 256px;
+    height: 256px;
   }
 </style>

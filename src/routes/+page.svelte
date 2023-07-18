@@ -1,6 +1,7 @@
 <script lang="ts">
   import '@milkdown/theme-nord/style.css';
   import Scene from './Scene.svelte';
+  import Input from './Input.svelte';
   import type { SceneType } from '$lib/interfaces';
   import { openAIKey } from '$lib/secrets';
 
@@ -46,17 +47,14 @@ ${char}: **"I have nowhere else to go."**
     scenes[scenes.length - 1].image = await generateImage('1girl')
   }
 
-  function generateMessages(scenes: Scene[]) {
+  function generateMessages(scenes: SceneType[]) {
     return scenes.map((s) => ({ role: s.role, content: s.content }))
   }
 
   async function chat() {
     const uri = "https://api.openai.com/v1/chat/completions"
     const url = new URL(uri)
-    console.log('uri', uri, 'url', url)
-    console.log('scenes', scenes)
     const messages = generateMessages(scenes)
-    console.log('messages', messages)
     const respFromGPT = await fetch(url, {
       body: JSON.stringify({
         frequency_penalty: 0.4,
@@ -75,15 +73,12 @@ ${char}: **"I have nowhere else to go."**
       method: "POST",
       signal: null
     })
-    console.log('response from GPT', respFromGPT)
     const dataFromGPT = await respFromGPT.json()
-    console.log('dataFromGPT', dataFromGPT)
     if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
       const gptScene: SceneType = dataFromGPT.choices[0].message
       gptScene.id = scenes[scenes.length - 1].id + 1
       scenes = [...scenes, gptScene]
     }
-    
   }
 </script>
 
@@ -92,6 +87,7 @@ ${char}: **"I have nowhere else to go."**
   {#each scenes as scene (scene.id)}
     <Scene {scene}/>
   {/each}
+  <Input />
   
   <div class='buttons'>
     <button on:click={roll}>
@@ -102,9 +98,3 @@ ${char}: **"I have nowhere else to go."**
     </button>
   </div>
 </main>
-
-<style lang="postcss">
-  :global(html) {
-    background-color: theme(colors.gray.100);
-  }
-</style>

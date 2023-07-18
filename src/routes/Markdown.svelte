@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Editor, rootCtx, defaultValueCtx, editorViewOptionsCtx } from '@milkdown/core';
+  import { Editor, rootCtx, defaultValueCtx, editorViewOptionsCtx, config } from '@milkdown/core';
+  import { listener, listenerCtx } from '@milkdown/plugin-listener';
   import { commonmark } from '@milkdown/preset-commonmark';
   import { nord } from '@milkdown/theme-nord';
   import { replaceAll } from '@milkdown/utils';
@@ -18,35 +19,48 @@
       })
       .config(nord)
       .config((ctx) => {
-        ctx.set(defaultValueCtx, "*Write your response here.*")
+        // Add attributes to the editor container
+        ctx.update(editorViewOptionsCtx, (prev) => {
+          const bg = readOnly ? '' : 'bg-neutral-300 border focus:ring-1 prompt'
+          return {
+            ...prev,
+            attributes: { class: `p-1 font-serif text-sm antialiased leading-relaxed rounded-lg ${bg}`, spellcheck: 'false' },
+            editable
+          }
+        })
       })
       .config((ctx) => {
-        // Add attributes to the editor container
-        ctx.update(editorViewOptionsCtx, (prev) => ({
-          ...prev,
-          attributes: { spellcheck: 'false' },
-          editable
-        }))
+        ctx.get(listenerCtx).focus(onFocus).mounted(onMount)
       })
       .use(commonmark)
+      .use(listener)
       .create();
   }
 
-  $: {
-    if (markdownEditor) {
-      markdownEditor.then((editor) => {
-        editor.action(replaceAll(markdown))
-      })
-    }
+  function onFocus() {
+    markdownEditor.then((editor) => {
+      if (!readOnly) {
+        editor.action(replaceAll(''))
+      }
+    })
+  }
+
+  function onMount() {
+    markdownEditor.then((editor) => {
+      const text = markdown == '' ? '*Write a prompt.*' : markdown;
+      editor.action(replaceAll(text))
+    })
   }
 </script>
   
 <div use:makeEditor />
 
 <style>
-  :global(.milkdown p) {
-    margin-block-start: 0px;
-    font-size: 11pt;
-    font-family: 'Times New Roman', 'Noto Serif KR', Times, serif
+  :global(.milkdown p em) {
+    color: rgb(82 82 82);
+  }
+
+  :global(.milkdown .prompt p em) {
+    color: rgb(163 163 163);
   }
 </style>
