@@ -91,7 +91,7 @@
       <img src={image} alt="scene #{scene.id}" class="float-left mr-5 placeholder">
     {/await}
       <!-- <span class='role'>{scene.role}:</span> -->
-        <Markdown markdown={content} />
+        <Markdown value={content} />
   </div>
   <div class="clear-both"></div>
 {:else}
