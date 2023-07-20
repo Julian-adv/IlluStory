@@ -5,7 +5,8 @@
   import { commonmark } from '@milkdown/preset-commonmark';
   import { nord } from '@milkdown/theme-nord';
   import { replaceAll } from '@milkdown/utils';
-
+  import { Label, Input } from 'flowbite-svelte';
+  
   export let value = '';
   export let readOnly = true;
   export let onEnter = (markdown: string) => {}
@@ -24,10 +25,10 @@
       .config((ctx) => {
         // Add attributes to the editor container
         ctx.update(editorViewOptionsCtx, (prev) => {
-          const bg = readOnly ? '' : 'bg-neutral-50 border focus:ring-1 shadow prompt'
+          const bg = readOnly ? '' : 'focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 text-sm rounded-lg prompt'
           return {
             ...prev,
-            attributes: { class: `p-1 font-serif text-sm antialiased leading-relaxed rounded-lg ${bg}`, spellcheck: 'false' },
+            attributes: { class: `p-1 font-serif text-sm antialiased leading-relaxed ${bg}`, spellcheck: 'false' },
             editable
           }
         })

@@ -2,7 +2,7 @@
   import '@milkdown/theme-nord/style.css';
   import SceneList from './SceneList.svelte';
   import Input from './Input.svelte';
-  import { chat } from '$lib/api';
+  import { Button } from 'flowbite-svelte';
   import type { SceneType } from '$lib/interfaces';
 
   let markdown = '';
@@ -61,16 +61,11 @@ export function updateScenes(newScene: SceneType) {
 </script>
 
 <main>
-  <h1 class="text-lg font-bold">AI Friend</h1>
   <SceneList {scenes} />
   <Input bind:value = {markdown} {scenes} {updateScenes}/>
   
   <div class='mt-5'>
-    <button on:click={roll} class="py-2 px-3 border border-slate-300 hover:border-indigo-300  text-gray-600 text-xs font-semibold rounded-md shadow">
-      Reimagine
-    </button>
-    <button on:click={sendChat} class="py-2 px-3 border border-slate-300 hover:border-indigo-400 bg-sky-500 text-white text-xs font-semibold rounded-md shadow">
-      Continue
-    </button>
+    <Button on:click={roll} size="xs" color="alternative">Reimage</Button>
+    <Button on:click={sendChat} size="xs">Continue</Button>
   </div>
 </main>
