@@ -13,7 +13,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class='mt-5'>
+<div class='mt-2'>
   <Markdown readOnly={false} onEnter={onEnter} bind:value />
 </div>
 

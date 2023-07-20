@@ -2,7 +2,7 @@
 import type { SceneType } from "$lib/interfaces";
 import Scene from "./Scene.svelte";
 
-export let scenes;
+export let scenes: SceneType[];
 
 </script>
 

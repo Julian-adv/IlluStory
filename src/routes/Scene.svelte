@@ -1,26 +1,35 @@
 <script lang="ts">
   import type { SceneType } from "$lib/interfaces";
-    import { onMount } from "svelte";
+  import { onMount } from "svelte";
   import Markdown from "./Markdown.svelte";
+
+  type ImagePrompt = {
+    image: string;
+    prompt: string
+  }
 
   export let scene: SceneType;
   let content: string;
-  let imageFromSD: Promise<string|undefined>;
+  let imageFromSD: Promise<ImagePrompt> = Promise.resolve(createImagePrompt('', ''));
 
   onMount(() => {
     [content, imageFromSD] = extractAndRemoveBracketsContent(scene);
   })
 
-  function extractAndRemoveBracketsContent(scene: SceneType): [string, Promise<string|undefined>] {
+  function createImagePrompt(image: string, prompt: string): ImagePrompt {
+    return { image: image, prompt: prompt }
+  }
+
+  function extractAndRemoveBracketsContent(scene: SceneType): [string, Promise<ImagePrompt>] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const extractedContents = matches.map(str => str.slice(2, -2));
     const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '').trim();
-    const image = generateImage(extractedContents.join(','))
+    const image = scene.role === 'user' ? Promise.resolve(createImagePrompt('', '')) : generateImage(extractedContents.join(','))
 
     return [cleanedInput, image];
   }
 
-  async function generateImage(prompt: string) {
+  async function generateImage(prompt: string): Promise<ImagePrompt> {
     const uri = "http://localhost:7860/sdapi/v1/txt2img"
     const responseFromSD = await fetch(uri, {
       body: JSON.stringify({
@@ -75,25 +84,31 @@
     if (responseFromSD.ok){
       let dataFromSD = await responseFromSD.json()
       console.log(dataFromSD)
-      return `data:image/png;base64,${dataFromSD.images[0]}`
+      const info = JSON.parse(dataFromSD.info)
+      console.log(info.prompt)
+      return createImagePrompt(`data:image/png;base64,${dataFromSD.images[0]}`, info.prompt)
     } else {
-      alert(JSON.stringify(responseFromSD.body))
-      return undefined   
+      console.log('responseFromSD not ok', responseFromSD)
+      return createImagePrompt('', '')
     }
   }
 </script>
 
 {#if scene.id > 0}
-  <div class="mb-10 block max-w-3xl">
-    {#await imageFromSD}
-      <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300"><div>⏳</div></div>
-    {:then image} 
-      <img src={image} alt="scene #{scene.id}" class="float-left mr-5 placeholder">
-    {/await}
+  <div class="block max-w-3xl">
+    {#if scene.role === 'user'}
+      <div class="placeholder-user float-left mr-5 flex justify-center items-center bg-transparent"><div></div></div>
+    {:else}
+      {#await imageFromSD}
+        <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300"><div>⏳</div></div>
+      {:then image}
+        <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder">
+      {/await}
+    {/if}
       <!-- <span class='role'>{scene.role}:</span> -->
-        <Markdown value={content} />
+    <Markdown value={content} />
   </div>
-  <div class="clear-both"></div>
+  <div class="clear-both p-2"></div>
 {:else}
   <div></div>
 {/if}
@@ -107,5 +122,10 @@
   .placeholder {
     width: 256px;
     height: 256px;
+  }
+
+  .placeholder-user {
+    width: 256px;
+    height: 16px;
   }
 </style>
