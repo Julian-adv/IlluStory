@@ -102,7 +102,7 @@
       {#await imageFromSD}
         <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300"><div>⏳</div></div>
       {:then image}
-        <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder">
+        <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder rounded-lg">
       {/await}
     {/if}
       <!-- <span class='role'>{scene.role}:</span> -->
