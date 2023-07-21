@@ -1,12 +1,10 @@
 import type { SceneType } from '$lib/interfaces';
-// import { scenes, updateScenes } from './scene';
-import { openAIKey } from './secrets';
 
 function generateMessages(scenes: SceneType[]) {
   return scenes.map((s) => ({ role: s.role, content: s.content }))
 }
 
-export async function chat(scenes: SceneType[], userInput: string|null, updateScenes: (scene: SceneType) => void) {
+export async function chat(scenes: SceneType[], userInput: string|null, updateScenes: (scene: SceneType) => void, apiKey: string) {
   const uri = "https://api.openai.com/v1/chat/completions"
   const url = new URL(uri)
   let id = scenes.length
@@ -33,7 +31,7 @@ export async function chat(scenes: SceneType[], userInput: string|null, updateSc
       temperature: 0.75
     }),
     headers: {
-      "Authorization": "Bearer " + openAIKey,
+      "Authorization": "Bearer " + apiKey,
       "Content-Type": "application/json"
     },
     method: "POST",

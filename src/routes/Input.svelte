@@ -1,14 +1,16 @@
 <script lang="ts">
   import Markdown from "./Markdown.svelte";
   import { chat } from "$lib/api"
+  import type { SceneType } from "$lib/interfaces";
+  import { openAiApiKey } from "$lib/store";
 
   export let value = '';
-  export let scenes;
-  export let updateScenes;
+  export let scenes: SceneType[];
+  export let updateScenes: (newScene: SceneType) => void;
 
   function onEnter(markdown: string) {
     const trimmed = markdown.trim()
-    chat(scenes, trimmed, updateScenes)
+    chat(scenes, trimmed, updateScenes, $openAiApiKey)
   }
 </script>
 

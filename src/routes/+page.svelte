@@ -65,7 +65,7 @@ export function updateScenes(newScene: SceneType) {
   <Input bind:value = {markdown} {scenes} {updateScenes}/>
   
   <div class='mt-5'>
-    <Button on:click={roll} size="xs" color="alternative">Reimage</Button>
-    <Button on:click={sendChat} size="xs">Continue</Button>
+    <Button on:click={roll} size="sm" color="alternative">Reimage</Button>
+    <Button on:click={sendChat} size="sm">Continue</Button>
   </div>
 </main>

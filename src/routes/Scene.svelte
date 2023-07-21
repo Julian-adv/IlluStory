@@ -11,8 +11,10 @@
   export let scene: SceneType;
   let content: string;
   let imageFromSD: Promise<ImagePrompt> = Promise.resolve(createImagePrompt('', ''));
+  let imageSize = 512/window.devicePixelRatio;
 
   onMount(() => {
+    console.log('imageSize', imageSize);
     [content, imageFromSD] = extractAndRemoveBracketsContent(scene);
   })
 
@@ -97,12 +99,12 @@
 {#if scene.id > 0}
   <div class="block max-w-3xl">
     {#if scene.role === 'user'}
-      <div class="placeholder-user float-left mr-5 flex justify-center items-center bg-transparent"><div></div></div>
+      <div class="placeholder-user float-left mr-5 flex justify-center items-center bg-transparent" style="--imageSize: {imageSize}px;"><div></div></div>
     {:else}
       {#await imageFromSD}
-        <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300"><div>⏳</div></div>
+        <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>⏳</div></div>
       {:then image}
-        <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder rounded-lg">
+        <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder rounded-lg" style="--imageSize: {imageSize}px;">
       {/await}
     {/if}
       <!-- <span class='role'>{scene.role}:</span> -->
@@ -120,12 +122,12 @@
   }
 
   .placeholder {
-    width: 256px;
-    height: 256px;
+    width: var(--imageSize);
+    height: var(--imageSize);
   }
 
   .placeholder-user {
-    width: 256px;
+    width: var(--imageSize);
     height: 16px;
   }
 </style>

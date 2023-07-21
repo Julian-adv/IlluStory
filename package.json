@@ -6,12 +6,15 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
+		"tauri": "tauri",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/adapter-static": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
+		"@tauri-apps/cli": "^1.4.0",
 		"autoprefixer": "^10.4.14",
 		"postcss": "^8.4.26",
 		"svelte": "^4.0.5",
@@ -31,6 +34,7 @@
 		"@milkdown/prose": "^7.2.4",
 		"@milkdown/theme-nord": "^7.2.4",
 		"@milkdown/transformer": "^7.2.4",
+		"@tauri-apps/api": "^1.4.0",
 		"flowbite": "^1.7.0",
 		"flowbite-svelte": "^0.40.1",
 		"tailwind-merge": "^1.14.0"
