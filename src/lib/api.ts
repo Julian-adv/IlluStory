@@ -4,20 +4,9 @@ function generateMessages(scenes: SceneType[]) {
   return scenes.map((s) => ({ role: s.role, content: s.content }))
 }
 
-export async function chat(scenes: SceneType[], userInput: string|null, updateScenes: (scene: SceneType) => void, apiKey: string) {
+export async function sendChat(scenes: SceneType[], apiKey: string, model: string) {
   const uri = "https://api.openai.com/v1/chat/completions"
   const url = new URL(uri)
-  let id = scenes.length
-  if (userInput) {
-    console.log('userInput', userInput)
-    const newScene: SceneType = {
-      id: id,
-      role: "user",
-      content: userInput
-    }
-    updateScenes(newScene)
-    id++
-  }
   const messages = generateMessages(scenes)
   const respFromGPT = await fetch(url, {
     body: JSON.stringify({
@@ -25,7 +14,7 @@ export async function chat(scenes: SceneType[], userInput: string|null, updateSc
       logit_bias: {},
       max_tokens: 500,
       messages: messages,
-      model: 'gpt-3.5-turbo-16k',
+      model: model,
       presence_penalty: 0.4,
       stream: false,
       temperature: 0.75
@@ -41,7 +30,9 @@ export async function chat(scenes: SceneType[], userInput: string|null, updateSc
   console.log('dataFromGPT', dataFromGPT)
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     const gptScene: SceneType = dataFromGPT.choices[0].message
-    gptScene.id = id
-    updateScenes(gptScene)
+    gptScene.id = scenes.length
+    return [...scenes, gptScene]
+  } else {
+    return scenes;
   }
 }

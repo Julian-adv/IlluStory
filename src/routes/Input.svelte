@@ -1,22 +1,23 @@
 <script lang="ts">
   import Markdown from "./Markdown.svelte";
-  import { chat } from "$lib/api"
-  import type { SceneType } from "$lib/interfaces";
-  import { openAiApiKey } from "$lib/store";
+  import { sendChat } from "$lib/api"
+  import { openAiApiKey, openAiModel, scenes } from "$lib/store";
 
-  export let value = '';
-  export let scenes: SceneType[];
-  export let updateScenes: (newScene: SceneType) => void;
-
-  function onEnter(markdown: string) {
+  async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
-    chat(scenes, trimmed, updateScenes, $openAiApiKey)
+    const newScene = {
+      id: $scenes.length,
+      role: "user",
+      content: trimmed
+    }
+    $scenes = [...$scenes, newScene]
+    $scenes = await sendChat($scenes, $openAiApiKey, $openAiModel)
   }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='mt-2'>
-  <Markdown readOnly={false} onEnter={onEnter} bind:value />
+  <Markdown readOnly={false} onEnter={onEnter} />
 </div>
 
 <style lang="postcss">
