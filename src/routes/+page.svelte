@@ -4,11 +4,14 @@
   import Input from './Input.svelte';
   import { Button } from 'flowbite-svelte';
   import { scenes } from '$lib/store';
+  import { onMount } from 'svelte';
+  import { loadSettings } from '$lib/fs';
+  import type { SceneType } from '$lib/interfaces';
 
   let char = 'Abby';
   let user = 'Julian';
 
-  $scenes = [
+  let initialScenes = [
     {
       id: 0,
       role: 'system',
@@ -52,6 +55,15 @@ ${char}: **"I have nowhere else to go."**
 
   }
 
+  onMount(async () => {
+    let [models, prompts] = await loadSettings();
+    let tempScenes = [...prompts, ...initialScenes];
+    let id = 0;
+    tempScenes.forEach((scene: SceneType) => {
+      scene.id = id++;
+    });
+    $scenes = tempScenes
+  })
 </script>
 
 <main>

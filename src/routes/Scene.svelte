@@ -25,7 +25,7 @@
   function extractAndRemoveBracketsContent(scene: SceneType): [string, Promise<ImagePrompt>] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const extractedContents = matches.map(str => str.slice(2, -2));
-    const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '').trim();
+    const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
     const image = scene.role === 'user' ? Promise.resolve(createImagePrompt('', '')) : generateImage(extractedContents.join(','))
 
     return [cleanedInput, image];

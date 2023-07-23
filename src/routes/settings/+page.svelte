@@ -1,44 +1,35 @@
 <script lang="ts">
-  import { Label, Input, Select, Textarea } from 'flowbite-svelte'
-  import { writeTextFile, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
+  import { Label, Input, Select, Textarea, Button } from 'flowbite-svelte'
   import { onMount } from 'svelte';
   import { openAiApiKey, openAiModel } from '$lib/store';
-  import { Configuration, OpenAIApi } from 'openai'
+  import { loadSettings, saveSettings } from '$lib/fs';
+  import type { SceneType } from '$lib/interfaces';
 
-  const settingsFile = 'settings.json'
   let models = [
     { value: "model", name: "model" }
   ]
-  let prompt = ''
   let roles = [
     { value: "system", name: "System" },
     { value: "assistant", name: "Assistant" },
     { value: "user", name: "User" },
   ]
-
-  async function saveSettings() {
-    const settings = {
-      "openAiApiKey": $openAiApiKey,
-      "openAiModel": $openAiModel
-    }
-    writeTextFile({ path: settingsFile, contents: JSON.stringify(settings) }, { dir: BaseDirectory.AppConfig })
-  }
+  let prompts: SceneType[] = [{
+    id: 0,
+    role: 'system',
+    content: 'You are a helpful assistant.'
+  }];
 
   onMount(async () => {
-    const settingsJson = await readTextFile(settingsFile, { dir: BaseDirectory.AppConfig })
-    const settings = JSON.parse(settingsJson)
-    openAiApiKey.set(settings.openAiApiKey)
-    openAiModel.set(settings.openAiModel)
-    const configuration = new Configuration({
-      apiKey: settings.openAiApiKey
-    })
-    const openai = new OpenAIApi(configuration)
-    const response = await openai.listModels()
-    console.log('response', response)
-    models = response.data.data.map((model) => {
-      return { value: model.id, name: model.id }
-    })
-  })
+    [models, prompts] = await loadSettings()
+  });
+
+  function addPrompt() {
+    prompts = [...prompts, { id: prompts.length, role: 'system', content: '' } ]
+  }
+
+  function save() {
+    saveSettings(prompts);
+  }
 </script>
 
 <h1 class='text-lg font-semibold mb-1'>Settings</h1>
@@ -47,22 +38,29 @@
     <Label for='openAIKey' class='text-base self-center text-right w-full'>Open AI API Key</Label>
   </div>
   <div class=''>
-    <Input id='openAIKey' placeholder="sk-xxxxx" bind:value={$openAiApiKey} on:blur={saveSettings} />
+    <Input id='openAIKey' placeholder="sk-xxxxx" bind:value={$openAiApiKey} on:blur={save} />
   </div>
   <div class='w-32 flex'>
     <Label for='models' class='text-base self-center text-right w-full'>Model</Label>
   </div>
   <div class=''>
-    <Select id='models' items={models} bind:value={$openAiModel} on:change={saveSettings} />
+    <Select id='models' items={models} bind:value={$openAiModel} on:change={save} />
   </div>
 </div>
 
-<h1 class='text-lg font-semibold mb-1'>Prompts</h1>
-<div class='grid grid-cols-[8rem,1fr] gap-2'>
-  <div class='w-32 flex'>
-    <Select items={roles} size="sm" class='text-base self-start text-center w-full' />
-  </div>
-  <div class=''>
-    <Textarea id='prompt' placeholder="Write your prompt" rows="4" bind:value={prompt} on:blur={saveSettings} />
-  </div>
+<h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
+<div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
+  {#each prompts as prompt (prompt.id) }
+    <div class='w-32 flex'>
+      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={prompt.role} />
+    </div>
+    <div class=''>
+      <Textarea id='prompt' placeholder="Write your prompt" rows="4" bind:value={prompt.content} on:blur={save} />
+    </div>
+  {/each}
 </div>
+<Button size='xs' color='alternative' on:click={addPrompt}>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+  </svg>
+</Button>
