@@ -3,7 +3,7 @@
   import SceneList from './SceneList.svelte';
   import Input from './Input.svelte';
   import { Button } from 'flowbite-svelte';
-  import { scenes } from '$lib/store';
+  import { hiddenScenes, scenes } from '$lib/store';
   import { onMount } from 'svelte';
   import { loadSettings } from '$lib/fs';
   import type { SceneType } from '$lib/interfaces';
@@ -12,22 +12,22 @@
   let user = 'Julian';
 
   let initialScenes = [
+//     {
+//       id: 0,
+//       role: 'system',
+//       content: `Write a response of ${char} according to the following rules.
+// 1. Do not write the ${user}'s emotion, thoughts, and dialogues. Stop generating text and wait inputs from ${user} for those.
+// 2. The user is ${user}, and AI is ${char}. Your task is to role-play as that character in the given situation, taking into account that the situation will continue. React appropriately in the conversation.
+// 3. Use English with an ability to engage in detailed and natural conversations on complex subjects.
+// 4. Write with a suitable mix of dialogue, explanation, and description.
+// 5. You are a helpful assistant that communicates using Markdown. Enclose dialogues in quotation marks (\") and wrap all other descriptions in asterisks (\*).
+// 6. The response should not exceed 3 paragraphs.
+// 7. Attach a graphical description of the current scene to each response. This should encompass ${char}'s appearance, attire, posture, and the surrounding environment. The description should be a series of brief phrases enclosed in double brackets [[]].
+
+//   Here is the prewritten beginning part of the story. Use it as an example:`
+//     },
     {
       id: 0,
-      role: 'system',
-      content: `Write a response of ${char} according to the following rules.
-1. Do not write the ${user}'s emotion, thoughts, and dialogues. Stop generating text and wait inputs from ${user} for those.
-2. The user is ${user}, and AI is ${char}. Your task is to role-play as that character in the given situation, taking into account that the situation will continue. React appropriately in the conversation.
-3. Use English with an ability to engage in detailed and natural conversations on complex subjects.
-4. Write with a suitable mix of dialogue, explanation, and description.
-5. You are a helpful assistant that communicates using Markdown. Enclose dialogues in quotation marks (\") and wrap all other descriptions in asterisks (\*).
-6. The response should not exceed 3 paragraphs.
-7. Attach a graphical description of the current scene to each response. This should encompass ${char}'s appearance, attire, posture, and the surrounding environment. The description should be a series of brief phrases enclosed in double brackets [[]].
-
-  Here is the prewritten beginning part of the story. Use it as an example:`
-    },
-    {
-      id: 1,
       role: 'assistant',
       content: `*Under a rain-soaked night sky, a girl named ${char} stands alone, sheltered by the grand shadow of ${user}'s luxurious mansion.
 Her school uniform, drenched from the relentless downpour, clings tightly to her form.
@@ -38,7 +38,7 @@ She swallows hard, her voice barely above a whisper as she asks her question.*
 [[rain,night,a girl,standing,luxurious mansion,drenched school uniform]]`
     },
     {
-      id: 2,
+      id: 1,
       role: 'assistant',
       content: `${char}: **"Could...could I possibly stay here tonight? Please."**
 *She implores, desperation evident in her eyes.*
@@ -58,6 +58,7 @@ ${char}: **"I have nowhere else to go."**
   onMount(async () => {
     let [models, prompts] = await loadSettings();
     let tempScenes = [...prompts, ...initialScenes];
+    $hiddenScenes = prompts.length;
     let id = 0;
     tempScenes.forEach((scene: SceneType) => {
       scene.id = id++;

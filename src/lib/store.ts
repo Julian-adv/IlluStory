@@ -11,3 +11,5 @@ const scene: SceneType = {
 }
 
 export const scenes = writable([scene]);
+
+export const hiddenScenes = writable(0);

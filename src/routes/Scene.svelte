@@ -2,6 +2,7 @@
   import type { SceneType } from "$lib/interfaces";
   import { onMount } from "svelte";
   import Markdown from "./Markdown.svelte";
+  import { hiddenScenes } from "$lib/store";
 
   type ImagePrompt = {
     image: string;
@@ -96,11 +97,9 @@
   }
 </script>
 
-{#if scene.id > 0}
+{#if scene.id >= $hiddenScenes}
   <div class="block max-w-3xl">
-    {#if scene.role === 'user'}
-      <div class="placeholder-user float-left mr-5 flex justify-center items-center bg-transparent" style="--imageSize: {imageSize}px;"><div></div></div>
-    {:else}
+    {#if scene.role !== 'user'}
       {#await imageFromSD}
         <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>⏳</div></div>
       {:then image}
