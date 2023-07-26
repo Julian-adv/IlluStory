@@ -37,13 +37,13 @@ export async function saveSettings() {
   writeTextFile({ path: settingsPath, contents: JSON.stringify(settings) }, { dir: BaseDirectory.AppConfig })
 }
 
-export async function loadStory(): Promise<Story|null> {
+export async function loadStory(): Promise<[Story|null, string]> {
   const selected = await open({ filters: [{ name: '*', extensions: ['json']}]});
   if (typeof(selected) === 'string' ) {
     const json = await readTextFile(selected);
-    return JSON.parse(json) as Story;
+    return [JSON.parse(json) as Story, selected];
   }
-  return null;
+  return [null, ''];
 }
 
 export async function saveStory(story: Story) {
@@ -55,7 +55,11 @@ export async function saveStory(story: Story) {
   }
   const filePath = await save({ defaultPath: fileName, filters: [{ name: '*', extensions: ['json'] }] })
   if (filePath) {
-    console.log('story', story)
     writeTextFile(filePath, JSON.stringify(story))
   }
+  return filePath;
+}
+
+export async function saveStoryQuietly(filePath:string, story:Story) {
+  writeTextFile(filePath, JSON.stringify(story))
 }

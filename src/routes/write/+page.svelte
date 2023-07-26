@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Label, Input, Range, Select, Helper, Button, Textarea } from "flowbite-svelte";
+  import { Label, Input, Range, Select, Helper, Button, Textarea, Checkbox } from "flowbite-svelte";
   import { onMount } from "svelte";
-  import { loadSettings, loadStory, saveStory } from "$lib/fs";
+  import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import type { Story } from "$lib/interfaces";
 
   let story: Story = {
@@ -22,12 +22,13 @@
     { value: "system", name: "System" },
     { value: "assistant", name: "Assistant" },
     { value: "user", name: "User" },
-  ]
+  ];
+  let autoSave = true;
+  let filePath = '';
 
   function showHelper(i: number) {
     return () => {
       helperClass[i] = helperClassVisible;
-      console.log('here')
     };
   }
 
@@ -61,21 +62,27 @@
   }
 
   async function load() {
-    const tempStory = await loadStory();
+    const [tempStory, tempFilePath] = await loadStory();
     if (tempStory) {
       story = tempStory;
+      filePath = tempFilePath;
     }
   }
 
   async function save() {
-    await saveStory(story);
+    const tempFilePath = await saveStory(story);
+    if (tempFilePath) {
+      filePath = tempFilePath;
+    }
   }
 
-  async function autoSave() {
-    
+  async function autoSaveFunc() {
+    if (autoSave && filePath !== '') {
+      saveStoryQuietly(filePath, story)
+    }
   }
 </script>
-<div class='mb-5'>
+<div class='mb-5 flex gap-2'>
   <Button color='alternative' size='sm' on:click={load}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" />
@@ -84,16 +91,24 @@
   <Button color='alternative' size='sm' on:click={save}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-    </svg>Save
+    </svg>Save as ...
   </Button>
+  <Checkbox class='inline self-center' bind:checked={autoSave}>Auto save</Checkbox>
   
 </div>
 <div class='grid grid-cols-[9rem,5rem,1fr] gap-2'>
   <div class='w-36 flex'>
+    <Label for='filePath' class='text-base self-center text-right w-full'>File path</Label>
+  </div>
+  <div class='col-span-2'>
+    <Input id='filePath' size='sm' bind:value={filePath} disabled />
+  </div>
+
+  <div class='w-36 flex'>
     <Label for='title' class='text-base self-center text-right w-full'>Title</Label>
   </div>
   <div class='col-span-2'>
-    <Input id='title' placeholder="title" bind:value={story.title} on:blur={autoSave} on:mouseenter={showHelper(0)} on:mouseleave={hideHelper(0)} />
+    <Input id='title' placeholder="title" bind:value={story.title} on:blur={autoSaveFunc} on:mouseenter={showHelper(0)} on:mouseleave={hideHelper(0)} />
   </div>
   <div>
   </div>
@@ -106,7 +121,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='col-span-2' on:mouseenter={showHelper(1)} on:mouseleave={hideHelper(1)}>
-    <Select id='models' items={models} bind:value={story.model} on:change={autoSave} />
+    <Select id='models' items={models} bind:value={story.model} on:change={autoSaveFunc} />
   </div>
   <div>
   </div>
@@ -120,7 +135,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(2)} on:mouseleave={hideHelper(2)}>
-    <Input type="number" id='Temperature' bind:value={story.temperature} on:blur={autoSave} step='0.01' />
+    <Input type="number" id='Temperature' bind:value={story.temperature} on:blur={autoSaveFunc} step='0.01' />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(2)} on:mouseleave={hideHelper(2)}>
@@ -137,7 +152,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(3)} on:mouseleave={hideHelper(3)}>
-    <Input type="number" id='frequencyPenalty' bind:value={story.frequencyPenalty} on:blur={autoSave} step='0.01' />
+    <Input type="number" id='frequencyPenalty' bind:value={story.frequencyPenalty} on:blur={autoSaveFunc} step='0.01' />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(3)} on:mouseleave={hideHelper(3)}>
@@ -154,7 +169,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(4)} on:mouseleave={hideHelper(4)}>
-    <Input type="number" id='presencePenalty' bind:value={story.presencePenalty} on:blur={autoSave} step='0.01' />
+    <Input type="number" id='presencePenalty' bind:value={story.presencePenalty} on:blur={autoSaveFunc} step='0.01' />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(4)} on:mouseleave={hideHelper(4)}>
@@ -171,7 +186,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(5)} on:mouseleave={hideHelper(5)}>
-    <Input type="number" id='maxTokens' bind:value={story.maxTokens} on:blur={autoSave} />
+    <Input type="number" id='maxTokens' bind:value={story.maxTokens} on:blur={autoSaveFunc} />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(5)} on:mouseleave={hideHelper(5)}>
@@ -190,7 +205,7 @@
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={prompt.role} />
     </div>
     <div class=''>
-      <Textarea id='prompt' placeholder="Write your prompt" rows="4" bind:value={prompt.content} on:blur={autoSave} />
+      <Textarea id='prompt' placeholder="Write your prompt" rows="4" bind:value={prompt.content} on:blur={autoSaveFunc} />
     </div>
   {/each}
 </div>
