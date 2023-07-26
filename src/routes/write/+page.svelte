@@ -1,10 +1,8 @@
 <script lang="ts">
   import { Label, Input, Range, Select, Helper, Button, Textarea } from "flowbite-svelte";
   import { onMount } from "svelte";
-  import { loadSettings } from "$lib/fs";
+  import { loadSettings, loadStory, saveStory } from "$lib/fs";
   import type { Story } from "$lib/interfaces";
-  import { open as openDialog, save } from '@tauri-apps/api/dialog';
-  import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 
   let story: Story = {
     title: '',
@@ -63,27 +61,14 @@
   }
 
   async function load() {
-    const selected = await openDialog({ filters: [{ name: '*', extensions: ['json']}]});
-    console.log('selected', selected)
-    if (typeof(selected) === 'string' ) {
-      const json = await readTextFile(selected);
-      story = JSON.parse(json) as Story;
-      console.log('story', story)
+    const tempStory = await loadStory();
+    if (tempStory) {
+      story = tempStory;
     }
   }
 
-  async function saveStory() {
-    let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim();
-    if (fileName === '') {
-      fileName = 'story' + Date.now() + '.json'
-    } else {
-      fileName = fileName + '.json'
-    }
-    const filePath = await save({ defaultPath: fileName, filters: [{ name: '*', extensions: ['json'] }] })
-    if (filePath) {
-      console.log('story', story)
-      writeTextFile(filePath, JSON.stringify(story))
-    }
+  async function save() {
+    await saveStory(story);
   }
 
   async function autoSave() {
@@ -96,7 +81,7 @@
       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" />
     </svg>Load
   </Button>
-  <Button color='alternative' size='sm' on:click={saveStory}>
+  <Button color='alternative' size='sm' on:click={save}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
     </svg>Save

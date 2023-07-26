@@ -1,30 +1,15 @@
 <script lang="ts">
   import { Label, Input, Select, Textarea, Button } from 'flowbite-svelte'
   import { onMount } from 'svelte';
-  import { openAiApiKey, openAiModel } from '$lib/store';
+  import { openAiApiKey } from '$lib/store';
   import { loadSettings, saveSettings } from '$lib/fs';
-  import type { SceneType } from '$lib/interfaces';
-
-  let models = [
-    { value: "model", name: "model" }
-  ]
-  let roles = [
-    { value: "system", name: "System" },
-    { value: "assistant", name: "Assistant" },
-    { value: "user", name: "User" },
-  ]
-  let prompts: SceneType[] = [{
-    id: 0,
-    role: 'system',
-    content: 'You are a helpful assistant.'
-  }];
 
   onMount(async () => {
-    [models, prompts] = await loadSettings()
+    await loadSettings()
   });
 
   function save() {
-    saveSettings(prompts);
+    saveSettings();
   }
 </script>
 
