@@ -16,7 +16,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class='mt-2'>
+<div>
   <Markdown readOnly={false} onEnter={onEnter} />
 </div>
 

@@ -1,7 +1,7 @@
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { openAiApiKey, openAiModel } from './store'
 import { Configuration, OpenAIApi } from 'openai'
-import type { SceneType } from './interfaces'
+import type { SceneType, Story } from './interfaces'
 
 const settingsPath = 'settings.json'
 const promptsPath = 'prompts.json'
@@ -22,14 +22,11 @@ export async function loadSettings() {
   })
   const openai = new OpenAIApi(configuration)
   const response = await openai.listModels()
-  console.log('response', response)
   const models = response.data.data.map((model) => {
     return { value: model.id, name: model.id }
   })
 
-  const promptsJson = await readTextFile(promptsPath, { dir: BaseDirectory.AppConfig })
-  const prompts = JSON.parse(promptsJson)
-  return [models, prompts];
+  return models;
 }
 
 export async function saveSettings(prompts: SceneType[]) {
@@ -39,4 +36,14 @@ export async function saveSettings(prompts: SceneType[]) {
   }
   writeTextFile({ path: settingsPath, contents: JSON.stringify(settings) }, { dir: BaseDirectory.AppConfig })
   writeTextFile({ path: promptsPath, contents: JSON.stringify(prompts) }, { dir: BaseDirectory.AppConfig })
+}
+
+export async function saveStory(story: Story) {
+  let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+  if (fileName === '') {
+    fileName = 'story' + Date.now() + '.json'
+  } else {
+    fileName = fileName + '.json'
+  }
+  writeTextFile({ path: fileName, contents: JSON.stringify(story) }, { dir: BaseDirectory.AppData })
 }

@@ -7,7 +7,7 @@
     "distDir": "../build"
   },
   "package": {
-    "productName": "Soulai",
+    "productName": "IlluStory",
     "version": "0.1.0"
   },
   "tauri": {
@@ -20,6 +20,10 @@
       },
       "path": {
         "all": true
+      },
+      "dialog": {
+        "open": true,
+        "save": true
       }
     },
     "bundle": {
@@ -37,7 +41,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.SoulAI",
+      "identifier": "com.tauri.illustory",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -66,7 +70,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "Soulai",
+        "title": "IlluStory",
         "width": 800
       }
     ]

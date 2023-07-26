@@ -7,9 +7,18 @@
   import { onMount } from 'svelte';
   import { loadSettings } from '$lib/fs';
   import type { SceneType } from '$lib/interfaces';
+  import { Select } from 'flowbite-svelte';
 
   let char = 'Abby';
   let user = 'Julian';
+
+  let roles = [
+    { value: "system", name: "System" },
+    { value: "assistant", name: "Assistant" },
+    { value: "user", name: "User" },
+  ]
+
+  let role = '';
 
   let initialScenes = [
 //     {
@@ -69,7 +78,14 @@ ${char}: **"I have nowhere else to go."**
 
 <main>
   <SceneList />
-  <Input />
+  <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
+    <div class='w-32 flex'>
+      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
+    </div>
+    <div>
+      <Input />
+    </div>
+  </div>
   
   <div class='mt-5'>
     <Button on:click={roll} size="sm" color="alternative">Reimage</Button>
