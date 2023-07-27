@@ -1,5 +1,11 @@
 import type { SceneType } from '$lib/interfaces';
 
+export const roles = [
+  { value: "system", name: "System" },
+  { value: "assistant", name: "Assistant" },
+  { value: "user", name: "User" },
+];
+
 function generateMessages(scenes: SceneType[]) {
   return scenes.map((s) => ({ role: s.role, content: s.content }))
 }

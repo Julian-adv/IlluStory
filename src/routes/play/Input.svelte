@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Markdown from "./Markdown.svelte";
+  import Markdown from "../Markdown.svelte";
   import { sendChat } from "$lib/api"
   import { openAiApiKey, openAiModel, scenes } from "$lib/store";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import '@milkdown/theme-nord/style.css';
-  import SceneList from './SceneList.svelte';
-  import Input from './Input.svelte';
+  import SceneList from './play/SceneList.svelte';
+  import Input from './play/Input.svelte';
   import { Button } from 'flowbite-svelte';
   import { hiddenScenes, scenes } from '$lib/store';
   import { onMount } from 'svelte';
@@ -11,14 +11,6 @@
 
   let char = 'Abby';
   let user = 'Julian';
-
-  let roles = [
-    { value: "system", name: "System" },
-    { value: "assistant", name: "Assistant" },
-    { value: "user", name: "User" },
-  ]
-
-  let role = '';
 
   let initialScenes = [
 //     {
@@ -56,39 +48,10 @@ ${char}: **"I have nowhere else to go."**
     }
   ]
 
-  async function roll() {
-    // scenes[scenes.length - 1].image = await generateImage('1girl')
-  }
-
-  function sendChat() {
-
-  }
-
   onMount(async () => {
-    let [models, x] = await loadSettings();
-    let tempScenes = [...initialScenes];
-    $hiddenScenes = 0;
-    let id = 0;
-    tempScenes.forEach((scene: SceneType) => {
-      scene.id = id++;
-    });
-    $scenes = tempScenes
+    let models = await loadSettings();
   })
 </script>
 
 <main>
-  <SceneList />
-  <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
-    <div class='w-32 flex'>
-      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
-    </div>
-    <div>
-      <Input />
-    </div>
-  </div>
-  
-  <div class='mt-5'>
-    <Button on:click={roll} size="sm" color="alternative">Reimage</Button>
-    <Button on:click={sendChat} size="sm">Continue</Button>
-  </div>
 </main>

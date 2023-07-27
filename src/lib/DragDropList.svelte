@@ -73,6 +73,7 @@
 
   function removeDatum(index:number) {
       data = [...data.slice(0, index), ...data.slice(index + 1)];
+      onChange(data)
   }
 </script>
 

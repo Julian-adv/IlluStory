@@ -4,26 +4,14 @@
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import type { Story } from "$lib/interfaces";
   import DragDropList from "$lib/DragDropList.svelte";
+  import { roles } from "$lib/api";
+  import { story } from "$lib/store";
 
-  let story: Story = {
-    title: '',
-    model: '',
-    temperature: 0.75,
-    frequencyPenalty: 0.4,
-    presencePenalty: 0.4,
-    maxTokens: 500,
-    prompts: []
-  }
   let models = [{ value: '', name: '' }];
   const helperClassVisible = "text-stone-600";
   const helperClassHidden = "text-stone-100";
   const linkClassVisible = "text-sky-600";
   let helperClass: string[] = [];
-  const roles = [
-    { value: "system", name: "System" },
-    { value: "assistant", name: "Assistant" },
-    { value: "user", name: "User" },
-  ];
   let autoSave = true;
   let filePath = '';
 
@@ -47,7 +35,7 @@
   });
 
   function addPrompt() {
-    story.prompts = [...story.prompts, { id: story.prompts.length, role: 'system', content: '' } ]
+    $story.prompts = [...$story.prompts, { id: $story.prompts.length, role: 'system', content: '' } ]
   }
 
   function onModelOverview() {
@@ -65,13 +53,13 @@
   async function load() {
     const [tempStory, tempFilePath] = await loadStory();
     if (tempStory) {
-      story = tempStory;
+      $story = tempStory;
       filePath = tempFilePath;
     }
   }
 
   async function save() {
-    const tempFilePath = await saveStory(story);
+    const tempFilePath = await saveStory($story);
     if (tempFilePath) {
       filePath = tempFilePath;
     }
@@ -80,25 +68,23 @@
   async function autoSaveFunc() {
     if (autoSave && filePath !== '') {
       let id = 0;
-      story.prompts.forEach(prompt => {
+      $story.prompts.forEach(prompt => {
         prompt.id = id++;
       });
-      story.prompts = story.prompts;
-      saveStoryQuietly(filePath, story)
+      $story.prompts = $story.prompts;
+      saveStoryQuietly(filePath, $story)
     }
   }
 
   function update(i: number, element: HTMLTextAreaElement) {
     return (e:Event) => {
-      console.log('element', element.value)
-      story.prompts[i].content = element.value;
+      $story.prompts[i].content = element.value;
     }
   }
 
   function updateRole(i: number, element: HTMLOptionElement) {
     return (e:Event) => {
-      console.log('element select', element);
-      story.prompts[i].role = element.value;
+      $story.prompts[i].role = element.value;
     }
   }
 </script>
@@ -128,7 +114,7 @@
     <Label for='title' class='text-base self-center text-right w-full'>Title</Label>
   </div>
   <div class='col-span-2'>
-    <Input id='title' placeholder="title" bind:value={story.title} on:blur={autoSaveFunc} on:mouseenter={showHelper(0)} on:mouseleave={hideHelper(0)} />
+    <Input id='title' placeholder="title" bind:value={$story.title} on:blur={autoSaveFunc} on:mouseenter={showHelper(0)} on:mouseleave={hideHelper(0)} />
   </div>
   <div>
   </div>
@@ -141,7 +127,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='col-span-2' on:mouseenter={showHelper(1)} on:mouseleave={hideHelper(1)}>
-    <Select id='models' items={models} bind:value={story.model} on:change={autoSaveFunc} />
+    <Select id='models' items={models} bind:value={$story.model} on:change={autoSaveFunc} />
   </div>
   <div>
   </div>
@@ -155,11 +141,11 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(2)} on:mouseleave={hideHelper(2)}>
-    <Input type="number" id='Temperature' bind:value={story.temperature} on:blur={autoSaveFunc} step='0.01' />
+    <Input type="number" id='Temperature' bind:value={$story.temperature} on:blur={autoSaveFunc} step='0.01' />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(2)} on:mouseleave={hideHelper(2)}>
-    <Range id='temperature' size='sm' bind:value={story.temperature} min='0' max='2.0' step='0.01' class='self-center'/>
+    <Range id='temperature' size='sm' bind:value={$story.temperature} min='0' max='2.0' step='0.01' class='self-center'/>
   </div>
   <div>
   </div>
@@ -172,11 +158,11 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(3)} on:mouseleave={hideHelper(3)}>
-    <Input type="number" id='frequencyPenalty' bind:value={story.frequencyPenalty} on:blur={autoSaveFunc} step='0.01' />
+    <Input type="number" id='frequencyPenalty' bind:value={$story.frequencyPenalty} on:blur={autoSaveFunc} step='0.01' />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(3)} on:mouseleave={hideHelper(3)}>
-    <Range id='frequencyPenalty' size='sm' bind:value={story.frequencyPenalty} min='-2.0' max='2.0' step='0.01' class='self-center'/>
+    <Range id='frequencyPenalty' size='sm' bind:value={$story.frequencyPenalty} min='-2.0' max='2.0' step='0.01' class='self-center'/>
   </div>
   <div>
   </div>
@@ -189,11 +175,11 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(4)} on:mouseleave={hideHelper(4)}>
-    <Input type="number" id='presencePenalty' bind:value={story.presencePenalty} on:blur={autoSaveFunc} step='0.01' />
+    <Input type="number" id='presencePenalty' bind:value={$story.presencePenalty} on:blur={autoSaveFunc} step='0.01' />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(4)} on:mouseleave={hideHelper(4)}>
-    <Range id='frequencyPenalty' size='sm' bind:value={story.presencePenalty} min='-2.0' max='2.0' step='0.01' class='self-center'/>
+    <Range id='frequencyPenalty' size='sm' bind:value={$story.presencePenalty} min='-2.0' max='2.0' step='0.01' class='self-center'/>
   </div>
   <div>
   </div>
@@ -206,11 +192,11 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='' on:mouseenter={showHelper(5)} on:mouseleave={hideHelper(5)}>
-    <Input type="number" id='maxTokens' bind:value={story.maxTokens} on:blur={autoSaveFunc} />
+    <Input type="number" id='maxTokens' bind:value={$story.maxTokens} on:blur={autoSaveFunc} />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class='flex' on:mouseenter={showHelper(5)} on:mouseleave={hideHelper(5)}>
-    <Range id='maxTokens' size='sm' bind:value={story.maxTokens} min='1' max='1024' step='1' class='self-center'/>
+    <Range id='maxTokens' size='sm' bind:value={$story.maxTokens} min='1' max='1024' step='1' class='self-center'/>
   </div>
   <div>
   </div>
@@ -220,7 +206,7 @@
 </div>
 
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
-<DragDropList bind:data={story.prompts} onChange={autoSaveFunc} removesItems let:datum={prompt} let:i >
+<DragDropList bind:data={$story.prompts} onChange={autoSaveFunc} removesItems let:datum={prompt} let:i >
   <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
     <div class='w-32 flex'>
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' value={prompt.role} on:change={updateRole(i, this)} />
