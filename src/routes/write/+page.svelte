@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import type { Story } from "$lib/interfaces";
+  import DragDropList from "$lib/DragDropList.svelte";
 
   let story: Story = {
     title: '',
@@ -79,6 +80,20 @@
   async function autoSaveFunc() {
     if (autoSave && filePath !== '') {
       saveStoryQuietly(filePath, story)
+    }
+  }
+
+  function update(i: number, element: HTMLTextAreaElement) {
+    return (e:Event) => {
+      console.log('element', element.value)
+      story.prompts[i].content = element.value;
+    }
+  }
+
+  function updateRole(i: number, element: HTMLOptionElement) {
+    return (e:Event) => {
+      console.log('element select', element);
+      story.prompts[i].role = element.value;
     }
   }
 </script>
@@ -198,17 +213,18 @@
     <Helper class={helperClass[5]}>The maximum number of tokens to generate in the completion.</Helper>
   </div>
 </div>
+
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
-<div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
-  {#each story.prompts as prompt (prompt.id) }
+<DragDropList bind:data={story.prompts} let:datum={prompt} let:i >
+  <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
     <div class='w-32 flex'>
-      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={prompt.role} />
+      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' value={prompt.role} on:change={updateRole(i, this)} />
     </div>
     <div class=''>
-      <Textarea id='prompt' placeholder="Write your prompt" rows="4" bind:value={prompt.content} on:blur={autoSaveFunc} />
+      <Textarea id='prompt' placeholder="Write your prompt" rows="4" value={prompt.content} on:change={update(i, this)} on:blur={autoSaveFunc} />
     </div>
-  {/each}
-</div>
+  </div>
+</DragDropList>
 <Button size='xs' color='alternative' on:click={addPrompt}>
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

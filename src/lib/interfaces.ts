@@ -6,6 +6,12 @@ export interface SceneType {
   image?: string
 }
 
+export interface Prompt {
+  id: number;
+  role: string;
+  content: string;
+}
+
 export interface Story {
   title: string;
   model: string;
@@ -13,9 +19,5 @@ export interface Story {
   frequencyPenalty: number;
   presencePenalty: number;
   maxTokens: number;
-  prompts: {
-    id: number;
-    role: string;
-    content: string;
-  }[]
+  prompts: Prompt[]
 }

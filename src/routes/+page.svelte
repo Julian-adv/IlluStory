@@ -65,9 +65,9 @@ ${char}: **"I have nowhere else to go."**
   }
 
   onMount(async () => {
-    let [models, prompts] = await loadSettings();
-    let tempScenes = [...prompts, ...initialScenes];
-    $hiddenScenes = prompts.length;
+    let [models, x] = await loadSettings();
+    let tempScenes = [...initialScenes];
+    $hiddenScenes = 0;
     let id = 0;
     tempScenes.forEach((scene: SceneType) => {
       scene.id = id++;
