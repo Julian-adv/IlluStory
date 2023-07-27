@@ -79,6 +79,11 @@
 
   async function autoSaveFunc() {
     if (autoSave && filePath !== '') {
+      let id = 0;
+      story.prompts.forEach(prompt => {
+        prompt.id = id++;
+      });
+      story.prompts = story.prompts;
       saveStoryQuietly(filePath, story)
     }
   }
@@ -215,7 +220,7 @@
 </div>
 
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
-<DragDropList bind:data={story.prompts} let:datum={prompt} let:i >
+<DragDropList bind:data={story.prompts} onChange={autoSaveFunc} removesItems let:datum={prompt} let:i >
   <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
     <div class='w-32 flex'>
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' value={prompt.role} on:change={updateRole(i, this)} />

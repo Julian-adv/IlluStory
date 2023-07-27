@@ -1,26 +1,29 @@
 <!-- This file is copied from https://github.com/jwlarocque/svelte-dragdroplist -->
-<script lang="js">
+<script lang="ts">
   import {flip} from "svelte/animate";
   
-  export let data = [];
+  export let data:any = [];
   export let removesItems = false;
+  export let onChange = (data:[]) => {};
 
-  let ghost;
-  let grabbed;
+  let ghost:HTMLElement;
+  let grabbed:HTMLElement|null;
 
-  let lastTarget;
+  let lastTarget:Element;
 
   let mouseY = 0; // pointer y coordinate within client
   let offsetY = 0; // y distance from top of grabbed element to pointer
   let layerY = 0; // distance from top of list to top of client
 
-  function grab(clientY, element) {
+  function grab(clientY:number, element:HTMLElement) {
       // modify grabbed element
       grabbed = element;
-      grabbed.dataset.grabY = clientY;
+      grabbed.dataset.grabY = clientY.toString();
 
       // modify ghost element (which is actually dragged)
-      ghost.innerHTML = grabbed.innerHTML;
+      if (ghost.firstChild) {
+        ghost.replaceChild(grabbed.cloneNode(true), ghost.firstChild);
+      }
 
       // record offset from cursor to top of element
       // (used for positioning ghost)
@@ -29,44 +32,46 @@
   }
 
   // drag handler updates cursor position
-  function drag(clientY) {
+  function drag(clientY:number) {
       if (grabbed) {
           mouseY = clientY;
-          layerY = ghost.parentNode.getBoundingClientRect().y;
+          const parent = ghost.parentNode as HTMLElement;
+          layerY = parent.getBoundingClientRect().y;
       }
   }
 
   // touchEnter handler emulates the mouseenter event for touch input
   // (more or less)
-  function touchEnter(ev) {       
+  function touchEnter(ev:Touch) {       
       drag(ev.clientY);
       // trigger dragEnter the first time the cursor moves over a list item
-      let target = document.elementFromPoint(ev.clientX, ev.clientY).closest(".item");
+      let target = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".item") as HTMLElement;
       if (target && target != lastTarget) {
           lastTarget = target;
-          dragEnter(ev, target);
+          dragEnter(target);
       }
   }
 
-  function dragEnter(ev, target) {
+  function dragEnter(target:HTMLElement) {
       // swap items in data
       if (grabbed && target != grabbed && target.classList.contains("item")) {
-          moveDatum(parseInt(grabbed.dataset.index), parseInt(target.dataset.index));
+          moveDatum(parseInt(grabbed.dataset.index as string), parseInt(target.dataset.index as string));
       }
   }
 
   // does the actual moving of items in data
-  function moveDatum(from, to) {
+  function moveDatum(from:number, to:number) {
       let temp = data[from];
       data = [...data.slice(0, from), ...data.slice(from + 1)];
       data = [...data.slice(0, to), temp, ...data.slice(to)];
   }
 
-  function release(ev) {
+  function release() {
       grabbed = null;
+      onChange(data);
   }
 
-  function removeDatum(index) {
+  function removeDatum(index:number) {
       data = [...data.slice(0, index), ...data.slice(index + 1)];
   }
 </script>
@@ -178,8 +183,8 @@
       class="list"
       on:mousemove={function(ev) {ev.stopPropagation(); drag(ev.clientY);}}
       on:touchmove={function(ev) {ev.stopPropagation(); drag(ev.touches[0].clientY);}}
-      on:mouseup={function(ev) {ev.stopPropagation(); release(ev);}}
-      on:touchend={function(ev) {ev.stopPropagation(); release(ev.touches[0]);}}>
+      on:mouseup={function(ev) {ev.stopPropagation(); release();}}
+      on:touchend={function(ev) {ev.stopPropagation(); release();}}>
       {#each data as datum, i (datum.id ? datum.id : JSON.stringify(datum))}
           <div 
               id={(grabbed && (datum.id ? datum.id : JSON.stringify(datum)) == grabbed.dataset.id) ? "grabbed" : ""}
@@ -189,7 +194,7 @@
               data-grabY="0"
               on:mousedown={function(ev) {grab(ev.clientY, this);}}
               on:touchstart={function(ev) {grab(ev.touches[0].clientY, this);}}
-              on:mouseenter={function(ev) {ev.stopPropagation(); dragEnter(ev, ev.target);}}
+              on:mouseenter={function(ev) {ev.stopPropagation(); dragEnter(ev.target);}}
               on:touchmove={function(ev) {ev.stopPropagation(); ev.preventDefault(); touchEnter(ev.touches[0]);}}
               animate:flip|local={{duration: 200}}>
               <div class="buttons">
