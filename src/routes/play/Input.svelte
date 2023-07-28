@@ -1,7 +1,7 @@
 <script lang="ts">
   import Markdown from "../Markdown.svelte";
   import { sendChat } from "$lib/api"
-  import { openAiApiKey, openAiModel, scenes } from "$lib/store";
+  import { openAiApiKey, openAiModel, scenes, usage } from "$lib/store";
 
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
@@ -10,8 +10,8 @@
       role: "user",
       content: trimmed
     }
-    $scenes = [...$scenes, newScene]
-    $scenes = await sendChat($scenes, $openAiApiKey, $openAiModel)
+    $scenes = [...$scenes, newScene];
+    [$scenes, $usage] = await sendChat($scenes, $openAiApiKey, $openAiModel)
   }
 </script>
 

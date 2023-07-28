@@ -39,8 +39,8 @@ export async function sendChat(scenes: SceneType[], apiKey: string, model: strin
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     const gptScene: SceneType = dataFromGPT.choices[0].message
     gptScene.id = scenes.length
-    return [...scenes, gptScene]
+    return [[...scenes, gptScene], dataFromGPT.usage];
   } else {
-    return scenes;
+    return [scenes, dataFromGPT.usage];
   }
 }

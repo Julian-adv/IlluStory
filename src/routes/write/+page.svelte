@@ -2,18 +2,23 @@
   import { Label, Input, Range, Select, Helper, Button, Textarea, Checkbox } from "flowbite-svelte";
   import { onMount } from "svelte";
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
-  import type { Story } from "$lib/interfaces";
   import DragDropList from "$lib/DragDropList.svelte";
   import { roles } from "$lib/api";
-  import { story } from "$lib/store";
+  import { story, filePath } from "$lib/store";
 
   let models = [{ value: '', name: '' }];
   const helperClassVisible = "text-stone-600";
   const helperClassHidden = "text-stone-100";
   const linkClassVisible = "text-sky-600";
-  let helperClass: string[] = [];
+  let helperClass: string[] = [
+    helperClassHidden,
+    helperClassHidden,
+    helperClassHidden,
+    helperClassHidden,
+    helperClassHidden,
+    helperClassHidden,
+  ];
   let autoSave = true;
-  let filePath = '';
 
   function showHelper(i: number) {
     return () => {
@@ -29,7 +34,7 @@
 
   onMount(async () => {
     models = await loadSettings()
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < helperClass.length; i++) {
       helperClass[i] = helperClassHidden;
     }
   });
@@ -54,25 +59,25 @@
     const [tempStory, tempFilePath] = await loadStory();
     if (tempStory) {
       $story = tempStory;
-      filePath = tempFilePath;
+      $filePath = tempFilePath;
     }
   }
 
   async function save() {
     const tempFilePath = await saveStory($story);
     if (tempFilePath) {
-      filePath = tempFilePath;
+      $filePath = tempFilePath;
     }
   }
 
   async function autoSaveFunc() {
-    if (autoSave && filePath !== '') {
+    if (autoSave && $filePath !== '') {
       let id = 0;
       $story.prompts.forEach(prompt => {
         prompt.id = id++;
       });
       $story.prompts = $story.prompts;
-      saveStoryQuietly(filePath, $story)
+      saveStoryQuietly($filePath, $story)
     }
   }
 
@@ -107,7 +112,7 @@
     <Label for='filePath' class='text-base self-center text-right w-full'>File path</Label>
   </div>
   <div class='col-span-2'>
-    <Input id='filePath' size='sm' bind:value={filePath} disabled />
+    <Input id='filePath' size='sm' bind:value={$filePath} disabled />
   </div>
 
   <div class='w-36 flex'>

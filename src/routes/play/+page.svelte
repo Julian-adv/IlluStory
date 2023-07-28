@@ -4,8 +4,8 @@
   import { roles } from '$lib/api';
   import Input from './Input.svelte';
   import { onMount } from 'svelte';
-  import { story, scenes, charName, userName } from '$lib/store';
-    import type { Prompt } from '$lib/interfaces';
+  import { story, scenes, charName, userName, usage } from '$lib/store';
+  import type { Prompt } from '$lib/interfaces';
 
   let role = 'user';
 
@@ -46,6 +46,9 @@
 <main>
   <SceneList />
   <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
+    <div class='col-span-2 text-sm text-stone-400'>
+      Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total tokens: {$usage.total_tokens}
+    </div>
     <div class='w-32 flex'>
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
     </div>

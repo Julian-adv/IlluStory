@@ -24,3 +24,7 @@ export const story = writable(defaultStory);
 
 export const charName = writable('Jane Doe');
 export const userName = writable('John Doe');
+
+export const filePath = writable('');
+
+export const usage = writable({prompt_tokens: 0, completion_tokens: 0, total_tokens: 0})
