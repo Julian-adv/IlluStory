@@ -81,9 +81,9 @@
     }
   }
 
-  function update(i: number, element: HTMLTextAreaElement) {
+  function update(i: number, value: string) {
     return (e:Event) => {
-      $story.prompts[i].content = element.value;
+      $story.prompts[i].content = value;
     }
   }
 
@@ -92,17 +92,35 @@
       $story.prompts[i].role = element.value;
     }
   }
+
+  function countLines(str: string): number {
+    let count = 0;
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] === "\n") {
+        count++;
+      }
+    }
+    if (count < 4) {
+      count = 4;
+    }
+    if (count > 15) {
+      count = 15;
+    }
+    return count;
+  }
 </script>
-<div class='mb-5 flex gap-2'>
+<div class='mt-2 mb-5 flex gap-2'>
   <Button color='alternative' size='sm' on:click={load}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" />
-    </svg>Load
+    </svg>
+    Load
   </Button>
   <Button color='alternative' size='sm' on:click={save}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-    </svg>Save as ...
+    </svg>
+    Save as ...
   </Button>
   <Checkbox class='inline self-center' bind:checked={autoSave}>Auto save</Checkbox>
   
@@ -217,7 +235,7 @@
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' value={prompt.role} on:change={updateRole(i, this)} />
     </div>
     <div class=''>
-      <Textarea id='prompt' placeholder="Write your prompt" rows="4" value={prompt.content} on:change={update(i, this)} on:blur={autoSaveFunc} />
+      <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt.content)} value={prompt.content} on:change={update(i, this.value)} on:blur={autoSaveFunc}/>
     </div>
   </div>
 </DragDropList>

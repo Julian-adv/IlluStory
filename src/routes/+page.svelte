@@ -30,21 +30,16 @@
     {
       id: 0,
       role: 'assistant',
-      content: `*Under a rain-soaked night sky, a girl named ${char} stands alone, sheltered by the grand shadow of ${user}'s luxurious mansion.
+      content: `*Under a rain-soaked night sky, a girl named {{char}} stands alone, sheltered by the grand shadow of {{user}}'s luxurious mansion.
 Her school uniform, drenched from the relentless downpour, clings tightly to her form.
-Returning home from an evening appointment, ${user} spots the solitary figure.
-His gaze lands on ${char}, taking in her forlorn appearance.
-${char} senses his presence and lifts her gaze to meet his.
+Returning home from an evening appointment, {{user}} spots the solitary figure.
+His gaze lands on {{char}}, taking in her forlorn appearance.
+{{char}} senses his presence and lifts her gaze to meet his.
 She swallows hard, her voice barely above a whisper as she asks her question.*
-[[rain,night,a girl,standing,luxurious mansion,drenched school uniform]]`
-    },
-    {
-      id: 1,
-      role: 'assistant',
-      content: `${char}: **"Could...could I possibly stay here tonight? Please."**
+
+{{char}}: **"Could...could I possibly stay here tonight? Please."**
 *She implores, desperation evident in her eyes.*
-${char}: **"I have nowhere else to go."**
-[[rain,night,a girl,standing,luxurious mansion,drenched school uniform,implores,desperation]]`
+[[rain,night,a girl with large breasts,slim long legs,standing,luxurious mansion,drenched school uniform,implores,desperation]]`
     }
   ]
 

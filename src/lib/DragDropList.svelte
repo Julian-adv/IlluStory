@@ -15,6 +15,8 @@
   let offsetY = 0; // y distance from top of grabbed element to pointer
   let layerY = 0; // distance from top of list to top of client
 
+  let changed = false;
+
   function grab(clientY:number, element:HTMLElement) {
       // modify grabbed element
       grabbed = element;
@@ -64,16 +66,21 @@
       let temp = data[from];
       data = [...data.slice(0, from), ...data.slice(from + 1)];
       data = [...data.slice(0, to), temp, ...data.slice(to)];
+      changed = true;
   }
 
   function release() {
       grabbed = null;
-      onChange(data);
+      if (changed) {
+        onChange(data);
+        changed = false;
+      }
   }
 
   function removeDatum(index:number) {
       data = [...data.slice(0, index), ...data.slice(index + 1)];
-      onChange(data)
+      onChange(data);
+      changed = false;
   }
 </script>
 
