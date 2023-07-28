@@ -4,7 +4,7 @@
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import DragDropList from "$lib/DragDropList.svelte";
   import { roles } from "$lib/api";
-  import { story, filePath } from "$lib/store";
+  import { story, storyPath } from "$lib/store";
 
   let models = [{ value: '', name: '' }];
   const helperClassVisible = "text-stone-600";
@@ -59,25 +59,25 @@
     const [tempStory, tempFilePath] = await loadStory();
     if (tempStory) {
       $story = tempStory;
-      $filePath = tempFilePath;
+      $storyPath = tempFilePath;
     }
   }
 
   async function save() {
     const tempFilePath = await saveStory($story);
     if (tempFilePath) {
-      $filePath = tempFilePath;
+      $storyPath = tempFilePath;
     }
   }
 
   async function autoSaveFunc() {
-    if (autoSave && $filePath !== '') {
+    if (autoSave && $storyPath !== '') {
       let id = 0;
       $story.prompts.forEach(prompt => {
         prompt.id = id++;
       });
       $story.prompts = $story.prompts;
-      saveStoryQuietly($filePath, $story)
+      saveStoryQuietly($storyPath, $story)
     }
   }
 
@@ -112,7 +112,7 @@
     <Label for='filePath' class='text-base self-center text-right w-full'>File path</Label>
   </div>
   <div class='col-span-2'>
-    <Input id='filePath' size='sm' bind:value={$filePath} disabled />
+    <Input id='filePath' size='sm' bind:value={$storyPath} disabled />
   </div>
 
   <div class='w-36 flex'>

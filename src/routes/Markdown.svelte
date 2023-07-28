@@ -14,6 +14,7 @@
   let markdownEditor: Promise<Editor>;
   const editable = () => !readOnly;
   let internalEditor: Editor;
+  let first = true;
 
   function makeEditor(dom: HTMLDivElement) {
     // to obtain the editor instance we need to store a reference of the editor.
@@ -42,8 +43,9 @@
   }
 
   function onFocus() {
-    if (!readOnly) {
+    if (!readOnly && first) {
       internalEditor.action(replaceAll(''))
+      first = false;
     }
   }
 

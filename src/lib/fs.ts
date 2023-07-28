@@ -1,7 +1,7 @@
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { openAiApiKey, openAiModel } from './store'
 import { Configuration, OpenAIApi } from 'openai'
-import type { Story } from './interfaces'
+import type { Story, Prompt } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 
 const settingsPath = 'settings.json'
@@ -46,6 +46,14 @@ export async function loadStory(): Promise<[Story|null, string]> {
   return [null, ''];
 }
 
+export async function savePath(path:string, data:any) {
+  const filePath = await save({ defaultPath: path, filters: [{ name: '*', extensions: ['json'] }] })
+  if (filePath) {
+    writeTextFile(filePath, JSON.stringify(data))
+  }
+  return filePath;
+}
+
 export async function saveStory(story: Story) {
   let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim();
   if (fileName === '') {
@@ -53,11 +61,7 @@ export async function saveStory(story: Story) {
   } else {
     fileName = fileName + '.json'
   }
-  const filePath = await save({ defaultPath: fileName, filters: [{ name: '*', extensions: ['json'] }] })
-  if (filePath) {
-    writeTextFile(filePath, JSON.stringify(story))
-  }
-  return filePath;
+  return savePath(fileName, story);
 }
 
 export async function saveStoryQuietly(filePath:string, story:Story) {

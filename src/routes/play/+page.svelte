@@ -1,10 +1,11 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte';
-  import { Select } from 'flowbite-svelte';
+  import { Button, Select } from 'flowbite-svelte';
   import { roles } from '$lib/api';
   import Input from './Input.svelte';
   import { onMount } from 'svelte';
-  import { story, scenes, charName, userName, usage } from '$lib/store';
+  import { story, scenes, charName, userName, usage, storyPath, sessionPath } from '$lib/store';
+  import { savePath } from '$lib/fs';
   import type { Prompt } from '$lib/interfaces';
 
   let role = 'user';
@@ -37,6 +38,37 @@
     })
   }
 
+  function formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    const min = date.getMinutes().toString().padStart(2, '0');
+    const sec = date.getSeconds().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}_${hour}-${min}-${sec}`;
+  }
+
+  function insertTimestamp(filename: string): string {
+    let extensionIndex = filename.lastIndexOf(".json");
+    if (extensionIndex === -1) {
+      extensionIndex = filename.length;
+    }
+
+    const baseName = filename.slice(0, extensionIndex);
+    const extension = filename.slice(extensionIndex);
+    const timestamp = formatDate(new Date());
+
+    return `${baseName}_${timestamp}${extension}`;
+  }
+
+  async function save() {
+    const tempPath = await savePath(insertTimestamp($storyPath), $scenes);
+    if (tempPath) {
+      $sessionPath = tempPath;
+    }
+  }
+
   onMount(() => {
     $scenes = findNames($story.prompts);
     $scenes = replaceNames($scenes);
@@ -49,6 +81,19 @@
     <div class='col-span-2 text-sm text-stone-400'>
       Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total tokens: {$usage.total_tokens}
     </div>
+    {#if $sessionPath}
+      <div class='col-span-2 text-sm text-stone-400'>
+        Saved {$sessionPath}
+      </div>
+    {:else}
+      <div class='col-span-2 text-sm text-stone-400'>
+        <Button color='alternative' size='sm' on:click={save}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+          </svg>Save as ...
+        </Button>
+      </div>
+    {/if}
     <div class='w-32 flex'>
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
     </div>
