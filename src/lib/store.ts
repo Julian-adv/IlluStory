@@ -21,3 +21,6 @@ const defaultStory: Story = {
 }
 
 export const story = writable(defaultStory);
+
+export const charName = writable('Jane Doe');
+export const userName = writable('John Doe');

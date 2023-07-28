@@ -4,6 +4,8 @@ export const roles = [
   { value: "system", name: "System" },
   { value: "assistant", name: "Assistant" },
   { value: "user", name: "User" },
+  { value: 'set_char', name: 'Char setting' },
+  { value: 'set_user', name: 'User setting' },
 ];
 
 function generateMessages(scenes: SceneType[]) {

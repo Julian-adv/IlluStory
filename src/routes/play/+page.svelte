@@ -4,15 +4,43 @@
   import { roles } from '$lib/api';
   import Input from './Input.svelte';
   import { onMount } from 'svelte';
-  import { story, scenes } from '$lib/store';
+  import { story, scenes, charName, userName } from '$lib/store';
+    import type { Prompt } from '$lib/interfaces';
 
   let role = 'user';
 
-  onMount(async () => {
-    $scenes = $story.prompts
-    console.log('scenes', $scenes)
-  })
+  function findNames(prompts: Prompt[]) {
+    return prompts.map((prompt) => {
+      let role = prompt.role
+      if (prompt.role === 'set_char') {
+        const match = prompt.content.match(/Name: *(.+)/)
+        if (match) {
+          $charName = match[1];
+        }
+        role = 'system';
+      } else if (prompt.role === 'set_user') {
+        const match = prompt.content.match(/Name: *(.+)/)
+        if (match) {
+          $userName = match[1];
+        }
+        role = 'system';
+      }
+      return { id: prompt.id, role: role, content: prompt.content };
+    })
+  }
 
+  function replaceNames(prompts: Prompt[]) {
+    return prompts.map((prompt) => {
+      let content = prompt.content.replace(/{{char}}/g, $charName)
+      content = content.replace(/{{user}}/g, $userName)
+      return { id: prompt.id, role: prompt.role, content: content };
+    })
+  }
+
+  onMount(() => {
+    $scenes = findNames($story.prompts);
+    $scenes = replaceNames($scenes);
+  })
 </script>
 
 <main>
