@@ -2,7 +2,7 @@
   import type { SceneType } from "$lib/interfaces";
   import { onMount } from "svelte";
   import Markdown from "./Markdown.svelte";
-  import { hiddenScenes } from "$lib/store";
+  import { startStoryId } from "$lib/store";
 
   type ImagePrompt = {
     image: string;
@@ -11,25 +11,26 @@
 
   export let scene: SceneType;
   let content: string;
+  let noImage: boolean;
   let imageFromSD: Promise<ImagePrompt> = Promise.resolve(createImagePrompt('', ''));
   let imageSize = 512/window.devicePixelRatio;
 
   onMount(() => {
-    console.log('imageSize', imageSize);
-    [content, imageFromSD] = extractAndRemoveBracketsContent(scene);
+    [content, noImage, imageFromSD] = extractAndRemoveBracketsContent(scene);
   })
 
   function createImagePrompt(image: string, prompt: string): ImagePrompt {
     return { image: image, prompt: prompt }
   }
 
-  function extractAndRemoveBracketsContent(scene: SceneType): [string, Promise<ImagePrompt>] {
+  function extractAndRemoveBracketsContent(scene: SceneType): [string, boolean, Promise<ImagePrompt>] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const extractedContents = matches.map(str => str.slice(2, -2));
     const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
-    const image = scene.role === 'user' ? Promise.resolve(createImagePrompt('', '')) : generateImage(extractedContents.join(','))
+    const noImage = scene.role === 'user' || matches.length == 0;
+    const image = noImage ? Promise.resolve(createImagePrompt('', '')) : generateImage(extractedContents.join(','))
 
-    return [cleanedInput, image];
+    return [cleanedInput, noImage, image];
   }
 
   async function generateImage(prompt: string): Promise<ImagePrompt> {
@@ -97,9 +98,9 @@
   }
 </script>
 
-{#if scene.id >= $hiddenScenes}
+{#if scene.id >= $startStoryId}
   <div class="block max-w-3xl">
-    {#if scene.role !== 'user'}
+    {#if !noImage}
       {#await imageFromSD}
         <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>⏳</div></div>
       {:then image}
@@ -115,18 +116,8 @@
 {/if}
 
 <style>
-  .role {
-    color: #c4c2c2;
-    font-size: 6pt;
-  }
-
   .placeholder {
     width: var(--imageSize);
     height: var(--imageSize);
-  }
-
-  .placeholder-user {
-    width: var(--imageSize);
-    height: 16px;
   }
 </style>

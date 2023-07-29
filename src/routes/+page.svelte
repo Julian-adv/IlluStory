@@ -3,7 +3,7 @@
   import SceneList from './play/SceneList.svelte';
   import Input from './play/Input.svelte';
   import { Button } from 'flowbite-svelte';
-  import { hiddenScenes, scenes } from '$lib/store';
+  import { startStoryId, scenes } from '$lib/store';
   import { onMount } from 'svelte';
   import { loadSettings } from '$lib/fs';
   import type { SceneType } from '$lib/interfaces';

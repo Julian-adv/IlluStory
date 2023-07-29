@@ -1,25 +1,35 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte';
   import { Button, Select } from 'flowbite-svelte';
-  import { roles } from '$lib/api';
+  import { charSetting, roles, startStory, userSetting } from '$lib/api';
   import Input from './Input.svelte';
   import { onMount } from 'svelte';
-  import { story, scenes, charName, userName, usage, storyPath, sessionPath } from '$lib/store';
+  import { story, scenes, charName, userName, usage, storyPath, sessionPath, startStoryId, zeroUsage } from '$lib/store';
   import { savePath } from '$lib/fs';
   import type { Prompt } from '$lib/interfaces';
 
   let role = 'user';
 
+  function findStartStory(prompts: Prompt[]) {
+    return prompts.filter((prompt) => {
+      if (prompt.role === startStory) {
+        $startStoryId = prompt.id;
+        return false;
+      }
+      return true;
+    })
+  }
+
   function findNames(prompts: Prompt[]) {
     return prompts.map((prompt) => {
       let role = prompt.role
-      if (prompt.role === 'set_char') {
+      if (prompt.role === charSetting) {
         const match = prompt.content.match(/Name: *(.+)/)
         if (match) {
           $charName = match[1];
         }
         role = 'system';
-      } else if (prompt.role === 'set_user') {
+      } else if (prompt.role === userSetting) {
         const match = prompt.content.match(/Name: *(.+)/)
         if (match) {
           $userName = match[1];
@@ -72,8 +82,11 @@
   }
 
   function newSession() {
-    $scenes = findNames($story.prompts);
+    $scenes = findStartStory($story.prompts);
+    $scenes = findNames($scenes);
     $scenes = replaceNames($scenes);
+    $usage = zeroUsage;
+    $sessionPath = '';
   }
 
   onMount(() => {
@@ -109,7 +122,7 @@
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
     </div>
     <div>
-      <Input />
+      <Input {role} />
     </div>
   </div>
 </main>

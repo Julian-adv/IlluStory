@@ -8,7 +8,7 @@ const defaultScenes:SceneType[] = [];
 
 export const scenes = writable(defaultScenes);
 
-export const hiddenScenes = writable(0);
+export const startStoryId = writable(0);
 
 const defaultStory: Story = {
   title: '',
@@ -28,4 +28,5 @@ export const userName = writable('John Doe');
 export const storyPath = writable('');
 export const sessionPath = writable('');
 
-export const usage = writable({prompt_tokens: 0, completion_tokens: 0, total_tokens: 0})
+export const zeroUsage = {prompt_tokens: 0, completion_tokens: 0, total_tokens: 0};
+export const usage = writable(zeroUsage);

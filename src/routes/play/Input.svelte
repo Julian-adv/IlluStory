@@ -4,6 +4,8 @@
   import { sessionPath, openAiApiKey, openAiModel, scenes, usage } from "$lib/store";
   import { writeTextFile } from "@tauri-apps/api/fs";
 
+  export let role = 'user';
+
   function saveScenes() {
     if ($sessionPath !== '') {
       writeTextFile($sessionPath, JSON.stringify($scenes))
@@ -13,8 +15,8 @@
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
     const newScene = {
-      id: $scenes.length,
-      role: "user",
+      id: $scenes[$scenes.length - 1].id + 1,
+      role: role,
       content: trimmed
     }
     $scenes = [...$scenes, newScene];

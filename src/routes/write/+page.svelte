@@ -3,8 +3,9 @@
   import { onMount } from "svelte";
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import DragDropList from "$lib/DragDropList.svelte";
-  import { roles } from "$lib/api";
+  import { roles, startStory } from "$lib/api";
   import { story, storyPath } from "$lib/store";
+  import type { Prompt } from "$lib/interfaces";
 
   let models = [{ value: '', name: '' }];
   const helperClassVisible = "text-stone-600";
@@ -93,8 +94,9 @@
     }
   }
 
-  function countLines(str: string): number {
+  function countLines(prompt: Prompt): number {
     let count = 0;
+    const str = prompt.content;
     for (let i = 0; i < str.length; i++) {
       if (str[i] === "\n") {
         count++;
@@ -234,8 +236,15 @@
     <div class='w-32 flex'>
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' value={prompt.role} on:change={updateRole(i, this)} />
     </div>
-    <div class=''>
-      <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt.content)} value={prompt.content} on:change={update(i, this.value)} on:blur={autoSaveFunc}/>
+    <div class='flex items-center w-full text-center'>
+      {#if prompt.role === startStory}
+        <hr class='flex-grow border-t border-dashed border-stone-400'>
+        <em class='px-2 text-sm text-stone-500'>The story begins from below.</em>
+        <hr class='flex-grow border-t border-dashed border-stone-400'>
+      {:else}
+        <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt)} value={prompt.content} 
+         on:change={update(i, this.value)} on:blur={autoSaveFunc} />
+      {/if}
     </div>
   </div>
 </DragDropList>

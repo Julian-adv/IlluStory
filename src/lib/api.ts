@@ -1,11 +1,16 @@
 import type { SceneType } from '$lib/interfaces';
 
+export const charSetting = 'set_char';
+export const userSetting = 'set_user';
+export const startStory = 'start_story';
+
 export const roles = [
   { value: "system", name: "System" },
   { value: "assistant", name: "Assistant" },
   { value: "user", name: "User" },
-  { value: 'set_char', name: 'Char setting' },
-  { value: 'set_user', name: 'User setting' },
+  { value: charSetting, name: 'Char setting' },
+  { value: userSetting, name: 'User setting' },
+  { value: startStory, name: "Start story" },
 ];
 
 function generateMessages(scenes: SceneType[]) {
@@ -38,7 +43,7 @@ export async function sendChat(scenes: SceneType[], apiKey: string, model: strin
   console.log('dataFromGPT', dataFromGPT)
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     const gptScene: SceneType = dataFromGPT.choices[0].message
-    gptScene.id = scenes.length
+    gptScene.id = scenes[scenes.length - 1].id + 1;
     return [[...scenes, gptScene], dataFromGPT.usage];
   } else {
     return [scenes, dataFromGPT.usage];
