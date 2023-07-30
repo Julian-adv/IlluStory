@@ -1,43 +1,26 @@
 <script lang="ts">
-  import { Label, Input, Range, Select, Helper, Button, Textarea, Checkbox } from "flowbite-svelte";
+  import { Label, Input, Select, Button, Textarea, Checkbox, Helper } from "flowbite-svelte";
   import { onMount } from "svelte";
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import DragDropList from "$lib/DragDropList.svelte";
-  import { roles, startStory } from "$lib/api";
+  import { changeApi, roles, sendChat, startStory } from "$lib/api";
   import { story, storyPath } from "$lib/store";
-  import type { Prompt } from "$lib/interfaces";
+  import { Api, type Prompt } from "$lib/interfaces";
+  import StringField from "./StringField.svelte";
+  import SelectField from "./SelectField.svelte";
+  import NumberField from "./NumberField.svelte";
+  import { sendChatOpenAi } from "$lib/apiOpenAi";
+  import { sendChatOobabooga } from "$lib/apiOobabooga";
 
   let models = [{ value: '', name: '' }];
-  const helperClassVisible = "text-stone-600";
-  const helperClassHidden = "text-stone-100";
-  const linkClassVisible = "text-sky-600";
-  let helperClass: string[] = [
-    helperClassHidden,
-    helperClassHidden,
-    helperClassHidden,
-    helperClassHidden,
-    helperClassHidden,
-    helperClassHidden,
-  ];
+  const apis = [
+    { value: Api.OpenAi, name: 'Open AI'},
+    { value: Api.Oobabooga, name: 'Oobabooga' }
+  ]
   let autoSave = true;
-
-  function showHelper(i: number) {
-    return () => {
-      helperClass[i] = helperClassVisible;
-    };
-  }
-
-  function hideHelper(i: number) {
-    return () => {
-      helperClass[i] = helperClassHidden;
-    };
-  }
 
   onMount(async () => {
     models = await loadSettings()
-    for (let i = 0; i < helperClass.length; i++) {
-      helperClass[i] = helperClassHidden;
-    }
   });
 
   function addPrompt() {
@@ -48,17 +31,10 @@
     open('https://platform.openai.com/docs/models/overview')
   }
 
-  function linkClass(cl: string): string {
-    if (cl === helperClassHidden) {
-      return helperClassHidden;
-    } else {
-      return linkClassVisible;
-    }
-  }
-
   async function load() {
     const [tempStory, tempFilePath] = await loadStory();
     if (tempStory) {
+      console.log('tempStory', tempStory)
       $story = tempStory;
       $storyPath = tempFilePath;
     }
@@ -110,6 +86,10 @@
     }
     return count;
   }
+
+  function apiChange(value:string) {
+    changeApi(value as Api);
+  }
 </script>
 <div class='mt-2 mb-5 flex gap-2'>
   <Button color='alternative' size='sm' on:click={load}>
@@ -127,107 +107,28 @@
   <Checkbox class='inline self-center' bind:checked={autoSave}>Auto save</Checkbox>
   
 </div>
-<div class='grid grid-cols-[9rem,5rem,1fr] gap-2'>
-  <div class='w-36 flex'>
+<div class='grid grid-cols-[9rem,5rem,1fr] gap-0'>
+  <div class='w-36 flex p-1'>
     <Label for='filePath' class='text-base self-center text-right w-full'>File path</Label>
   </div>
-  <div class='col-span-2'>
+  <div class='col-span-2 p-1'>
     <Input id='filePath' size='sm' bind:value={$storyPath} disabled />
   </div>
 
-  <div class='w-36 flex'>
-    <Label for='title' class='text-base self-center text-right w-full'>Title</Label>
-  </div>
-  <div class='col-span-2'>
-    <Input id='title' placeholder="title" bind:value={$story.title} on:blur={autoSaveFunc} on:mouseenter={showHelper(0)} on:mouseleave={hideHelper(0)} />
-  </div>
-  <div>
-  </div>
-  <div class='col-span-2'>
-    <Helper class={helperClass[0]}>Title of this story.</Helper>
-  </div>
+  <StringField label='Title' placeholder='Enter title' help='Title of this story.' bind:value={$story.title} save={autoSaveFunc} />
+  <SelectField label='API' items={apis} help='API to use.' bind:value={$story.api} save={apiChange} />
+  {#if $story.api === Api.OpenAi}
+    <SelectField label='Models' items={models} bind:value={$story.model} save={autoSaveFunc} >
+      <p slot='helper'>
+        See our <a href='https://platform.openai.com/docs/models/overview' target='_blank' on:click={onModelOverview} class='text-sky-500'>Model overview</a> for descriptions of them.
+      </p>
+    </SelectField>
 
-  <div class='w-32 flex'>
-    <Label for='models' class='text-base self-center text-right w-full'>Model</Label>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='col-span-2' on:mouseenter={showHelper(1)} on:mouseleave={hideHelper(1)}>
-    <Select id='models' items={models} bind:value={$story.model} on:change={autoSaveFunc} />
-  </div>
-  <div>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='col-span-2' on:mouseenter={showHelper(1)} on:mouseleave={hideHelper(1)}>
-    <Helper class={helperClass[1]}>See our <a href='https://platform.openai.com/docs/models/overview' target="_blank" on:click={onModelOverview} class={linkClass(helperClass[1])}>Model overview</a> for descriptions of them.</Helper>
-  </div>
-
-  <div class='w-36 flex'>
-    <Label for='temperature' class='text-base self-center text-right w-full'>Temperature</Label>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='' on:mouseenter={showHelper(2)} on:mouseleave={hideHelper(2)}>
-    <Input type="number" id='Temperature' bind:value={$story.temperature} on:blur={autoSaveFunc} step='0.01' />
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='flex' on:mouseenter={showHelper(2)} on:mouseleave={hideHelper(2)}>
-    <Range id='temperature' size='sm' bind:value={$story.temperature} min='0' max='2.0' step='0.01' class='self-center'/>
-  </div>
-  <div>
-  </div>
-  <div class='col-span-2'>
-    <Helper class={helperClass[2]}>Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.</Helper>
-  </div>
-
-  <div class='w-36 flex'>
-    <Label for='frequencyPenalty' class='text-base self-center text-right w-full'>Frequency penalty</Label>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='' on:mouseenter={showHelper(3)} on:mouseleave={hideHelper(3)}>
-    <Input type="number" id='frequencyPenalty' bind:value={$story.frequencyPenalty} on:blur={autoSaveFunc} step='0.01' />
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='flex' on:mouseenter={showHelper(3)} on:mouseleave={hideHelper(3)}>
-    <Range id='frequencyPenalty' size='sm' bind:value={$story.frequencyPenalty} min='-2.0' max='2.0' step='0.01' class='self-center'/>
-  </div>
-  <div>
-  </div>
-  <div class='col-span-2'>
-    <Helper class={helperClass[3]}>Positive values reduce the model's tendency to repeat itself.</Helper>
-  </div>
-
-  <div class='w-36 flex'>
-    <Label for='presencePenalty' class='text-base self-center text-right w-full'>Presence penalty</Label>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='' on:mouseenter={showHelper(4)} on:mouseleave={hideHelper(4)}>
-    <Input type="number" id='presencePenalty' bind:value={$story.presencePenalty} on:blur={autoSaveFunc} step='0.01' />
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='flex' on:mouseenter={showHelper(4)} on:mouseleave={hideHelper(4)}>
-    <Range id='frequencyPenalty' size='sm' bind:value={$story.presencePenalty} min='-2.0' max='2.0' step='0.01' class='self-center'/>
-  </div>
-  <div>
-  </div>
-  <div class='col-span-2'>
-    <Helper class={helperClass[4]}>Positive values help the model to transition to new topics.</Helper>
-  </div>
-
-  <div class='w-36 flex'>
-    <Label for='maxTokens' class='text-base self-center text-right w-full'>Max tokens</Label>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='' on:mouseenter={showHelper(5)} on:mouseleave={hideHelper(5)}>
-    <Input type="number" id='maxTokens' bind:value={$story.maxTokens} on:blur={autoSaveFunc} />
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class='flex' on:mouseenter={showHelper(5)} on:mouseleave={hideHelper(5)}>
-    <Range id='maxTokens' size='sm' bind:value={$story.maxTokens} min='1' max='1024' step='1' class='self-center'/>
-  </div>
-  <div>
-  </div>
-  <div class='col-span-2'>
-    <Helper class={helperClass[5]}>The maximum number of tokens to generate in the completion.</Helper>
-  </div>
+    <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
+    <NumberField label='Frequency penalty' help="Positive values reduce the model's tendency to repeat itself." bind:value={$story.frequencyPenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
+    <NumberField label='Presence penalty' help="Positive values help the model to transition to new topics." bind:value={$story.presencePenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
+    <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.maxTokens} min={50} max={1000} save={autoSaveFunc} />
+  {/if}
 </div>
 
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>

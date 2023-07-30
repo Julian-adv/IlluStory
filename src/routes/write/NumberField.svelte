@@ -1,0 +1,45 @@
+<script lang="ts">
+  import { Label, Input, Helper, Range } from "flowbite-svelte";
+  import { onMount } from "svelte";
+  import { helperClassHidden, helperClassVisible } from "$lib";
+  
+  export let label = '';
+  export let value = 0.0;
+  export let min = 0.0;
+  export let max = 1.0;
+  export let help = '';
+  export let save = () => {};
+
+  let helperClass = helperClassHidden;
+  
+  const showHelper = () => {
+    helperClass = helperClassVisible;
+  }
+
+  const hideHelper = () => {
+    helperClass = helperClassHidden;
+  }
+
+  onMount(() => {
+    helperClass = helperClassHidden;
+  })
+</script>
+
+<div class='w-36 flex p-1'>
+  <Label for={label} class='text-base self-center text-right w-full'>{label}</Label>
+</div>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class='p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
+  <Input id={label} type='number' bind:value on:blur={save} class='px-2 py-1 text-base' />
+</div>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class='flex' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
+  <Range id={label + 'range'} size='sm' bind:value {min} {max} step='0.01' class='self-center'/>
+</div>
+
+<div>
+</div>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class='col-span-2 pl-1 pb-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
+  <Helper class={helperClass}><em>{help}</em></Helper>
+</div>

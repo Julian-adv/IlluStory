@@ -1,8 +1,9 @@
 <script lang="ts">
   import Markdown from "../Markdown.svelte";
   import { sendChat } from "$lib/api"
-  import { sessionPath, openAiApiKey, openAiModel, scenes, usage } from "$lib/store";
+  import { sessionPath, story, scenes, usage } from "$lib/store";
   import { writeTextFile } from "@tauri-apps/api/fs";
+  import { newSceneId } from "$lib";
 
   export let role = 'user';
 
@@ -15,12 +16,12 @@
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
     const newScene = {
-      id: $scenes[$scenes.length - 1].id + 1,
+      id: newSceneId($scenes),
       role: role,
       content: trimmed
     }
     $scenes = [...$scenes, newScene];
-    [$scenes, $usage] = await sendChat($scenes, $openAiApiKey, $openAiModel)
+    [$scenes, $usage] = await sendChat($story, $scenes);
     saveScenes();
   }
 </script>

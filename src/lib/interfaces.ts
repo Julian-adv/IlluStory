@@ -12,8 +12,14 @@ export interface Prompt {
   content: string;
 }
 
+export enum Api {
+  OpenAi = 'openAi',
+  Oobabooga = 'oobabooga'
+}
+
 export interface Story {
   title: string;
+  api: Api;
   model: string;
   temperature: number;
   frequencyPenalty: number;

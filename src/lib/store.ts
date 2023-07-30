@@ -1,4 +1,5 @@
 import { writable } from "svelte/store";
+import { Api } from "./interfaces";
 import type { SceneType, Story } from "./interfaces";
 
 export const openAiApiKey = writable('');
@@ -12,6 +13,7 @@ export const startStoryId = writable(0);
 
 const defaultStory: Story = {
   title: '',
+  api: Api.OpenAi,
   model: '',
   temperature: 0.75,
   frequencyPenalty: 0.4,
