@@ -15,7 +15,7 @@ export const roles = [
   { value: startStory, name: "Start story" },
 ];
 
-export let sendChat = sendChatOpenAi;
+export let sendChat = sendChatOobabooga;
 
 export function changeApi(api: Api) {
   switch (api) {

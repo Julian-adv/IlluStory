@@ -6,6 +6,7 @@
   import { nord } from '@milkdown/theme-nord';
   import { replaceAll } from '@milkdown/utils';
   import { Label, Input } from 'flowbite-svelte';
+  import { afterUpdate } from 'svelte';
   
   export let value = '';
   export let readOnly = true;
@@ -57,7 +58,24 @@
     })
   }
 
+  let dontUpdate = false;
+
+  afterUpdate(() => {
+    if (internalEditor && !dontUpdate) {
+      internalEditor.action(replaceAll(value))
+    }
+    dontUpdate = false;
+  })
+
+  // $: {
+  //   if (internalEditor) {
+  //     const text = value == '' ? '*Write a prompt.*' : value;
+  //     internalEditor.action(replaceAll(text))
+  //   }
+  // }
+
   function onUpdate(ctx: Ctx, markdown: string) {
+    dontUpdate = true;
     value = markdown;
   }
 

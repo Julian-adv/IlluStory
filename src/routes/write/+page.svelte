@@ -9,8 +9,6 @@
   import StringField from "./StringField.svelte";
   import SelectField from "./SelectField.svelte";
   import NumberField from "./NumberField.svelte";
-  import { sendChatOpenAi } from "$lib/apiOpenAi";
-  import { sendChatOobabooga } from "$lib/apiOobabooga";
 
   let models = [{ value: '', name: '' }];
   const apis = [

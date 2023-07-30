@@ -1,40 +1,50 @@
 <script lang="ts">
   import type { SceneType } from "$lib/interfaces";
-  import { onMount } from "svelte";
+  import { afterUpdate, onMount } from "svelte";
   import Markdown from "./Markdown.svelte";
   import { startStoryId } from "$lib/store";
 
-  type ImagePrompt = {
+  type ImageInfo = {
     image: string;
     prompt: string
   }
 
   export let scene: SceneType;
   let content: string;
-  let noImage: boolean;
-  let imageFromSD: Promise<ImagePrompt> = Promise.resolve(createImagePrompt('', ''));
+  let noImage = false;
+  let imageFromSD = Promise.resolve({ image: '', prompt: ''});
+  let waitingImage = false;
   let imageSize = 512/window.devicePixelRatio;
 
-  onMount(() => {
-    [content, noImage, imageFromSD] = extractAndRemoveBracketsContent(scene);
-  })
-
-  function createImagePrompt(image: string, prompt: string): ImagePrompt {
-    return { image: image, prompt: prompt }
+  function sceneChanged() {
+    console.log('afterUpdate scene');
+    let imagePrompt;
+    [content, imagePrompt] = extractImagePrompt(scene);
+    noImage = scene.role === 'user' || imagePrompt == '';
+    if (!noImage && imagePrompt && !waitingImage && !scene.image) {
+      imageFromSD = generateImage(imagePrompt)
+        .then(info => {
+          scene.image = info.image;
+          return info;
+        });
+    }
   }
 
-  function extractAndRemoveBracketsContent(scene: SceneType): [string, boolean, Promise<ImagePrompt>] {
+  onMount(sceneChanged);
+
+  afterUpdate(sceneChanged);
+
+  function extractImagePrompt(scene: SceneType): [string, string] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const extractedContents = matches.map(str => str.slice(2, -2));
     const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
-    const noImage = scene.role === 'user' || matches.length == 0;
-    const image = noImage ? Promise.resolve(createImagePrompt('', '')) : generateImage(extractedContents.join(','))
-
-    return [cleanedInput, noImage, image];
+    return [cleanedInput, extractedContents.join(',')];
   }
 
-  async function generateImage(prompt: string): Promise<ImagePrompt> {
+  async function generateImage(prompt: string): Promise<ImageInfo> {
+    console.log('image prompt', prompt)
     const uri = "http://localhost:7860/sdapi/v1/txt2img"
+    waitingImage = true;
     const responseFromSD = await fetch(uri, {
       body: JSON.stringify({
           "width": 512,
@@ -85,15 +95,17 @@
       method: "POST"
     })   
 
-    if (responseFromSD.ok){
+    if (responseFromSD.ok) {
       let dataFromSD = await responseFromSD.json()
       console.log(dataFromSD)
       const info = JSON.parse(dataFromSD.info)
       console.log(info.prompt)
-      return createImagePrompt(`data:image/png;base64,${dataFromSD.images[0]}`, info.prompt)
+      waitingImage = false;
+      return { image: `data:image/png;base64,${dataFromSD.images[0]}`, prompt: info.prompt };
     } else {
       console.log('responseFromSD not ok', responseFromSD)
-      return createImagePrompt('', '')
+      waitingImage = false;
+      return { image: '', prompt: '' };
     }
   }
 </script>

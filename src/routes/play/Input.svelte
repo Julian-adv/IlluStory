@@ -13,6 +13,11 @@
     }
   }
 
+    function received(text: string) {
+      console.log('text', text);
+      $scenes[$scenes.length - 1].content = text;
+    }
+
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
     const newScene = {
@@ -21,7 +26,7 @@
       content: trimmed
     }
     $scenes = [...$scenes, newScene];
-    [$scenes, $usage] = await sendChat($story, $scenes);
+    [$scenes, $usage] = await sendChat($story, $scenes, received);
     saveScenes();
   }
 </script>

@@ -27,3 +27,9 @@ export interface Story {
   maxTokens: number;
   prompts: Prompt[]
 }
+
+export interface Usage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
