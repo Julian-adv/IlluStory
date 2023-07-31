@@ -20,11 +20,19 @@ export enum Api {
 export interface Story {
   title: string;
   api: Api;
+  // openAI
   model: string;
   temperature: number;
   frequencyPenalty: number;
   presencePenalty: number;
   maxTokens: number;
+  // oobabooga
+  topP: number;
+  typicalP: number;
+  topK: number;
+  repetitionPenalty: number;
+  penaltyAlpha: number;
+  lengthPenalty: number;
   prompts: Prompt[]
 }
 

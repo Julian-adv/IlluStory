@@ -32,7 +32,6 @@
   async function load() {
     const [tempStory, tempFilePath] = await loadStory();
     if (tempStory) {
-      console.log('tempStory', tempStory)
       $story = tempStory;
       $storyPath = tempFilePath;
     }
@@ -126,6 +125,16 @@
     <NumberField label='Frequency penalty' help="Positive values reduce the model's tendency to repeat itself." bind:value={$story.frequencyPenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Presence penalty' help="Positive values help the model to transition to new topics." bind:value={$story.presencePenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.maxTokens} min={50} max={1000} save={autoSaveFunc} />
+  {/if}
+  {#if $story.api === Api.Oobabooga}
+    <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
+    <NumberField label='Top k' help="The number of highest probability vocabulary tokens to keep for top-k-filtering." bind:value={$story.topK} min={0.0} max={2.0} save={autoSaveFunc} />
+    <NumberField label='Top p' help="If set to float < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation." bind:value={$story.topP} min={0.0} max={1.0} save={autoSaveFunc} />
+    <NumberField label='Typical p' help="If set to float < 1, the smallest set of the most locally typical tokens with probabilities that add up to typical_p or higher are kept for generation." bind:value={$story.typicalP} min={0.0} max={1.0} save={autoSaveFunc} />
+    <NumberField label='Length penalty' help="length_penalty > 0.0 promotes longer sequences, while length_penalty < 0.0 encourages shorter sequences." bind:value={$story.lengthPenalty} min={-5.0} max={5.0} save={autoSaveFunc} />
+    <NumberField label='Repetition penalty' help="The parameter for repetition penalty. 1.0 means no penalty." bind:value={$story.repetitionPenalty} min={1.0} max={2.0} save={autoSaveFunc} />
+    <NumberField label='Penalty alpha' help="The values balance the model confidence and the degeneration penalty in contrastive search decoding." bind:value={$story.penaltyAlpha} min={0.0} max={5.0} save={autoSaveFunc} />
+    <NumberField label='Max new tokens' help="The maximum numbers of tokens to generate, ignoring the number of tokens in the prompt." bind:value={$story.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />
   {/if}
 </div>
 

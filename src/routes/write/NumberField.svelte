@@ -8,6 +8,7 @@
   export let min = 0.0;
   export let max = 1.0;
   export let help = '';
+  export let step = 0.01;
   export let save = () => {};
 
   let helperClass = helperClassHidden;
@@ -34,7 +35,7 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='flex' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Range id={label + 'range'} size='sm' bind:value {min} {max} step='0.01' class='self-center'/>
+  <Range id={label + 'range'} size='sm' bind:value {min} {max} {step} class='self-center'/>
 </div>
 
 <div>

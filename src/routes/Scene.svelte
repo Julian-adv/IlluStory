@@ -15,9 +15,15 @@
   let imageFromSD = Promise.resolve({ image: '', prompt: ''});
   let waitingImage = false;
   let imageSize = 512/window.devicePixelRatio;
+  let oldContent: string;
 
   function sceneChanged() {
-    console.log('afterUpdate scene');
+    if (scene.content === oldContent || scene.id < $startStoryId) {
+      return;
+    }
+    oldContent = scene.content;
+    // console.log('afterUpdate scene', scene.id);
+
     let imagePrompt;
     [content, imagePrompt] = extractImagePrompt(scene);
     noImage = scene.role === 'user' || imagePrompt == '';
