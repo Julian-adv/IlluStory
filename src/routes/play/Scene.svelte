@@ -135,7 +135,6 @@
 
 {#if scene.id >= $startStoryId}
   <div class="block max-w-3xl">
-    <em>{scene.id}.</em>
     {#if showImage}
       {#await imageFromSD}
         <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>⏳</div></div>
