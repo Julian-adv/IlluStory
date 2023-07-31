@@ -9,7 +9,7 @@ IlluStory is a frontend for chatting with LLMs. Still in development.
 
 *webui-user.bat*
 ``` bat
-set COMMANDLINE_ARGS=--xformers --api --autolaunch --cors-allow-origins=http://localhost:5173
+set COMMANDLINE_ARGS=--xformers --api --autolaunch --cors-allow-origins=*
 ```
 
 #### 3. (Optional) Install [Oobabooga's Text generation web UI](https://github.com/oobabooga/text-generation-webui)

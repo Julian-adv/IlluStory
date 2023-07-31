@@ -13,7 +13,61 @@ function history(scenes: SceneType[]) {
   // return { 'internal': [], 'visible': [] };
 }
 
-export async function sendChatOobabooga(story: Story, scenes: SceneType[], received: (text: string) => void,
+export async function sendChatOobabooga(story:Story, scenes:SceneType[], received:(text:string) => void,
+                                        closedCallback:() => void): Promise<[SceneType[], Usage]> {
+  const uri = "http://localhost:5000/api/v1/generate";
+  const url = new URL(uri);
+  let prompt = '';
+  scenes.forEach((scene) => {
+    prompt += scene.content + '\n';
+  });
+
+  const respFromOoga = await fetch(url, {
+    body: JSON.stringify({
+      "max_new_tokens": story.maxTokens,
+      "do_sample": true,
+      "temperature": story.temperature,
+      "top_p": story.topP,
+      "typical_p": story.typicalP,
+      "repetition_penalty": story.repetitionPenalty,
+      "encoder_repetition_penalty": 1,
+      "top_k": story.topK,
+      "min_length": 0,
+      "no_repeat_ngram_size": 0,
+      "num_beams": 1,
+      "penalty_alpha": story.penaltyAlpha,
+      "length_penalty": story.lengthPenalty,
+      "early_stopping": false,
+      "truncation_length": story.maxTokens,
+      "ban_eos_token": false,
+      "stopping_strings": [
+        "\nUser:",
+        "\nuser:",
+        `\n${get(userName)}:`
+      ],
+      "seed": -1,
+      "add_bos_token": true,
+      "prompt": prompt
+    }),
+    headers: {},
+    method: "POST",
+    signal: null
+  })
+  const dataFromOoga = await respFromOoga.json();
+  console.log('dataFromOoga', dataFromOoga);
+  if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
+    const newScene: SceneType = {
+      id: newSceneId(scenes),
+      role: 'assistant',
+      content: dataFromOoga.results[0].text
+    }
+    return [[...scenes, newScene], zeroUsage];
+  } else {
+    return [scenes, zeroUsage];
+  }
+}
+
+export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[], received: (text: string) => void,
                                         closedCallback: () => void): Promise<[SceneType[], Usage]> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream');
   
