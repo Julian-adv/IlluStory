@@ -14,8 +14,12 @@
   }
 
   function received(text: string) {
-    console.log('text', text);
     $scenes[$scenes.length - 1].content += text;
+    $scenes[$scenes.length - 1].done = false;
+  }
+
+  function closedCb() {
+    $scenes[$scenes.length - 1].done = true;
   }
 
   async function onEnter(markdown: string) {
@@ -23,10 +27,11 @@
     const newScene = {
       id: newSceneId($scenes),
       role: role,
-      content: `${$userName}: ` + trimmed
+      content: `${$userName}: ` + trimmed,
+      done: false
     }
     $scenes = [...$scenes, newScene];
-    [$scenes, $usage] = await sendChat($story, $scenes, received);
+    [$scenes, $usage] = await sendChat($story, $scenes, received, closedCb);
     saveScenes();
   }
 </script>

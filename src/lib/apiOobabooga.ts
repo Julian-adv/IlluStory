@@ -13,7 +13,8 @@ function history(scenes: SceneType[]) {
   // return { 'internal': [], 'visible': [] };
 }
 
-export async function sendChatOobabooga(story: Story, scenes: SceneType[], received: (text: string) => void): Promise<[SceneType[], Usage]> {
+export async function sendChatOobabooga(story: Story, scenes: SceneType[], received: (text: string) => void,
+                                        closedCallback: () => void): Promise<[SceneType[], Usage]> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream');
   
   conn.onopen = () => {
@@ -21,7 +22,6 @@ export async function sendChatOobabooga(story: Story, scenes: SceneType[], recei
     scenes.forEach((scene) => {
       prompt += scene.content + '\n';
     });
-    console.log('prompt', prompt)
     const request = {
       "max_new_tokens": story.maxTokens,
       "do_sample": true,
@@ -62,7 +62,7 @@ export async function sendChatOobabooga(story: Story, scenes: SceneType[], recei
         break;
       case 'stream_end':
         conn.close();
-        console.log('close')
+        closedCallback();
         break;
     }
   }

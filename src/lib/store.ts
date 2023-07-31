@@ -14,11 +14,20 @@ export const startStoryId = writable(0);
 const defaultStory: Story = {
   title: '',
   api: Api.OpenAi,
-  model: '',
   temperature: 0.75,
+  maxTokens: 300,
+  // open ai
+  model: '',
   frequencyPenalty: 0.4,
   presencePenalty: 0.4,
-  maxTokens: 300,
+  // oobabooga
+  topP: 0.9,
+  typicalP: 1.0,
+  repetitionPenalty: 1.1,
+  topK: 0,
+  penaltyAlpha: 0,
+  lengthPenalty: 1,
+
   prompts: []
 }
 

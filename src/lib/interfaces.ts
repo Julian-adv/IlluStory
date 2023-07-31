@@ -4,6 +4,7 @@ export interface SceneType {
   content: string
   name?: string
   image?: string
+  done?: boolean
 }
 
 export interface Prompt {

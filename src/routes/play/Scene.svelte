@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { SceneType } from "$lib/interfaces";
   import { afterUpdate, onMount } from "svelte";
-  import Markdown from "./Markdown.svelte";
-  import { startStoryId } from "$lib/store";
+  import Markdown from "../Markdown.svelte";
+  import { startStoryId, story } from "$lib/store";
 
   type ImageInfo = {
     image: string;
@@ -11,34 +11,12 @@
 
   export let scene: SceneType;
   let content: string;
-  let noImage = false;
+  let showImage = false;
   let imageFromSD = Promise.resolve({ image: '', prompt: ''});
   let waitingImage = false;
   let imageSize = 512/window.devicePixelRatio;
-  let oldContent: string;
-
-  function sceneChanged() {
-    if (scene.content === oldContent || scene.id < $startStoryId) {
-      return;
-    }
-    oldContent = scene.content;
-    // console.log('afterUpdate scene', scene.id);
-
-    let imagePrompt;
-    [content, imagePrompt] = extractImagePrompt(scene);
-    noImage = scene.role === 'user' || imagePrompt == '';
-    if (!noImage && imagePrompt && !waitingImage && !scene.image) {
-      imageFromSD = generateImage(imagePrompt)
-        .then(info => {
-          scene.image = info.image;
-          return info;
-        });
-    }
-  }
-
-  onMount(sceneChanged);
-
-  afterUpdate(sceneChanged);
+  let oldContent:string;
+  let ignoreUpdate = true;
 
   function extractImagePrompt(scene: SceneType): [string, string] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
@@ -46,6 +24,44 @@
     const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
     return [cleanedInput, extractedContents.join(',')];
   }
+
+  export function generateImageIfNeeded(scene:SceneType) {
+    const [cleanedContent, imagePrompt] = extractImagePrompt(scene);
+    showImage = scene.role !== 'user' && imagePrompt !== '';
+    if (showImage && !waitingImage && !scene.image) {
+      content = cleanedContent;
+      console.log('generateImage')
+      imageFromSD = generateImage(imagePrompt)
+        .then(result => {
+          scene.image = result.image;
+          return result;
+        });
+    }
+  }
+
+  onMount(() => {
+    if (scene.id < $startStoryId) {
+      return;
+    }
+    content = scene.content;
+    console.log('onMount scene', scene.id);
+    ignoreUpdate = true;
+    generateImageIfNeeded(scene);
+  });
+
+  afterUpdate(() => {
+    if (scene.content === content || scene.id < $startStoryId || ignoreUpdate) {
+      ignoreUpdate = false;
+      return;
+    }
+    if (scene.done) {
+      console.log('scene done', scene.id);
+      generateImageIfNeeded(scene);
+    } else {
+      content = scene.content;
+      console.log('afterUpdate scene', scene.id);
+    }
+  });
 
   async function generateImage(prompt: string): Promise<ImageInfo> {
     console.log('image prompt', prompt)
@@ -114,11 +130,13 @@
       return { image: '', prompt: '' };
     }
   }
+
 </script>
 
 {#if scene.id >= $startStoryId}
   <div class="block max-w-3xl">
-    {#if !noImage}
+    <em>{scene.id}.</em>
+    {#if showImage}
       {#await imageFromSD}
         <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>⏳</div></div>
       {:then image}

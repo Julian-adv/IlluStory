@@ -7,3 +7,7 @@ export const linkClassVisible = "text-sky-600";
 export function newSceneId(scenes:SceneType[]):number {
   return scenes[scenes.length - 1].id + 1;
 }
+
+export function lastScene(scenes:SceneType[]):SceneType {
+  return scenes[scenes.length - 1];
+}
