@@ -9,6 +9,7 @@
   import StringField from "./StringField.svelte";
   import SelectField from "./SelectField.svelte";
   import NumberField from "./NumberField.svelte";
+  import ImageField from "./ImageField.svelte";
 
   let models = [{ value: '', name: '' }];
   const apis = [
@@ -112,6 +113,7 @@
     <Input id='filePath' size='sm' bind:value={$storyPath} disabled />
   </div>
 
+  <ImageField label='Image' help='Image of this story.' bind:value={$story.image} save={autoSaveFunc} />
   <StringField label='Title' placeholder='Enter title' help='Title of this story.' bind:value={$story.title} save={autoSaveFunc} />
   <SelectField label='API' items={apis} help='API to use.' bind:value={$story.api} save={apiChange} />
   {#if $story.api === Api.OpenAi}

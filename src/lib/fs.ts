@@ -1,8 +1,9 @@
-import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
+import { BaseDirectory, readTextFile, writeTextFile, readBinaryFile } from '@tauri-apps/api/fs'
 import { openAiApiKey, openAiModel } from './store'
 import { Configuration, OpenAIApi } from 'openai'
 import type { Story, Prompt } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
+import { convertFileSrc } from '@tauri-apps/api/tauri'
 
 const settingsPath = 'settings.json'
 
@@ -44,6 +45,30 @@ export async function loadStory(): Promise<[Story|null, string]> {
     return [JSON.parse(json) as Story, selected];
   }
   return [null, ''];
+}
+
+async function readAsDataURL(blob:Blob): Promise<string|null> {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  })
+}
+
+export async function loadImage():Promise<string|null> {
+  const selected = await open({ filters: [{ name: '*', extensions: ['png', 'jpg']}]});
+  if (typeof(selected) === 'string') {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      xhr.responseType = 'blob';
+      xhr.onload = () => resolve(readAsDataURL(xhr.response));
+      xhr.onerror = reject;
+      xhr.open('GET', convertFileSrc(selected));
+      xhr.send();
+    })
+  }
+  return null;
 }
 
 export async function savePath(path:string, data:any) {

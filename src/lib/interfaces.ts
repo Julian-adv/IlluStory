@@ -20,6 +20,7 @@ export enum Api {
 
 export interface Story {
   title: string;
+  image: string;
   api: Api;
   // openAI
   model: string;

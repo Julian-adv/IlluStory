@@ -13,6 +13,7 @@ export const startStoryId = writable(0);
 
 const defaultStory: Story = {
   title: '',
+  image: '',
   api: Api.OpenAi,
   temperature: 0.75,
   maxTokens: 300,
