@@ -16,7 +16,8 @@
       "fs": {
         "readFile": true,
         "writeFile": true,
-        "scope": ["$APPCONFIG/*"]
+        "readDir": true,
+        "scope": ["$APPCONFIG/*", "$APPDATA/"]
       },
       "path": {
         "all": true

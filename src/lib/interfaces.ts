@@ -42,3 +42,8 @@ export interface Usage {
   completion_tokens: number;
   total_tokens: number;
 }
+
+export interface StoryCard {
+  name: string;
+  image: string;
+}

@@ -1,52 +1,35 @@
 <script lang="ts">
   import '@milkdown/theme-nord/style.css';
-  import SceneList from './play/SceneList.svelte';
-  import Input from './play/Input.svelte';
-  import { Button } from 'flowbite-svelte';
-  import { startStoryId, scenes } from '$lib/store';
   import { onMount } from 'svelte';
   import { loadSettings } from '$lib/fs';
-  import type { SceneType } from '$lib/interfaces';
-  import { Select } from 'flowbite-svelte';
+  import { readDir, BaseDirectory, type FileEntry } from '@tauri-apps/api/fs';
+  import { Card } from 'flowbite-svelte';
+  import type { StoryCard } from '$lib/interfaces';
 
-  let char = 'Abby';
-  let user = 'Julian';
-
-  let initialScenes = [
-//     {
-//       id: 0,
-//       role: 'system',
-//       content: `Write a response of ${char} according to the following rules.
-// 1. Do not write the ${user}'s emotion, thoughts, and dialogues. Stop generating text and wait inputs from ${user} for those.
-// 2. The user is ${user}, and AI is ${char}. Your task is to role-play as that character in the given situation, taking into account that the situation will continue. React appropriately in the conversation.
-// 3. Use English with an ability to engage in detailed and natural conversations on complex subjects.
-// 4. Write with a suitable mix of dialogue, explanation, and description.
-// 5. You are a helpful assistant that communicates using Markdown. Enclose dialogues in quotation marks (\") and wrap all other descriptions in asterisks (\*).
-// 6. The response should not exceed 3 paragraphs.
-// 7. Attach a graphical description of the current scene to each response. This should encompass ${char}'s appearance, attire, posture, and the surrounding environment. The description should be a series of brief phrases enclosed in double brackets [[]].
-
-//   Here is the prewritten beginning part of the story. Use it as an example:`
-//     },
-    {
-      id: 0,
-      role: 'assistant',
-      content: `*Under a rain-soaked night sky, a girl named {{char}} stands alone, sheltered by the grand shadow of {{user}}'s luxurious mansion.
-Her school uniform, drenched from the relentless downpour, clings tightly to her form.
-Returning home from an evening appointment, {{user}} spots the solitary figure.
-His gaze lands on {{char}}, taking in her forlorn appearance.
-{{char}} senses his presence and lifts her gaze to meet his.
-She swallows hard, her voice barely above a whisper as she asks her question.*
-
-{{char}}: **"Could...could I possibly stay here tonight? Please."**
-*She implores, desperation evident in her eyes.*
-[[rain,night,a girl with large breasts,slim long legs,standing,luxurious mansion,drenched school uniform,implores,desperation]]`
-    }
-  ]
+  let cards:StoryCard[] = [];
 
   onMount(async () => {
     let models = await loadSettings();
+
+    const entries = await readDir('.', { dir: BaseDirectory.AppData, recursive: true });
+    for (const entry of entries) {
+      if (entry.name?.endsWith('.json')) {
+        cards.push({
+          name: entry.name.slice(0, -5),
+          image: '00007-780430952.png'
+        });
+      }
+    }
+    cards = cards;
   })
 </script>
 
 <main>
+  <div class="flex flex-wrap flex-none gap-2">
+    {#each cards as card}
+      <Card href='/write' img={card.image} class='w-72'>
+        <h2>{card.name}</h2>
+      </Card>
+    {/each}
+  </div>
 </main>
