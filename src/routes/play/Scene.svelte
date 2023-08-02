@@ -143,7 +143,7 @@
         <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder rounded-lg" style="--imageSize: {imageSize}px;">
       {/await}
     {/if}
-    {scene.id}
+    <!-- {scene.id} -->
     <!-- <span class='role'>{scene.role}:</span> -->
     <Markdown value={content} />
   </div>

@@ -17,7 +17,10 @@
 
   let changed = false;
 
-  function grab(clientY:number, element:HTMLElement) {
+  function grab(clientY:number, element:HTMLElement, target:HTMLElement) {
+      if (target.nodeName === 'TEXTAREA') {
+        return;
+      }
       // modify grabbed element
       grabbed = element;
       grabbed.dataset.grabY = clientY.toString();
@@ -200,8 +203,8 @@
               data-index={i}
               data-id={(datum.id ? datum.id : JSON.stringify(datum))}
               data-grabY="0"
-              on:mousedown={function(ev) {grab(ev.clientY, this);}}
-              on:touchstart={function(ev) {grab(ev.touches[0].clientY, this);}}
+              on:mousedown={function(ev) {grab(ev.clientY, this, ev.target);}}
+              on:touchstart={function(ev) {grab(ev.touches[0].clientY, this, ev.target);}}
               on:mouseenter={function(ev) {ev.stopPropagation(); dragEnter(ev.target);}}
               on:touchmove={function(ev) {ev.stopPropagation(); ev.preventDefault(); touchEnter(ev.touches[0]);}}
               animate:flip|local={{duration: 200}}>
