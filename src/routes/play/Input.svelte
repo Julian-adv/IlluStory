@@ -6,6 +6,7 @@
   import { newSceneId } from "$lib";
 
   export let role = 'user';
+  export let value = '';
 
   function saveScenes() {
     if ($sessionPath !== '') {
@@ -38,7 +39,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div>
-  <Markdown readOnly={false} onEnter={onEnter} />
+  <Markdown {value} readOnly={false} onEnter={onEnter} />
 </div>
 
 <style lang="postcss">

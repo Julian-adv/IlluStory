@@ -21,17 +21,17 @@ set COMMANDLINE_ARGS=--xformers --api --autolaunch --cors-allow-origins=*
 CMD_FLAGS = '--api --chat --load-in-8bit --threads 24 --n-gpu-layers 100'
 ```
 
-#### 5. Clone this repository, run:
+#### 4. Clone this repository, run:
 ``` sh
 npm install
 npm run tauri dev
 ```
 
-#### 6. Enter your OpenAI API Key in settings
+#### 5. Enter your OpenAI API Key in settings
 
 ![Settings API](screenshots/screen-api-key.png)
 
-#### 7. Write story settings
+#### 6. Write story settings
 
 ![Write tab description 1](screenshots/write-tab1.png)
 
@@ -57,7 +57,7 @@ npm run tauri dev
 1. Save the current story settings to a file.
 1. Load settings from a file.
 
-#### 8. Play the story
+#### 7. Play the story
 
 ![Play tab description](screenshots/play-tab.png)
 

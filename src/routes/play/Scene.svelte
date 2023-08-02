@@ -21,7 +21,8 @@
   function extractImagePrompt(scene: SceneType): [string, string] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const extractedContents = matches.map(str => str.slice(2, -2));
-    const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
+    // const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
+    const cleanedInput = scene.content;
     return [cleanedInput, extractedContents.join(',')];
   }
 
@@ -142,7 +143,8 @@
         <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder rounded-lg" style="--imageSize: {imageSize}px;">
       {/await}
     {/if}
-      <!-- <span class='role'>{scene.role}:</span> -->
+    {scene.id}
+    <!-- <span class='role'>{scene.role}:</span> -->
     <Markdown value={content} />
   </div>
   <div class="clear-both p-2"></div>
