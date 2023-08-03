@@ -2,7 +2,8 @@
   import type { SceneType } from "$lib/interfaces";
   import { afterUpdate, onMount } from "svelte";
   import Markdown from "../Markdown.svelte";
-  import { startStoryId, story } from "$lib/store";
+  import { startStoryId } from "$lib/store";
+  import { Button, Popover } from "flowbite-svelte";
 
   type ImageInfo = {
     image: string;
@@ -12,13 +13,14 @@
   export let scene: SceneType;
   let content: string;
   let showImage = false;
-  let imageFromSD = Promise.resolve({ image: '', prompt: ''});
+  let imageFromSD = new Promise((resolve, reject) => {});
   let waitingImage = false;
   let imageSize = 512/window.devicePixelRatio;
   let ignoreUpdate = true;
+  let popoverId = 'pop123';
 
   function clearImagePrompt(str:string) {
-    return str.replace(/\[\[([^\]]+)\]\]/g, '<em>$&</em>').trim();
+    return str.replace(/\[\[([^\]]+)\]\]/g, '').trim();
   }
 
   function extractImagePrompt(scene: SceneType): [string, string] {
@@ -31,7 +33,8 @@
   export function generateImageIfNeeded(sceneParam:SceneType) {
     if (scene.image) {
       showImage = true;
-      imageFromSD = Promise.resolve({image: scene.image, prompt: ''});
+      const [_, imagePrompt] = extractImagePrompt(scene);
+      imageFromSD = Promise.resolve({image: scene.image, prompt: imagePrompt});
       return;
     }
     if (waitingImage || !(scene.role === 'system' || scene.role === 'assistant')) {
@@ -41,6 +44,7 @@
     showImage = imagePrompt !== '';
     if (showImage) {
       content = cleanedContent;
+      popoverId = 'image' + scene.id;
       console.log('generateImage')
       imageFromSD = generateImage(imagePrompt)
         .then(result => {
@@ -139,6 +143,13 @@
     }
   }
 
+  function regenerateImage() {
+    console.log("regenerateImage")
+  }
+
+  function saveImage() {
+    console.log('saveImage')
+  }
 </script>
 
 {#if scene.id >= $startStoryId}
@@ -147,7 +158,24 @@
       {#await imageFromSD}
         <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>⏳</div></div>
       {:then image}
-        <img src={image.image} alt="scene #{scene.id}" title={image.prompt} class="float-left mr-5 placeholder rounded-lg" style="--imageSize: {imageSize}px;">
+        <div class='flex float-left gap-2 mr-5 z-10'>
+          <img id={popoverId} src={image.image} alt="scene #{scene.id}" class="placeholder rounded-lg z-20" style="--imageSize: {imageSize}px;">
+          <div class='flex flex-col-reverse gap-2'>
+            <Button color='alternative' class='w-10 h-10 p-0 bg-stone-100 z-20 mt-1' on:click={regenerateImage}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-stone-400">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+              </svg>
+            </Button>
+            <Button color='alternative' class='w-10 h-10 p-0 bg-stone-100 z-20 mt-1' on:click={saveImage}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-stone-400">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </Button>
+          </div>
+        </div>
+        <Popover class='w-80 h-24 text-sm z-30' triggeredBy={'#'+popoverId}>
+          <span>{image.prompt}</span>
+        </Popover>
       {/await}
     {/if}
     <!-- {scene.id} -->
