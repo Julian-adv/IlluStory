@@ -15,21 +15,31 @@
   let imageFromSD = Promise.resolve({ image: '', prompt: ''});
   let waitingImage = false;
   let imageSize = 512/window.devicePixelRatio;
-  let oldContent:string;
   let ignoreUpdate = true;
+
+  function clearImagePrompt(str:string) {
+    return str.replace(/\[\[([^\]]+)\]\]/g, '<em>$&</em>').trim();
+  }
 
   function extractImagePrompt(scene: SceneType): [string, string] {
     const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const extractedContents = matches.map(str => str.slice(2, -2));
-    // const cleanedInput = scene.content.replace(/\[\[([^\]]+)\]\]/g, '*$&*').trim();
-    const cleanedInput = scene.content;
+    const cleanedInput = clearImagePrompt(scene.content);
     return [cleanedInput, extractedContents.join(',')];
   }
 
-  export function generateImageIfNeeded(scene:SceneType) {
+  export function generateImageIfNeeded(sceneParam:SceneType) {
+    if (scene.image) {
+      showImage = true;
+      imageFromSD = Promise.resolve({image: scene.image, prompt: ''});
+      return;
+    }
+    if (waitingImage || !(scene.role === 'system' || scene.role === 'assistant')) {
+      return;
+    }
     const [cleanedContent, imagePrompt] = extractImagePrompt(scene);
-    showImage = scene.role !== 'user' && imagePrompt !== '';
-    if (showImage && !waitingImage && !scene.image) {
+    showImage = imagePrompt !== '';
+    if (showImage) {
       content = cleanedContent;
       console.log('generateImage')
       imageFromSD = generateImage(imagePrompt)
@@ -44,23 +54,20 @@
     if (scene.id < $startStoryId) {
       return;
     }
-    content = scene.content;
-    console.log('onMount scene', scene.id);
-    ignoreUpdate = true;
+    content = clearImagePrompt(scene.content);
+    ignoreUpdate = false;
     generateImageIfNeeded(scene);
   });
 
   afterUpdate(() => {
-    if (scene.content === content || scene.id < $startStoryId || ignoreUpdate) {
+    if (scene.id < $startStoryId || ignoreUpdate) {
       ignoreUpdate = false;
       return;
     }
     if (scene.done) {
-      console.log('scene done', scene.id);
       generateImageIfNeeded(scene);
     } else {
-      content = scene.content;
-      console.log('afterUpdate scene', scene.id);
+      content = clearImagePrompt(scene.content);
     }
   });
 

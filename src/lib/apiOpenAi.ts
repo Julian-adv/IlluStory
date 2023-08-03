@@ -8,7 +8,7 @@ function generateMessages(scenes: SceneType[]) {
 }
 
 export async function sendChatOpenAi(story: Story, scenes: SceneType[], received: (text:string) => void,
-                                     closedCallback: () => void): Promise<[SceneType[], Usage]> {
+                                     closedCallback: () => void): Promise<[SceneType|null, Usage]> {
   const uri = "https://api.openai.com/v1/chat/completions"
   const url = new URL(uri)
   const messages = generateMessages(scenes)
@@ -33,9 +33,9 @@ export async function sendChatOpenAi(story: Story, scenes: SceneType[], received
   console.log('dataFromGPT', dataFromGPT)
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     const gptScene: SceneType = dataFromGPT.choices[0].message
-    gptScene.id = newSceneId(scenes);
-    return [[...scenes, gptScene], dataFromGPT.usage];
+    gptScene.id = 0;
+    return [gptScene, dataFromGPT.usage];
   } else {
-    return [scenes, dataFromGPT.usage];
+    return [null, dataFromGPT.usage];
   }
 }

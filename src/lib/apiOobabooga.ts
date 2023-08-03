@@ -4,17 +4,8 @@ import type { SceneType, Story, Usage } from "./interfaces";
 import { zeroUsage, charName, userName } from "./store";
 import { newSceneId } from "$lib";
 
-function history(scenes: SceneType[]) {
-  let dialogs = scenes.map((scene) => {
-    return scene.content
-  })
-  dialogs = dialogs.slice(0, -1);
-  return { 'internal': dialogs, 'visible': dialogs }
-  // return { 'internal': [], 'visible': [] };
-}
-
 export async function sendChatOobabooga(story:Story, scenes:SceneType[], received:(text:string) => void,
-                                        closedCallback:() => void): Promise<[SceneType[], Usage]> {
+                                        closedCallback:() => void): Promise<[SceneType|null, Usage]> {
   const uri = "http://localhost:5000/api/v1/generate";
   const url = new URL(uri);
   let prompt = '';
@@ -57,13 +48,13 @@ export async function sendChatOobabooga(story:Story, scenes:SceneType[], receive
   console.log('dataFromOoga', dataFromOoga);
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
     const newScene: SceneType = {
-      id: newSceneId(scenes),
+      id: 0,
       role: 'assistant',
       content: dataFromOoga.results[0].text
     }
-    return [[...scenes, newScene], zeroUsage];
+    return [newScene, zeroUsage];
   } else {
-    return [scenes, zeroUsage];
+    return [null, zeroUsage];
   }
 }
 
@@ -130,11 +121,10 @@ export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[],
   }
 
   const newScene: SceneType = {
-    id: newSceneId(scenes),
+    id: 0,
     role: 'assistant',
     content: ''
   }
   scenes = [...scenes, newScene];
-  console.log(scenes)
   return [scenes, zeroUsage]
 }

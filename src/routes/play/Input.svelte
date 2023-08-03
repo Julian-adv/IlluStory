@@ -1,7 +1,7 @@
 <script lang="ts">
   import Markdown from "../Markdown.svelte";
   import { sendChat } from "$lib/api"
-  import { sessionPath, story, scenes, usage, userName } from "$lib/store";
+  import { sessionPath, story, initialScenes, additionalScenes, usage, userName } from "$lib/store";
   import { writeTextFile } from "@tauri-apps/api/fs";
   import { newSceneId } from "$lib";
 
@@ -10,29 +10,35 @@
 
   function saveScenes() {
     if ($sessionPath !== '') {
-      writeTextFile($sessionPath, JSON.stringify($scenes))
+      writeTextFile($sessionPath, JSON.stringify($additionalScenes))
     }
   }
 
   function received(text: string) {
-    $scenes[$scenes.length - 1].content += text;
-    $scenes[$scenes.length - 1].done = false;
+    $additionalScenes[$additionalScenes.length - 1].content += text;
+    $additionalScenes[$additionalScenes.length - 1].done = false;
   }
 
   function closedCb() {
-    $scenes[$scenes.length - 1].done = true;
+    $additionalScenes[$additionalScenes.length - 1].done = true;
   }
 
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
     const newScene = {
-      id: newSceneId($scenes),
+      id: newSceneId($initialScenes, $additionalScenes),
       role: role,
       content: `${$userName}: ` + trimmed,
       done: false
     }
-    $scenes = [...$scenes, newScene];
-    [$scenes, $usage] = await sendChat($story, $scenes, received, closedCb);
+    $additionalScenes = [...$additionalScenes, newScene];
+    const scenes = [...$initialScenes, ...$additionalScenes];
+    let addedScene;
+    [addedScene, $usage] = await sendChat($story, scenes, received, closedCb);
+    if (addedScene) {
+      addedScene.id = newSceneId($initialScenes, $additionalScenes);
+      $additionalScenes = [...$additionalScenes, addedScene];
+    }
     saveScenes();
   }
 </script>
@@ -42,7 +48,7 @@
   <Markdown {value} readOnly={false} onEnter={onEnter} />
 </div>
 
-<style lang="postcss">
+<style>
   /* Disable some style from ProseMirror */
   :global(:focus-visible) {
     outline: 0px;

@@ -7,12 +7,6 @@ export interface SceneType {
   done?: boolean
 }
 
-export interface Prompt {
-  id: number;
-  role: string;
-  content: string;
-}
-
 export enum Api {
   OpenAi = 'openAi',
   Oobabooga = 'oobabooga'
@@ -35,7 +29,7 @@ export interface Story {
   repetitionPenalty: number;
   penaltyAlpha: number;
   lengthPenalty: number;
-  prompts: Prompt[]
+  prompts: SceneType[]
 }
 
 export interface Usage {

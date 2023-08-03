@@ -4,15 +4,16 @@
   import { charSetting, roles, startStory, userSetting, sendChat } from '$lib/api';
   import Input from './Input.svelte';
   import { onMount } from 'svelte';
-  import { story, scenes, charName, userName, usage, storyPath, sessionPath, startStoryId, zeroUsage } from '$lib/store';
+  import { story, initialScenes, additionalScenes, charName, userName, usage, storyPath, sessionPath, startStoryId, zeroUsage } from '$lib/store';
   import { savePath } from '$lib/fs';
-  import type { Prompt } from '$lib/interfaces';
-    import { lastScene } from '$lib';
+  import { lastScene } from '$lib';
+  import type { SceneType } from '$lib/interfaces';
+    import Scene from './Scene.svelte';
 
   let role = 'user';
   let userInput = '';
 
-  function findStartStory(prompts: Prompt[]) {
+  function findStartStory(prompts: SceneType[]) {
     return prompts.filter((prompt) => {
       if (prompt.role === startStory) {
         $startStoryId = prompt.id + 1;
@@ -22,7 +23,23 @@
     })
   }
 
-  function findNames(prompts: Prompt[]) {
+  function mergeScenes(oldScenes: SceneType[], oldStartId: number, newScenes: SceneType[], newStartId: number) {
+    if (newScenes.length != oldScenes.length || oldStartId != newStartId) {
+      // big change, refresh all images
+      return newScenes;
+    }
+    let scenes = [];
+    for (let i = 0; i < newScenes.length; i++) {
+      let scene = newScenes[i];
+      if (newScenes[i].id >= newStartId) {
+        scene.image = oldScenes[i].image;
+      }
+      scenes.push(scene)
+    }
+    return scenes;
+  }
+
+  function findNames(prompts: SceneType[]) {
     return prompts.map((prompt) => {
       let role = prompt.role
       if (prompt.role === charSetting) {
@@ -38,17 +55,17 @@
         }
         role = 'system';
       }
-      return { id: prompt.id, role: role, content: prompt.content };
+      return { id: prompt.id, role: role, content: prompt.content, image: prompt.image };
     })
   }
 
-  function replaceNames(prompts: Prompt[]) {
+  function replaceNames(prompts: SceneType[]) {
     return prompts.map((prompt) => {
       let content = prompt.content.replace(/{{char}}/g, $charName)
       content = content.replace(/{{user}}/g, $userName)
       content = content.replace(/<char>/g, $charName)
       content = content.replace(/<user>/g, $userName)
-      return { id: prompt.id, role: prompt.role, content: content };
+      return { id: prompt.id, role: prompt.role, content: content, image: prompt.image };
     })
   }
 
@@ -77,35 +94,46 @@
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($storyPath), $scenes);
+    const tempPath = await savePath(insertTimestamp($storyPath), $additionalScenes);
     if (tempPath) {
       $sessionPath = tempPath;
     }
   }
 
+  function updateInitialScenes() {
+    const oldStartId = $startStoryId;
+    let newScenes = findStartStory($story.prompts);
+    $initialScenes = mergeScenes($initialScenes, oldStartId, newScenes, $startStoryId);
+    $initialScenes = findNames($initialScenes);
+    $initialScenes = replaceNames($initialScenes);
+  }
+
   function newSession() {
-    $scenes = findStartStory($story.prompts);
-    $scenes = findNames($scenes);
-    $scenes = replaceNames($scenes);
+    updateInitialScenes();
+    $additionalScenes = [];
     $usage = zeroUsage;
     $sessionPath = '';
   }
 
   async function regenerate() {
-    if (lastScene($scenes).id <= $startStoryId) {
+    if ($additionalScenes.length == 0) {
       return;
     }
-    $scenes.pop();
-    const scene = $scenes.pop();
+    $additionalScenes.pop();
+    const scene = $additionalScenes.pop();
     if (scene) {
       const userNameLabel = $userName + ": "
       userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content;
     }
-    $scenes = $scenes;
+    $additionalScenes = $additionalScenes;
   }
 
   onMount(() => {
-    newSession();
+    if ($additionalScenes.length == 0) {
+      newSession();
+    } else {
+      updateInitialScenes();
+    }
   })
 </script>
 

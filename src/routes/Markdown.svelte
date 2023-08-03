@@ -52,7 +52,14 @@
 
   function onMount() {
     markdownEditor.then((editor) => {
-      const text = value == '' ? '*Write a prompt.*' : value;
+      let text;
+      if (value) {
+        text = value;
+        first = false;
+      } else {
+        text = '*Write a prompt.*';
+        first = true;
+      }
       editor.action(replaceAll(text))
       internalEditor = editor;
     })
@@ -66,13 +73,6 @@
     }
     dontUpdate = false;
   })
-
-  // $: {
-  //   if (internalEditor) {
-  //     const text = value == '' ? '*Write a prompt.*' : value;
-  //     internalEditor.action(replaceAll(text))
-  //   }
-  // }
 
   function onUpdate(ctx: Ctx, markdown: string) {
     dontUpdate = true;

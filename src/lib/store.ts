@@ -7,7 +7,8 @@ export const openAiModel = writable('');
 
 const defaultScenes:SceneType[] = [];
 
-export const scenes = writable(defaultScenes);
+export const initialScenes = writable(defaultScenes);
+export const additionalScenes = writable(defaultScenes);
 
 export const startStoryId = writable(0);
 

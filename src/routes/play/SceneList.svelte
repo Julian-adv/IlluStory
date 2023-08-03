@@ -1,8 +1,11 @@
 <script lang="ts">
 import Scene from "./Scene.svelte";
-import { scenes } from "$lib/store";
+import { initialScenes, additionalScenes } from "$lib/store";
 </script>
 
-{#each $scenes as scene (scene.id)}
+{#each $initialScenes as scene (scene.id)}
+  <Scene {scene}/>
+{/each}
+{#each $additionalScenes as scene (scene.id)}
   <Scene {scene}/>
 {/each}
