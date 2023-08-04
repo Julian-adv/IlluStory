@@ -40,5 +40,6 @@ export interface Usage {
 
 export interface StoryCard {
   name: string;
+  path: string;
   image: string;
 }

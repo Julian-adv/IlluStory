@@ -44,4 +44,4 @@ export const sessionPath = writable('');
 export const zeroUsage = {prompt_tokens: 0, completion_tokens: 0, total_tokens: 0};
 export const usage = writable(zeroUsage);
 
-export const currentPath = writable('/');
+export const currentTab = writable('/');

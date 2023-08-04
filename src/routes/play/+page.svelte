@@ -6,9 +6,7 @@
   import { onMount } from 'svelte';
   import { story, initialScenes, additionalScenes, charName, userName, usage, storyPath, sessionPath, startStoryId, zeroUsage } from '$lib/store';
   import { savePath } from '$lib/fs';
-  import { lastScene } from '$lib';
   import type { SceneType } from '$lib/interfaces';
-    import Scene from './Scene.svelte';
 
   let role = 'user';
   let userInput = '';
