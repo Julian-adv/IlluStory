@@ -1,7 +1,7 @@
 import { BaseDirectory, readTextFile, writeTextFile, readBinaryFile } from '@tauri-apps/api/fs'
 import { openAiApiKey, openAiModel } from './store'
 import { Configuration, OpenAIApi } from 'openai'
-import type { Story, Prompt } from './interfaces'
+import type { Story } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 

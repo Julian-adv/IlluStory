@@ -5,7 +5,7 @@
   import DragDropList from "$lib/DragDropList.svelte";
   import { changeApi, roles, sendChat, startStory } from "$lib/api";
   import { story, storyPath } from "$lib/store";
-  import { Api, type Prompt } from "$lib/interfaces";
+  import { Api, type SceneType } from "$lib/interfaces";
   import StringField from "./StringField.svelte";
   import SelectField from "./SelectField.svelte";
   import NumberField from "./NumberField.svelte";
@@ -68,7 +68,7 @@
     }
   }
 
-  function countLines(prompt: Prompt): number {
+  function countLines(prompt: SceneType): number {
     let count = 0;
     const str = prompt.content;
     for (let i = 0; i < str.length; i++) {

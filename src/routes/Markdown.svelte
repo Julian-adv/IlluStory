@@ -2,6 +2,7 @@
   import { Editor, rootCtx, editorViewOptionsCtx, editorViewCtx, serializerCtx } from '@milkdown/core';
   import type { Ctx } from '@milkdown/ctx';
   import { listener, listenerCtx } from '@milkdown/plugin-listener';
+  import { history } from '@milkdown/plugin-history';
   import { commonmark } from '@milkdown/preset-commonmark';
   import { nord } from '@milkdown/theme-nord';
   import { replaceAll } from '@milkdown/utils';
@@ -38,6 +39,7 @@
         ctx.get(listenerCtx).focus(onFocus).mounted(onMount).markdownUpdated(onUpdate)
       })
       .use(commonmark)
+      .use(history)
       .use(listener)
       .create();
   }
@@ -73,20 +75,25 @@
     dontUpdate = false;
   })
 
-  function onUpdate(ctx: Ctx, markdown: string) {
+  let enterPressed = false;
+
+  function onUpdate(ctx: Ctx, markdown: string, prevMarkdown: string) {
     dontUpdate = true;
-    value = markdown;
+    if (enterPressed) {
+      value = prevMarkdown;
+      enterPressed = false;
+    } else {
+      value = markdown;
+    }
   }
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
-      const markdown = internalEditor.action((ctx) => {
-        const editorView = ctx.get(editorViewCtx);
-        const serializer = ctx.get(serializerCtx);
-        return serializer(editorView.state.doc);
-      });
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      enterPressed = true;
       internalEditor.action(replaceAll(''))
-      onEnter(markdown)
+      onEnter(value);
     }
   }
 </script>
