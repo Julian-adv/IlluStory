@@ -71,15 +71,16 @@
   afterUpdate(() => {
     if (internalEditor && !dontUpdate) {
       internalEditor.action(replaceAll(value))
+      first = false;
     }
     dontUpdate = false;
   })
 
   let enterPressed = false;
 
-  function onUpdate(ctx: Ctx, markdown: string, prevMarkdown: string) {
+  function onUpdate(ctx: Ctx, markdown: string, prevMarkdown: string|null) {
     dontUpdate = true;
-    if (enterPressed) {
+    if (enterPressed && prevMarkdown) {
       value = prevMarkdown;
       enterPressed = false;
     } else {
