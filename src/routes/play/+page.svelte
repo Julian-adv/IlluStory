@@ -111,6 +111,7 @@
     $additionalScenes = [];
     $usage = zeroUsage;
     $sessionPath = '';
+    userInput = '';
   }
 
   async function regenerate() {
@@ -169,7 +170,7 @@
       <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
     </div>
     <div>
-      <Input {role} value={userInput} />
+      <Input {role} bind:value={userInput} />
     </div>
   </div>
 </main>

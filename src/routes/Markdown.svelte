@@ -15,7 +15,6 @@
   let markdownEditor: Promise<Editor>;
   const editable = () => !readOnly;
   let internalEditor: Editor;
-  let first = true;
 
   function makeEditor(dom: HTMLDivElement) {
     // to obtain the editor instance we need to store a reference of the editor.
@@ -44,10 +43,11 @@
       .create();
   }
 
+  const placeHolder = '*Write a prompt.*\n';
+
   function onFocus() {
-    if (!readOnly && first) {
+    if (!readOnly && value === placeHolder) {
       internalEditor.action(replaceAll(''))
-      first = false;
     }
   }
 
@@ -56,10 +56,8 @@
       let text;
       if (value) {
         text = value;
-        first = false;
       } else {
-        text = '*Write a prompt.*';
-        first = true;
+        text = placeHolder;
       }
       editor.action(replaceAll(text))
       internalEditor = editor;
@@ -71,7 +69,6 @@
   afterUpdate(() => {
     if (internalEditor && !dontUpdate) {
       internalEditor.action(replaceAll(value))
-      first = false;
     }
     dontUpdate = false;
   })

@@ -45,7 +45,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div>
-  <Markdown {value} readOnly={false} onEnter={onEnter} />
+  <Markdown bind:value={value} readOnly={false} onEnter={onEnter} />
 </div>
 
 <style>
