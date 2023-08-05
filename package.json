@@ -39,6 +39,8 @@
 		"@tauri-apps/api": "^1.4.0",
 		"flowbite": "^1.7.0",
 		"flowbite-svelte": "^0.40.1",
+		"gpt-tokenizer": "^2.1.1",
+		"llama-tokenizer-js": "^1.1.2",
 		"openai": "^3.3.0",
 		"tailwind-merge": "^1.14.0"
 	}

@@ -22,7 +22,7 @@ export async function loadSettings() {
     apiKey: settings.openAiApiKey
   })
   const openai = new OpenAIApi(configuration)
-  const response = await openai.listModels()
+  const response = await openai.listModels();
   const models = response.data.data.map((model) => {
     return { value: model.id, name: model.id }
   })
@@ -74,7 +74,7 @@ export async function loadImage():Promise<string|null> {
 export async function savePath(path:string, data:any) {
   const filePath = await save({ defaultPath: path, filters: [{ name: '*', extensions: ['json'] }] })
   if (filePath) {
-    writeTextFile(filePath, JSON.stringify(data))
+    writeTextFile(filePath, JSON.stringify(data, null, 2));
   }
   return filePath;
 }
@@ -90,5 +90,5 @@ export async function saveStory(story: Story) {
 }
 
 export async function saveStoryQuietly(filePath:string, story:Story) {
-  writeTextFile(filePath, JSON.stringify(story))
+  writeTextFile(filePath, JSON.stringify(story, null, 2));
 }

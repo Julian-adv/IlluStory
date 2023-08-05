@@ -1,7 +1,6 @@
 import { get } from "svelte/store"
 import type { Story, SceneType, Usage } from "./interfaces"
 import { openAiApiKey } from "./store"
-import { newSceneId } from "$lib"
 
 function generateMessages(scenes: SceneType[]) {
   return scenes.map((s) => ({ role: s.role, content: s.content }))

@@ -18,6 +18,7 @@ const defaultStory: Story = {
   api: Api.OpenAi,
   temperature: 0.75,
   maxTokens: 300,
+  contextSize: 4096,
   // open ai
   model: '',
   frequencyPenalty: 0.4,

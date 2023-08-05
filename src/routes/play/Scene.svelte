@@ -13,14 +13,16 @@
   let imageSize = 512 / window.devicePixelRatio;
   let popoverId = 'pop123';
   let imagePrompt = '';
+  const regexp = /<Visual:([^>]+)>/g;
 
   function clearImagePrompt(str:string) {
-    return str.replace(/\[\[([^\]]+)\]\]/g, '').trim();
+    return str.replace(regexp, '').trim();
   }
 
   function extractImagePrompt(scene: SceneType): [string, string] {
-    const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
-    const extractedContents = matches.map(str => str.slice(2, -2));
+    // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
+    const matches = scene.content.match(regexp) || [];
+    const extractedContents = matches.map(str => str.slice(8, -1));
     const cleanedInput = clearImagePrompt(scene.content);
     return [cleanedInput, extractedContents.join(',')];
   }

@@ -31,7 +31,7 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Input id={label} type='number' bind:value on:blur={save} class='px-2 py-1 text-base' />
+  <Input id={label} type='number' bind:value {step} on:blur={save} class='px-2 py-1 text-base' />
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='flex' on:mouseenter={showHelper} on:mouseleave={hideHelper}>

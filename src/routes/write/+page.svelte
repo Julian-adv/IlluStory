@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Label, Input, Select, Button, Textarea, Checkbox, Helper } from "flowbite-svelte";
+  import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte";
   import { onMount } from "svelte";
   import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
   import DragDropList from "$lib/DragDropList.svelte";
-  import { changeApi, roles, sendChat, startStory } from "$lib/api";
+  import { changeApi, roles, countTokensApi, startStory } from "$lib/api";
   import { story, storyPath } from "$lib/store";
   import { Api, type SceneType } from "$lib/interfaces";
   import StringField from "./StringField.svelte";
@@ -17,8 +17,10 @@
     { value: Api.Oobabooga, name: 'Oobabooga' }
   ]
   let autoSave = true;
+  let totalTokens = 0;
 
   onMount(async () => {
+    totalTokens = 0;
     models = await loadSettings()
   });
 
@@ -35,6 +37,7 @@
     if (tempStory) {
       $story = tempStory;
       $storyPath = tempFilePath;
+      totalTokens = 0;
     }
   }
 
@@ -42,6 +45,7 @@
     const tempFilePath = await saveStory($story);
     if (tempFilePath) {
       $storyPath = tempFilePath;
+      totalTokens = 0;
     }
   }
 
@@ -53,6 +57,7 @@
       });
       $story.prompts = $story.prompts;
       saveStoryQuietly($storyPath, $story)
+      totalTokens = 0;
     }
   }
 
@@ -87,6 +92,13 @@
 
   function apiChange(value:string) {
     changeApi(value as Api);
+    autoSaveFunc();
+  }
+
+  function countTokens(str: string) {
+    const tokens = countTokensApi(str);
+    totalTokens += tokens;
+    return tokens;
   }
 </script>
 <div class='mt-2 mb-5 flex gap-2'>
@@ -126,7 +138,6 @@
     <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Frequency penalty' help="Positive values reduce the model's tendency to repeat itself." bind:value={$story.frequencyPenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Presence penalty' help="Positive values help the model to transition to new topics." bind:value={$story.presencePenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
-    <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.maxTokens} min={50} max={1000} save={autoSaveFunc} />
   {/if}
   {#if $story.api === Api.Oobabooga}
     <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
@@ -136,8 +147,9 @@
     <NumberField label='Length penalty' help="length_penalty > 0.0 promotes longer sequences, while length_penalty < 0.0 encourages shorter sequences." bind:value={$story.lengthPenalty} min={-5.0} max={5.0} save={autoSaveFunc} />
     <NumberField label='Repetition penalty' help="The parameter for repetition penalty. 1.0 means no penalty." bind:value={$story.repetitionPenalty} min={1.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Penalty alpha' help="The values balance the model confidence and the degeneration penalty in contrastive search decoding." bind:value={$story.penaltyAlpha} min={0.0} max={5.0} save={autoSaveFunc} />
-    <NumberField label='Max new tokens' help="The maximum numbers of tokens to generate, ignoring the number of tokens in the prompt." bind:value={$story.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />
   {/if}
+  <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />
+  <NumberField label='Context size' help="Represents the model's context size. If story tokens near this, the chat history will be summarized." bind:value={$story.contextSize} min={512} max={32768} step={1} save={autoSaveFunc} />
 </div>
 
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
@@ -152,12 +164,16 @@
         <em class='px-2 text-sm text-stone-500'>The story begins from below.</em>
         <hr class='flex-grow border-t border-dashed border-stone-400'>
       {:else}
-        <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt)} value={prompt.content} 
-         on:change={update(i, this.value)} on:blur={autoSaveFunc} />
+        <div class='flex flex-col w-full text-left'>
+          <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt)} value={prompt.content} 
+           on:change={update(i, this.value)} on:blur={autoSaveFunc} />
+          <span class='text-sm text-stone-400 px-2'>Tokens: {countTokens(prompt.content)}</span>
+        </div>
       {/if}
     </div>
   </div>
 </DragDropList>
+<div class='text-base text-stone-500 p-3'>Total tokens: {totalTokens}</div>
 <Button size='xs' color='alternative' on:click={addPrompt}>
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Label, Input, Select, Textarea, Button } from 'flowbite-svelte'
+  import { Label, Input } from 'flowbite-svelte'
   import { onMount } from 'svelte';
   import { openAiApiKey } from '$lib/store';
   import { loadSettings, saveSettings } from '$lib/fs';

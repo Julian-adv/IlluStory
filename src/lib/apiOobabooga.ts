@@ -1,8 +1,6 @@
-// import { WebSocket } from "vite";
 import { get } from "svelte/store";
 import type { SceneType, Story, Usage } from "./interfaces";
-import { zeroUsage, charName, userName } from "./store";
-import { newSceneId } from "$lib";
+import { zeroUsage, userName } from "./store";
 
 export async function sendChatOobabooga(story:Story, scenes:SceneType[], received:(text:string) => void,
                                         closedCallback:() => void): Promise<[SceneType|null, Usage]> {

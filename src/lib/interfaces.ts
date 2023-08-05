@@ -16,12 +16,13 @@ export interface Story {
   title: string;
   image: string;
   api: Api;
+  temperature: number;
+  maxTokens: number;
+  contextSize: number;
   // openAI
   model: string;
-  temperature: number;
   frequencyPenalty: number;
   presencePenalty: number;
-  maxTokens: number;
   // oobabooga
   topP: number;
   typicalP: number;
