@@ -17,3 +17,19 @@ export function newSceneId(initialScenes:SceneType[], additionalScenes:SceneType
 export function lastScene(scenes:SceneType[]):SceneType {
   return scenes[scenes.length - 1];
 }
+
+export function countLines(str: string): number {
+  let count = 1;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === "\n") {
+      count++;
+    }
+  }
+  if (count < 4) {
+    count = 4;
+  }
+  if (count > 15) {
+    count = 15;
+  }
+  return count;
+}

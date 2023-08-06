@@ -1,12 +1,13 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte';
   import { Button, Select } from 'flowbite-svelte';
-  import { charSetting, roles, startStory, userSetting, sendChat } from '$lib/api';
+  import { charSetting, roles, sendChat, startStory, userSetting } from '$lib/api';
   import Input from './Input.svelte';
   import { onMount } from 'svelte';
   import { story, initialScenes, additionalScenes, charName, userName, usage, storyPath, sessionPath, startStoryId, zeroUsage } from '$lib/store';
   import { savePath } from '$lib/fs';
   import type { SceneType } from '$lib/interfaces';
+  import { lastScene, newSceneId } from '$lib';
 
   let role = 'user';
   let userInput = '';
@@ -127,6 +128,17 @@
     $additionalScenes = $additionalScenes;
   }
 
+  async function summarize() {
+    const filteredScenes = $initialScenes.filter((scene) => (scene.id >= $startStoryId));
+    const summarizeScene: SceneType = { id: 0, role: "system", content: $story.summarizePrompt }
+    const scenes = [summarizeScene, ...filteredScenes, ...$additionalScenes];
+    let [newScene, usage] = await sendChat($story, scenes);
+    if (newScene) {
+      newScene.id = newSceneId(filteredScenes, $additionalScenes);
+      $additionalScenes = [newScene];
+    }
+  }
+
   onMount(() => {
     if ($additionalScenes.length == 0) {
       newSession();
@@ -164,6 +176,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
         </svg>
         <span class='pl-2'>Back</span>
+      </Button>
+      <Button color='alternative' size='sm' on:click={summarize}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+        </svg>
+        <span class='pl-2'>Summarize</span>
       </Button>
     </div>
     <div class='w-32 flex'>

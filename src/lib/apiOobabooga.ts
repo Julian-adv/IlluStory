@@ -1,15 +1,17 @@
 import { get } from "svelte/store";
 import type { SceneType, Story, Usage } from "./interfaces";
-import { zeroUsage, userName } from "./store";
+import { userName, zeroUsage } from "./store";
+import { countTokensApi } from "./api";
 
-export async function sendChatOobabooga(story:Story, scenes:SceneType[], received:(text:string) => void,
-                                        closedCallback:() => void): Promise<[SceneType|null, Usage]> {
+export async function sendChatOobabooga(story:Story, scenes:SceneType[]): Promise<[SceneType|null, Usage]> {
   const uri = "http://localhost:5000/api/v1/generate";
   const url = new URL(uri);
   let prompt = '';
   scenes.forEach((scene) => {
     prompt += scene.content + '\n';
   });
+  let usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+  usage.prompt_tokens = countTokensApi(prompt);
 
   const respFromOoga = await fetch(url, {
     body: JSON.stringify({
@@ -32,7 +34,8 @@ export async function sendChatOobabooga(story:Story, scenes:SceneType[], receive
       "stopping_strings": [
         "\nUser:",
         "\nuser:",
-        `\n${get(userName)}:`
+        `\n${get(userName)}:`,
+        `\n${get(userName)} `
       ],
       "seed": -1,
       "add_bos_token": true,
@@ -50,9 +53,11 @@ export async function sendChatOobabooga(story:Story, scenes:SceneType[], receive
       role: 'assistant',
       content: dataFromOoga.results[0].text
     }
-    return [newScene, zeroUsage];
+    usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text);
+    usage.total_tokens = usage.prompt_tokens + usage.completion_tokens;
+    return [newScene, usage];
   } else {
-    return [null, zeroUsage];
+    return [null, usage];
   }
 }
 

@@ -6,8 +6,7 @@ function generateMessages(scenes: SceneType[]) {
   return scenes.map((s) => ({ role: s.role, content: s.content }))
 }
 
-export async function sendChatOpenAi(story: Story, scenes: SceneType[], received: (text:string) => void,
-                                     closedCallback: () => void): Promise<[SceneType|null, Usage]> {
+export async function sendChatOpenAi(story: Story, scenes: SceneType[]): Promise<[SceneType|null, Usage]> {
   const uri = "https://api.openai.com/v1/chat/completions"
   const url = new URL(uri)
   const messages = generateMessages(scenes)

@@ -19,6 +19,7 @@ export interface Story {
   temperature: number;
   maxTokens: number;
   contextSize: number;
+  summarizePrompt: string;
   // openAI
   model: string;
   frequencyPenalty: number;

@@ -10,6 +10,8 @@
   import SelectField from "./SelectField.svelte";
   import NumberField from "./NumberField.svelte";
   import ImageField from "./ImageField.svelte";
+  import TextField from "./TextField.svelte";
+  import { countLines } from "$lib";
 
   let models = [{ value: '', name: '' }];
   const apis = [
@@ -73,23 +75,6 @@
     }
   }
 
-  function countLines(prompt: SceneType): number {
-    let count = 0;
-    const str = prompt.content;
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === "\n") {
-        count++;
-      }
-    }
-    if (count < 4) {
-      count = 4;
-    }
-    if (count > 15) {
-      count = 15;
-    }
-    return count;
-  }
-
   function apiChange(value:string) {
     changeApi(value as Api);
     autoSaveFunc();
@@ -150,6 +135,7 @@
   {/if}
   <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />
   <NumberField label='Context size' help="Represents the model's context size. If story tokens near this, the chat history will be summarized." bind:value={$story.contextSize} min={512} max={32768} step={1} save={autoSaveFunc} />
+  <TextField label='Summarize prompt' help="The prompt to use for summarizing the conversation." bind:value={$story.summarizePrompt} save={autoSaveFunc} />
 </div>
 
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
@@ -165,7 +151,7 @@
         <hr class='flex-grow border-t border-dashed border-stone-400'>
       {:else}
         <div class='flex flex-col w-full text-left'>
-          <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt)} value={prompt.content} 
+          <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt.content)} value={prompt.content} 
            on:change={update(i, this.value)} on:blur={autoSaveFunc} />
           <span class='text-sm text-stone-400 px-2'>Tokens: {countTokens(prompt.content)}</span>
         </div>

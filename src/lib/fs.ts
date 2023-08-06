@@ -4,6 +4,7 @@ import { Configuration, OpenAIApi } from 'openai'
 import type { Story } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { changeApi } from './api'
 
 const settingsPath = 'settings.json'
 
@@ -42,7 +43,9 @@ export async function loadStory(): Promise<[Story|null, string]> {
   const selected = await open({ filters: [{ name: '*', extensions: ['json']}]});
   if (typeof(selected) === 'string' ) {
     const json = await readTextFile(selected);
-    return [JSON.parse(json) as Story, selected];
+    const story = JSON.parse(json) as Story;
+    changeApi(story.api);
+    return [story, selected];
   }
   return [null, ''];
 }

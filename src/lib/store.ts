@@ -19,6 +19,8 @@ const defaultStory: Story = {
   temperature: 0.75,
   maxTokens: 300,
   contextSize: 4096,
+  // This prompt is copied from https://arca.live/b/characterai/81890153
+  summarizePrompt: "This is part of the history of the last conversation between <char>(female) and <user>(male). Summarize, condense, approximately timestamp the content of the messages exchanged between <char> and <user>, focusing on concrete events and direct information from their conversation. Remove or simplify any content that appears to be redundant or repetitive. Use abbreviations, common language shortcuts. Lastly, add \"Preiviously on <char> and <user>'s story: [\" at the beginning of the output, and \"].\" at the end of the output. If any of these phrases are in the middle of the input you receive, delete them. They should only appear once, at the beginning and end of the output.",
   // open ai
   model: '',
   frequencyPenalty: 0.4,
