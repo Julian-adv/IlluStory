@@ -1,17 +1,28 @@
-import { get } from "svelte/store";
-import type { SceneType, Story, Usage } from "./interfaces";
-import { userName, zeroUsage } from "./store";
-import { countTokensApi } from "./api";
+import { get } from "svelte/store"
+import type { SceneType, Story, Usage } from "./interfaces"
+import { replaceDict, zeroUsage } from "./store"
+import { countTokensApi } from "./api"
 
-export async function sendChatOobabooga(story:Story, scenes:SceneType[]): Promise<[SceneType|null, Usage]> {
-  const uri = "http://localhost:5000/api/v1/generate";
-  const url = new URL(uri);
-  let prompt = '';
-  scenes.forEach((scene) => {
-    prompt += scene.content + '\n';
-  });
-  let usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
-  usage.prompt_tokens = countTokensApi(prompt);
+export async function sendChatOobabooga(story:Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
+  const uri = "http://localhost:5000/api/v1/generate"
+  const url = new URL(uri)
+  let prompt = ''
+  if (summary) {
+    prompt += story.summarizePrompt + '\n'
+    initScenes.slice(firstSceneIndex).forEach(scene => {
+      prompt += scene.content + '\n'
+    })
+  } else {
+    initScenes.forEach(scene => {
+      prompt += scene.content + '\n'
+    })
+  }
+  addedScenes.slice(sendStartIndex).forEach(scene => {
+    prompt += scene.content + '\n'
+  })
+  const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+  usage.prompt_tokens = countTokensApi(prompt)
+  const userName = get(replaceDict)['user']
 
   const respFromOoga = await fetch(url, {
     body: JSON.stringify({
@@ -34,8 +45,8 @@ export async function sendChatOobabooga(story:Story, scenes:SceneType[]): Promis
       "stopping_strings": [
         "\nUser:",
         "\nuser:",
-        `\n${get(userName)}:`,
-        `\n${get(userName)} `
+        `\n${userName}:`,
+        `\n${userName} `
       ],
       "seed": -1,
       "add_bos_token": true,
@@ -45,31 +56,32 @@ export async function sendChatOobabooga(story:Story, scenes:SceneType[]): Promis
     method: "POST",
     signal: null
   })
-  const dataFromOoga = await respFromOoga.json();
-  console.log('dataFromOoga', dataFromOoga);
+  const dataFromOoga = await respFromOoga.json()
+  console.log('dataFromOoga', dataFromOoga)
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
     const newScene: SceneType = {
       id: 0,
       role: 'assistant',
       content: dataFromOoga.results[0].text
     }
-    usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text);
-    usage.total_tokens = usage.prompt_tokens + usage.completion_tokens;
-    return [newScene, usage];
+    usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text)
+    usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
+    return [newScene, usage]
   } else {
-    return [null, usage];
+    return [null, usage]
   }
 }
 
 export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[], received: (text: string) => void,
                                         closedCallback: () => void): Promise<[SceneType[], Usage]> {
-  const conn = new WebSocket('ws://localhost:5005/api/v1/stream');
+  const conn = new WebSocket('ws://localhost:5005/api/v1/stream')
+  const userName = get(replaceDict)['user']
   
   conn.onopen = () => {
-    let prompt = '';
+    let prompt = ''
     scenes.forEach((scene) => {
-      prompt += scene.content + '\n';
-    });
+      prompt += scene.content + '\n'
+    })
     const request = {
       "max_new_tokens": story.maxTokens,
       "do_sample": true,
@@ -90,7 +102,7 @@ export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[],
       "stopping_strings": [
         "\nUser:",
         "\nuser:",
-        `\n${get(userName)}:`
+        `\n${userName}:`
       ],
       "seed": -1,
       "add_bos_token": true,
@@ -101,17 +113,17 @@ export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[],
   
   conn.onmessage = (event) => {
     // console.log('on message', event)
-    const resp = JSON.parse(event.data);
+    const resp = JSON.parse(event.data)
     switch (resp.event) {
       case 'text_stream':
         // console.log(resp);
         // console.log(resp.history.visible[resp.history.visible.length - 1][1])
-        received(resp.text);
-        break;
+        received(resp.text)
+        break
       case 'stream_end':
-        conn.close();
-        closedCallback();
-        break;
+        conn.close()
+        closedCallback()
+        break
     }
   }
   
@@ -128,6 +140,6 @@ export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[],
     role: 'assistant',
     content: ''
   }
-  scenes = [...scenes, newScene];
+  scenes = [...scenes, newScene]
   return [scenes, zeroUsage]
 }

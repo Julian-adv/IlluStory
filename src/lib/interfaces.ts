@@ -7,6 +7,11 @@ export interface SceneType {
   done?: boolean
 }
 
+export interface Message {
+  role: string;
+  content: string;
+}
+
 export enum Api {
   OpenAi = 'openAi',
   Oobabooga = 'oobabooga'
@@ -31,6 +36,7 @@ export interface Story {
   repetitionPenalty: number;
   penaltyAlpha: number;
   lengthPenalty: number;
+
   prompts: SceneType[]
 }
 
@@ -44,4 +50,8 @@ export interface StoryCard {
   name: string;
   path: string;
   image: string;
+}
+
+export type StringDictionary = {
+  [key: string]: string;
 }

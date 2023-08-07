@@ -1,149 +1,150 @@
 <script lang="ts">
-  import SceneList from './SceneList.svelte';
-  import { Button, Select } from 'flowbite-svelte';
-  import { charSetting, roles, sendChat, startStory, userSetting } from '$lib/api';
-  import Input from './Input.svelte';
-  import { onMount } from 'svelte';
-  import { story, initialScenes, additionalScenes, charName, userName, usage, storyPath, sessionPath, startStoryId, zeroUsage } from '$lib/store';
-  import { savePath } from '$lib/fs';
-  import type { SceneType } from '$lib/interfaces';
-  import { lastScene, newSceneId } from '$lib';
+  import SceneList from './SceneList.svelte'
+  import { Button, Select } from 'flowbite-svelte'
+  import { charSetting, roles, sendChat, startStory, userSetting } from '$lib/api'
+  import Input from './Input.svelte'
+  import { onMount } from 'svelte'
+  import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict } from '$lib/store'
+  import { savePath } from '$lib/fs'
+  import type { SceneType } from '$lib/interfaces'
+  import { newSceneId } from '$lib'
 
-  let role = 'user';
-  let userInput = '';
+  let role = 'user'
+  let userInput = ''
 
-  function findStartStory(prompts: SceneType[]) {
-    return prompts.filter((prompt) => {
-      if (prompt.role === startStory) {
-        $startStoryId = prompt.id + 1;
-        return false;
-      }
-      return true;
-    })
+  function findFirstSceneIndex(scenes: SceneType[]) {
+    const index = scenes.findIndex((scene) => (scene.role === startStory))
+    return index < 0 ? scenes.length : index + 1
   }
 
-  function mergeScenes(oldScenes: SceneType[], oldStartId: number, newScenes: SceneType[], newStartId: number) {
-    if (newScenes.length != oldScenes.length || oldStartId != newStartId) {
+  // Basically, we're returning newScenes. But trying to preserve images in oldScenes.
+  function mergeScenes(oldScenes: SceneType[], oldFirstSceneIndex: number, newScenes: SceneType[], newFirstSceneIndex: number) {
+    if (newScenes.length != oldScenes.length || oldFirstSceneIndex != newFirstSceneIndex) {
       // big change, refresh all images
-      return newScenes;
+      return newScenes
     }
-    let scenes = [];
+    let scenes = []
     for (let i = 0; i < newScenes.length; i++) {
-      let scene = newScenes[i];
-      if (newScenes[i].id >= newStartId) {
-        scene.image = oldScenes[i].image;
+      let scene = newScenes[i]
+      if (i >= newFirstSceneIndex) {
+        scene.image = oldScenes[i].image
       }
       scenes.push(scene)
     }
-    return scenes;
+    return scenes
+  }
+
+  function matchSet(content: string, replKey: string) {
+    const match = content.match(/Name: *(.+)/)
+    if (match) {
+      $replaceDict[replKey] = match[1].trim()
+    }
+    const genderMatch = content.match(/Gender: *(.+)/)
+    if (genderMatch) {
+      $replaceDict[replKey + '_gender'] = genderMatch[1].trim()
+    }
   }
 
   function findNames(prompts: SceneType[]) {
     return prompts.map((prompt) => {
       let role = prompt.role
       if (prompt.role === charSetting) {
-        const match = prompt.content.match(/Name: *(.+)/)
-        if (match) {
-          $charName = match[1];
-        }
-        role = 'system';
+        matchSet(prompt.content, "char")
+        role = 'system'
       } else if (prompt.role === userSetting) {
-        const match = prompt.content.match(/Name: *(.+)/)
-        if (match) {
-          $userName = match[1];
-        }
-        role = 'system';
+        matchSet(prompt.content, "user")
+        role = 'system'
       }
-      return { id: prompt.id, role: role, content: prompt.content, image: prompt.image };
+      return { id: prompt.id, role: role, content: prompt.content, image: prompt.image }
     })
   }
 
   function replaceNames(prompts: SceneType[]) {
     return prompts.map((prompt) => {
-      let content = prompt.content.replace(/{{char}}/g, $charName)
-      content = content.replace(/{{user}}/g, $userName)
-      content = content.replace(/<char>/g, $charName)
-      content = content.replace(/<user>/g, $userName)
-      return { id: prompt.id, role: prompt.role, content: content, image: prompt.image };
+      let content = prompt.content
+      for (const [key, value] of Object.entries($replaceDict)) {
+        const regex = new RegExp(`{{${key}}}`, 'g')
+        content = content.replace(regex, value)
+        const regex2 = new RegExp(`<${key}>`, 'g')
+        content = content.replace(regex2, value)
+      }
+      return { id: prompt.id, role: prompt.role, content: content, image: prompt.image }
     })
   }
 
   function formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hour = date.getHours().toString().padStart(2, '0');
-    const min = date.getMinutes().toString().padStart(2, '0');
-    const sec = date.getSeconds().toString().padStart(2, '0');
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const hour = date.getHours().toString().padStart(2, '0')
+    const min = date.getMinutes().toString().padStart(2, '0')
+    const sec = date.getSeconds().toString().padStart(2, '0')
 
-    return `${year}-${month}-${day}_${hour}-${min}-${sec}`;
+    return `${year}-${month}-${day}_${hour}-${min}-${sec}`
   }
 
   function insertTimestamp(filename: string): string {
-    let extensionIndex = filename.lastIndexOf(".json");
+    let extensionIndex = filename.lastIndexOf(".json")
     if (extensionIndex === -1) {
-      extensionIndex = filename.length;
+      extensionIndex = filename.length
     }
 
-    const baseName = filename.slice(0, extensionIndex);
-    const extension = filename.slice(extensionIndex);
-    const timestamp = formatDate(new Date());
+    const baseName = filename.slice(0, extensionIndex)
+    const extension = filename.slice(extensionIndex)
+    const timestamp = formatDate(new Date())
 
-    return `${baseName}_${timestamp}${extension}`;
+    return `${baseName}_${timestamp}${extension}`
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($storyPath), $additionalScenes);
+    const tempPath = await savePath(insertTimestamp($storyPath), $additionalScenes)
     if (tempPath) {
-      $sessionPath = tempPath;
+      $sessionPath = tempPath
     }
   }
 
   function updateInitialScenes() {
-    const oldStartId = $startStoryId;
-    let newScenes = findStartStory($story.prompts);
-    $initialScenes = mergeScenes($initialScenes, oldStartId, newScenes, $startStoryId);
-    $initialScenes = findNames($initialScenes);
-    $initialScenes = replaceNames($initialScenes);
+    $firstSceneIndex = findFirstSceneIndex($story.prompts)
+    $initialScenes = mergeScenes($initialScenes, $firstSceneIndex, $story.prompts, $firstSceneIndex)
+    $initialScenes = findNames($initialScenes)
+    $initialScenes = replaceNames($initialScenes)
   }
 
   function newSession() {
-    updateInitialScenes();
-    $additionalScenes = [];
-    $usage = zeroUsage;
-    $sessionPath = '';
-    userInput = '';
+    updateInitialScenes()
+    $additionalScenes = []
+    $usage = zeroUsage
+    $sessionPath = ''
+    userInput = ''
   }
 
   async function regenerate() {
     if ($additionalScenes.length == 0) {
-      return;
+      return
     }
-    $additionalScenes.pop();
-    const scene = $additionalScenes.pop();
+    $additionalScenes.pop()
+    const scene = $additionalScenes.pop()
     if (scene) {
-      const userNameLabel = $userName + ": "
-      userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content;
+      const userNameLabel = $replaceDict['user'] + ": "
+      userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content
     }
-    $additionalScenes = $additionalScenes;
+    $additionalScenes = $additionalScenes
   }
 
   async function summarize() {
-    const filteredScenes = $initialScenes.filter((scene) => (scene.id >= $startStoryId));
-    const summarizeScene: SceneType = { id: 0, role: "system", content: $story.summarizePrompt }
-    const scenes = [summarizeScene, ...filteredScenes, ...$additionalScenes];
-    let [newScene, usage] = await sendChat($story, scenes);
+    let [newScene, _usage] = await sendChat($story, $initialScenes, $additionalScenes, true, $firstSceneIndex, $summarySceneIndex)
     if (newScene) {
-      newScene.id = newSceneId(filteredScenes, $additionalScenes);
-      $additionalScenes = [newScene];
+      newScene.id = newSceneId($initialScenes, $additionalScenes)
+      $summarySceneIndex = $additionalScenes.length
+      $additionalScenes = [...$additionalScenes, newScene]
     }
   }
 
   onMount(() => {
     if ($additionalScenes.length == 0) {
-      newSession();
+      newSession()
     } else {
-      updateInitialScenes();
+      updateInitialScenes()
     }
   })
 </script>

@@ -1,30 +1,30 @@
 <script lang="ts">
-  import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte";
-  import { onMount } from "svelte";
-  import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs";
-  import DragDropList from "$lib/DragDropList.svelte";
-  import { changeApi, roles, countTokensApi, startStory } from "$lib/api";
-  import { story, storyPath } from "$lib/store";
-  import { Api, type SceneType } from "$lib/interfaces";
-  import StringField from "./StringField.svelte";
-  import SelectField from "./SelectField.svelte";
-  import NumberField from "./NumberField.svelte";
-  import ImageField from "./ImageField.svelte";
-  import TextField from "./TextField.svelte";
-  import { countLines } from "$lib";
+  import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte"
+  import { onMount } from "svelte"
+  import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs"
+  import DragDropList from "$lib/DragDropList.svelte"
+  import { changeApi, roles, countTokensApi, startStory } from "$lib/api"
+  import { story, storyPath } from "$lib/store"
+  import { Api } from "$lib/interfaces"
+  import StringField from "./StringField.svelte"
+  import SelectField from "./SelectField.svelte"
+  import NumberField from "./NumberField.svelte"
+  import ImageField from "./ImageField.svelte"
+  import TextField from "./TextField.svelte"
+  import { countLines } from "$lib"
 
-  let models = [{ value: '', name: '' }];
+  let models = [{ value: '', name: '' }]
   const apis = [
     { value: Api.OpenAi, name: 'Open AI'},
     { value: Api.Oobabooga, name: 'Oobabooga' }
   ]
-  let autoSave = true;
-  let totalTokens = 0;
+  let autoSave = true
+  let totalTokens = 0
 
   onMount(async () => {
-    totalTokens = 0;
+    totalTokens = 0
     models = await loadSettings()
-  });
+  })
 
   function addPrompt() {
     $story.prompts = [...$story.prompts, { id: $story.prompts.length, role: 'system', content: '' } ]
@@ -35,55 +35,55 @@
   }
 
   async function load() {
-    const [tempStory, tempFilePath] = await loadStory();
+    const [tempStory, tempFilePath] = await loadStory()
     if (tempStory) {
-      $story = tempStory;
-      $storyPath = tempFilePath;
-      totalTokens = 0;
+      $story = tempStory
+      $storyPath = tempFilePath
+      totalTokens = 0
     }
   }
 
   async function save() {
-    const tempFilePath = await saveStory($story);
+    const tempFilePath = await saveStory($story)
     if (tempFilePath) {
-      $storyPath = tempFilePath;
-      totalTokens = 0;
+      $storyPath = tempFilePath
+      totalTokens = 0
     }
   }
 
   async function autoSaveFunc() {
     if (autoSave && $storyPath !== '') {
-      let id = 0;
+      let id = 0
       $story.prompts.forEach(prompt => {
-        prompt.id = id++;
-      });
-      $story.prompts = $story.prompts;
+        prompt.id = id++
+      })
+      $story.prompts = $story.prompts
       saveStoryQuietly($storyPath, $story)
-      totalTokens = 0;
+      totalTokens = 0
     }
   }
 
   function update(i: number, value: string) {
-    return (e:Event) => {
-      $story.prompts[i].content = value;
+    return (_e: Event) => {
+      $story.prompts[i].content = value
     }
   }
 
   function updateRole(i: number, element: HTMLOptionElement) {
-    return (e:Event) => {
-      $story.prompts[i].role = element.value;
+    return (_e: Event) => {
+      $story.prompts[i].role = element.value
     }
   }
 
   function apiChange(value:string) {
-    changeApi(value as Api);
-    autoSaveFunc();
+    changeApi(value as Api)
+    autoSaveFunc()
   }
 
   function countTokens(str: string) {
-    const tokens = countTokensApi(str);
-    totalTokens += tokens;
-    return tokens;
+    const tokens = countTokensApi(str)
+    totalTokens += tokens
+    return tokens
   }
 </script>
 <div class='mt-2 mb-5 flex gap-2'>

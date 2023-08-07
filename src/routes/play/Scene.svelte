@@ -1,79 +1,72 @@
 <script lang="ts">
-  import type { SceneType } from "$lib/interfaces";
-  import { afterUpdate, onMount } from "svelte";
-  import Markdown from "../Markdown.svelte";
-  import { startStoryId } from "$lib/store";
-  import { Button, Popover, Spinner } from "flowbite-svelte";
+  import type { SceneType } from "$lib/interfaces"
+  import { afterUpdate, onMount } from "svelte"
+  import Markdown from "../Markdown.svelte"
+  import { Button, Popover, Spinner } from "flowbite-svelte"
 
-  export let scene: SceneType;
-  let content: string;
-  let showImage = false;
-  let imageFromSD = new Promise<string>((resolve, reject) => {});
-  let waitingImage = false;
-  let imageSize = 512 / window.devicePixelRatio;
-  let popoverId = 'pop123';
-  let imagePrompt = '';
-  const regexp = /Visual: \[([^\]]+)\]/g;
+  export let scene: SceneType
+  let content: string
+  let showImage = false
+  let imageFromSD = new Promise<string>((_resolve, _reject) => {})
+  let waitingImage = false
+  let imageSize = 512 / window.devicePixelRatio
+  let popoverId = 'pop123'
+  let imagePrompt = ''
+  const regexp = /Visual: \[([^\]]+)\]/g
 
   function clearImagePrompt(str:string) {
-    return str.replace(regexp, '').trim();
+    return str.replace(regexp, '').trim()
   }
 
   function extractImagePrompt(scene: SceneType): [string, string] {
     // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
-    const matches = scene.content.match(regexp) || [];
-    const extractedContents = matches.map(str => str.slice(9, -1));
-    const cleanedInput = clearImagePrompt(scene.content);
-    return [cleanedInput, extractedContents.join(',')];
+    const matches = scene.content.match(regexp) || []
+    const extractedContents = matches.map(str => str.slice(9, -1))
+    const cleanedInput = clearImagePrompt(scene.content)
+    return [cleanedInput, extractedContents.join(',')]
   }
 
-  export function generateImageIfNeeded(sceneParam:SceneType) {
+  export function generateImageIfNeeded(_sceneParam: SceneType) {
     if (scene.image) {
-      showImage = true;
+      showImage = true
       let _cleaned;
-      [_cleaned, imagePrompt] = extractImagePrompt(scene);
-      imageFromSD = Promise.resolve(scene.image);
-      return;
+      [_cleaned, imagePrompt] = extractImagePrompt(scene)
+      imageFromSD = Promise.resolve(scene.image)
+      return
     }
     if (waitingImage || !(scene.role === 'system' || scene.role === 'assistant')) {
-      return;
+      return
     }
     let cleanedContent;
-    [cleanedContent, imagePrompt] = extractImagePrompt(scene);
-    showImage = imagePrompt !== '';
+    [cleanedContent, imagePrompt] = extractImagePrompt(scene)
+    showImage = imagePrompt !== ''
     if (showImage) {
-      content = cleanedContent;
-      popoverId = 'image' + scene.id;
+      content = cleanedContent
+      popoverId = 'image' + scene.id
       imageFromSD = generateImage(imagePrompt)
         .then(result => {
-          scene.image = result;
-          return result;
-        });
+          scene.image = result
+          return result
+        })
     }
   }
 
   onMount(() => {
-    if (scene.id < $startStoryId) {
-      return;
-    }
-    content = clearImagePrompt(scene.content);
-    generateImageIfNeeded(scene);
-  });
+    content = clearImagePrompt(scene.content)
+    generateImageIfNeeded(scene)
+  })
 
   afterUpdate(() => {
-    if (scene.id < $startStoryId) {
-      return;
-    }
     if (scene.done) {
-      generateImageIfNeeded(scene);
+      generateImageIfNeeded(scene)
     } else {
-      content = clearImagePrompt(scene.content);
+      content = clearImagePrompt(scene.content)
     }
-  });
+  })
 
   async function generateImage(prompt: string): Promise<string> {
     const uri = "http://localhost:7860/sdapi/v1/txt2img"
-    waitingImage = true;
+    waitingImage = true
     const responseFromSD = await fetch(uri, {
       body: JSON.stringify({
           "width": 512,
@@ -126,21 +119,20 @@
 
     if (responseFromSD.ok) {
       let dataFromSD = await responseFromSD.json()
-      const info = JSON.parse(dataFromSD.info)
-      waitingImage = false;
-      return `data:image/png;base64,${dataFromSD.images[0]}`;
+      waitingImage = false
+      return `data:image/png;base64,${dataFromSD.images[0]}`
     } else {
-      waitingImage = false;
-      return '';
+      waitingImage = false
+      return ''
     }
   }
 
   function regenerateImage() {
     imageFromSD = generateImage(imagePrompt)
       .then(result => {
-        scene.image = result;
-        return result;
-      });
+        scene.image = result
+        return result
+      })
   }
 
   function saveImage() {
@@ -148,42 +140,38 @@
   }
 </script>
 
-{#if scene.id >= $startStoryId}
-  <div class="block max-w-3xl">
-    {#if showImage}
-      <div class='flex flex-col float-left mr-5 z-10'>
-        {#await imageFromSD}
-          <div class="placeholder flex justify-center items-center bg-stone-300 rounded-lg mt-2" style="--imageSize: {imageSize}px;">
-            <Spinner class="mr-3" size="4" />
-          </div>
-        {:then image}
-          <img id={popoverId} src={image} alt="scene #{scene.id}" class="placeholder rounded-lg mt-2 z-20" style="--imageSize: {imageSize}px;">
-          <Popover class='w-80 h-auto text-sm z-30' triggeredBy={'#'+popoverId}>
-            <span>{imagePrompt}</span>
-          </Popover>
-        {/await}
-        <div class='flex gap-2'>
-          <Button color='alternative' class='w-10 h-10 p-0 bg-stone-100 z-20 text-stone-200 border-stone-100 focus:ring-0' pill on:click={regenerateImage}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
-            </svg>
-          </Button>
-          <Button color='alternative' class='w-10 h-10 p-0 bg-stone-100 z-20 text-stone-200 border-stone-100 focus:ring-0' pill on:click={saveImage}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-          </Button>
+<div class="block max-w-3xl">
+  {#if showImage}
+    <div class='flex flex-col float-left mr-5 z-10'>
+      {#await imageFromSD}
+        <div class="placeholder flex justify-center items-center bg-stone-300 rounded-lg mt-2" style="--imageSize: {imageSize}px;">
+          <Spinner class="mr-3" size="4" />
         </div>
+      {:then image}
+        <img id={popoverId} src={image} alt="scene #{scene.id}" class="placeholder rounded-lg mt-2 z-20" style="--imageSize: {imageSize}px;">
+        <Popover class='w-80 h-auto text-sm z-30' triggeredBy={'#'+popoverId}>
+          <span>{imagePrompt}</span>
+        </Popover>
+      {/await}
+      <div class='flex gap-2'>
+        <Button color='alternative' class='w-10 h-10 p-0 bg-stone-100 z-20 text-stone-200 border-stone-100 focus:ring-0' pill on:click={regenerateImage}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+          </svg>
+        </Button>
+        <Button color='alternative' class='w-10 h-10 p-0 bg-stone-100 z-20 text-stone-200 border-stone-100 focus:ring-0' pill on:click={saveImage}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+        </Button>
       </div>
-    {/if}
-    <!-- {scene.id} -->
-    <!-- <span class='role'>{scene.role}:</span> -->
-    <Markdown value={content} />
-  </div>
-  <div class="clear-both p-2"></div>
-{:else}
-  <div></div>
-{/if}
+    </div>
+  {/if}
+  <!-- {scene.id} -->
+  <!-- <span class='role'>{scene.role}:</span> -->
+  <Markdown value={content} />
+</div>
+<div class="clear-both p-2"></div>
 
 <style>
   .placeholder {
