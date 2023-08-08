@@ -1,42 +1,50 @@
 <script lang="ts">
-  import '@milkdown/theme-nord/style.css';
-  import { onMount } from 'svelte';
-  import { loadSettings } from '$lib/fs';
-  import { readDir, BaseDirectory, type FileEntry, readTextFile } from '@tauri-apps/api/fs';
-  import { Card, Spinner } from 'flowbite-svelte';
-  import type { StoryCard } from '$lib/interfaces';
-  import { currentTab, story, storyPath } from '$lib/store';
+  import '@milkdown/theme-nord/style.css'
+  import { onMount } from 'svelte'
+  import { loadSettings } from '$lib/fs'
+  import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
+  import { Card, Spinner } from 'flowbite-svelte'
+  import type { Story, StoryCard } from '$lib/interfaces'
+  import { currentTab, story, storyPath } from '$lib/store'
 
-  let cards:StoryCard[] = [];
-  let loading = false;
+  let cards:StoryCard[] = []
+  let loading = false
 
   onMount(async () => {
-    await loadSettings();
+    await loadSettings()
 
-    loading = true;
-    const entries = await readDir('.', { dir: BaseDirectory.AppData, recursive: true });
+    loading = true
+    const entries = await readDir('.', { dir: BaseDirectory.AppData, recursive: true })
     for (const entry of entries) {
       if (entry.name?.endsWith('.json')) {
-        let storyText = await readTextFile(entry.path);
-        let story = JSON.parse(storyText);
+        let storyText = await readTextFile(entry.path)
+        let story = JSON.parse(storyText) as Story
+        let image = ''
+        if (story) {
+          if (story.image) {
+            image = story.image
+          } else if (story.prompts && story.prompts.length > 0 && story.prompts[0].image) {
+            image = story.prompts[0].image
+          }
+        }
         cards.push({
           name: entry.name.slice(0, -5),
           path: entry.path,
-          image: story.image ?? '00007-780430952.png'
-        });
+          image: image
+        })
       }
     }
-    cards = cards;
-    loading = false;
+    cards = cards
+    loading = false
   })
 
   function onClick(path:string) {
-    return async (ev: Event) => {
-      const storyText = await readTextFile(path);
+    return async (_ev: Event) => {
+      const storyText = await readTextFile(path)
       if (storyText) {
-        $storyPath = path;
-        $story = JSON.parse(storyText);
-        $currentTab = '/write';
+        $storyPath = path
+        $story = JSON.parse(storyText)
+        $currentTab = '/write'
       }
     }
   }

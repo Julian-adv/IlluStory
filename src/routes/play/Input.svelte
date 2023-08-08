@@ -25,7 +25,7 @@
 
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
-    let content;
+    let content
     if (trimmed[0] === '"') {
       content = `${$replaceDict['user']}: ` + trimmed 
     } else {

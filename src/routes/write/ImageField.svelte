@@ -1,35 +1,35 @@
 <script lang="ts">
-  import { Img, Label, Helper } from "flowbite-svelte";
-  import { onMount } from "svelte";
-  import { helperClassHidden, helperClassVisible } from "$lib";
-    import { loadImage } from "$lib/fs";
+  import { Img, Label, Helper } from "flowbite-svelte"
+  import { onMount } from "svelte"
+  import { helperClassHidden, helperClassVisible } from "$lib"
+    import { loadImage } from "$lib/fs"
 
-  export let label = '';
-  export let value = '';
-  export let help = '';
-  export let save = () => {};
-  let imageSize = 512/window.devicePixelRatio;
+  export let label = ''
+  export let value = ''
+  export let help = ''
+  export let save = () => {}
+  let imageSize = 512/window.devicePixelRatio
 
-  let helperClass = helperClassHidden;
+  let helperClass = helperClassHidden
   
   const showHelper = () => {
-    helperClass = helperClassVisible;
+    helperClass = helperClassVisible
   }
 
   const hideHelper = () => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   }
 
   async function onClick() {
-    let image = await loadImage();
+    let image = await loadImage()
     if (image) {
-      value = image;
+      value = image
       save()
     }
   }
 
   onMount(() => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   })
 
 </script>

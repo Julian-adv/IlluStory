@@ -1,4 +1,4 @@
-import { BaseDirectory, readTextFile, writeTextFile, readBinaryFile } from '@tauri-apps/api/fs'
+import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { openAiApiKey, openAiModel, story } from './store'
 import { Configuration, OpenAIApi } from 'openai'
 import type { Story } from './interfaces'
@@ -12,12 +12,12 @@ let apiKey = ''
 let apiModel = ''
 let tempStory: Story
 
-openAiApiKey.subscribe((key: string) => { apiKey = key });
-openAiModel.subscribe((model: string) => { apiModel = model });
+openAiApiKey.subscribe((key: string) => { apiKey = key })
+openAiModel.subscribe((model: string) => { apiModel = model })
 story.subscribe((s: Story) => { tempStory = s })
 
 export async function loadSettings() {
-  if (tempStory.apiUrl.startsWith('https://api.openai.com')) {
+  if (tempStory.apiUrl && tempStory.apiUrl.startsWith('https://api.openai.com')) {
     const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
     const settings = JSON.parse(settingsJson)
     openAiApiKey.set(settings.openAiApiKey)
@@ -59,58 +59,88 @@ export async function saveSettings() {
 }
 
 export async function loadStory(): Promise<[Story|null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['json']}]});
+  const selected = await open({ filters: [{ name: '*', extensions: ['json']}]})
   if (typeof(selected) === 'string' ) {
-    const json = await readTextFile(selected);
-    const story = JSON.parse(json) as Story;
-    changeApi(story.api);
-    return [story, selected];
+    const json = await readTextFile(selected)
+    const story = JSON.parse(json) as Story
+    changeApi(story.api)
+    return [story, selected]
   }
-  return [null, ''];
+  return [null, '']
 }
 
 async function readAsDataURL(blob:Blob): Promise<string|null> {
   return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
   })
 }
 
 export async function loadImage():Promise<string|null> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['png', 'jpg']}]});
+  const selected = await open({ filters: [{ name: '*', extensions: ['png', 'jpg']}]})
   if (typeof(selected) === 'string') {
     return new Promise((resolve, reject) => {
-      let xhr = new XMLHttpRequest();
-      xhr.responseType = 'blob';
-      xhr.onload = () => resolve(readAsDataURL(xhr.response));
-      xhr.onerror = reject;
-      xhr.open('GET', convertFileSrc(selected));
-      xhr.send();
+      const xhr = new XMLHttpRequest()
+      xhr.responseType = 'blob'
+      xhr.onload = () => resolve(readAsDataURL(xhr.response))
+      xhr.onerror = reject
+      xhr.open('GET', convertFileSrc(selected))
+      xhr.send()
     })
   }
-  return null;
+  return null
 }
 
-export async function savePath(path:string, data:any) {
+function dataURIToBlob(dataURI: string) {
+  const byteString = atob(dataURI.split(",")[1])
+  const arrayBuffer = new ArrayBuffer(byteString.length)
+  const uint8Array = new Uint8Array(arrayBuffer)
+
+  for (let i = 0; i < byteString.length; i++) {
+      uint8Array[i] = byteString.charCodeAt(i)
+  }
+
+  const blob = new Blob([uint8Array], { type: "image/png" })
+  return blob
+}
+
+export function saveImageToFile(dataURI: string, filename: string) {
+  const blob = dataURIToBlob(dataURI)
+
+  const url = window.URL.createObjectURL(blob)
+
+  const a = document.createElement("a")
+  a.style.display = "none"
+  a.href = url
+  a.download = filename
+
+  document.body.appendChild(a)
+  a.click()
+
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+}
+
+export async function savePath(path: string, data: any) {
   const filePath = await save({ defaultPath: path, filters: [{ name: '*', extensions: ['json'] }] })
   if (filePath) {
-    writeTextFile(filePath, JSON.stringify(data, null, 2));
+    writeTextFile(filePath, JSON.stringify(data, null, 2))
   }
-  return filePath;
+  return filePath
 }
 
 export async function saveStory(story: Story) {
-  let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim();
+  let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim()
   if (fileName === '') {
     fileName = 'story' + Date.now() + '.json'
   } else {
     fileName = fileName + '.json'
   }
-  return savePath(fileName, story);
+  return savePath(fileName, story)
 }
 
 export async function saveStoryQuietly(filePath:string, story:Story) {
-  writeTextFile(filePath, JSON.stringify(story, null, 2));
+  writeTextFile(filePath, JSON.stringify(story, null, 2))
 }

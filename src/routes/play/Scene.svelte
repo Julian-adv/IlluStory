@@ -3,6 +3,9 @@
   import { afterUpdate, onMount } from "svelte"
   import Markdown from "../Markdown.svelte"
   import { Button, Popover, Spinner } from "flowbite-svelte"
+  import { saveImageToFile } from "$lib/fs"
+  import { save } from "@tauri-apps/api/dialog"
+  import { basename, downloadDir } from "@tauri-apps/api/path"
 
   export let scene: SceneType
   let content: string
@@ -137,8 +140,15 @@
       })
   }
 
-  function saveImage() {
-    console.log('saveImage')
+  async function saveImage() {
+    if (scene.image) {
+      const downDir = await downloadDir()
+      const filePath = await save({ defaultPath: downDir, filters: [{ name: '*', extensions: ['png'] }] })
+      if (filePath) {
+        const fileName = await basename(filePath)
+        saveImageToFile(scene.image, fileName)
+      }
+    }
   }
 </script>
 
