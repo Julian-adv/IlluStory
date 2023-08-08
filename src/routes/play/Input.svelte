@@ -25,10 +25,16 @@
 
   async function onEnter(markdown: string) {
     const trimmed = markdown.trim()
+    let content;
+    if (trimmed[0] === '"') {
+      content = `${$replaceDict['user']}: ` + trimmed 
+    } else {
+      content = trimmed
+    }
     const newScene = {
       id: newSceneId($initialScenes, $additionalScenes),
       role: role,
-      content: `${$replaceDict['user']}: ` + trimmed,
+      content: content,
       done: false
     }
     $additionalScenes = [...$additionalScenes, newScene]

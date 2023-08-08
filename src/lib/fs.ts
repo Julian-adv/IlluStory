@@ -1,5 +1,5 @@
 import { BaseDirectory, readTextFile, writeTextFile, readBinaryFile } from '@tauri-apps/api/fs'
-import { openAiApiKey, openAiModel } from './store'
+import { openAiApiKey, openAiModel, story } from './store'
 import { Configuration, OpenAIApi } from 'openai'
 import type { Story } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
@@ -8,27 +8,46 @@ import { changeApi } from './api'
 
 const settingsPath = 'settings.json'
 
-let apiKey = '';
-let apiModel = '';
+let apiKey = ''
+let apiModel = ''
+let tempStory: Story
 
 openAiApiKey.subscribe((key: string) => { apiKey = key });
 openAiModel.subscribe((model: string) => { apiModel = model });
+story.subscribe((s: Story) => { tempStory = s })
 
 export async function loadSettings() {
-  const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
-  const settings = JSON.parse(settingsJson)
-  openAiApiKey.set(settings.openAiApiKey)
-  openAiModel.set(settings.openAiModel)
-  const configuration = new Configuration({
-    apiKey: settings.openAiApiKey
-  })
-  const openai = new OpenAIApi(configuration)
-  const response = await openai.listModels();
-  const models = response.data.data.map((model) => {
-    return { value: model.id, name: model.id }
-  })
-
-  return models;
+  if (tempStory.apiUrl.startsWith('https://api.openai.com')) {
+    const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
+    const settings = JSON.parse(settingsJson)
+    openAiApiKey.set(settings.openAiApiKey)
+    openAiModel.set(settings.openAiModel)
+    const configuration = new Configuration({
+      apiKey: settings.openAiApiKey
+    })
+    const openai = new OpenAIApi(configuration)
+    const response = await openai.listModels()
+    const models = response.data.data.map((model) => {
+      return { value: model.id, name: model.id }
+    })
+  
+    return models
+  } else {
+    // console.log('url', tempStory.apiUrl)
+    // const url = new URL(tempStory.apiUrl + '/models')
+    // const respFromGPT = await fetch(url, {
+    //   body: "",
+    //   headers: {},
+    //   method: "POST",
+    //   signal: null
+    // })
+    // const dataFromGPT = await respFromGPT.json()
+    // console.log('dataFromGPT', dataFromGPT)
+    return [
+      { value: "gpt-4", name: "gpt-4"},
+      { value: "gpt-4-32k", name: "gpt-4-32k"}
+    ]
+  }
 }
 
 export async function saveSettings() {

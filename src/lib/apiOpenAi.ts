@@ -30,7 +30,8 @@ function generateMessages(story: Story, initScenes: SceneType[], addedScenes: Sc
 }
 
 export async function sendChatOpenAi(story: Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
-  const uri = "https://api.openai.com/v1/chat/completions"
+  const uri = story.apiUrl + '/chat/completions'
+  // const uri = "https://api.openai.com/v1/chat/completions"
   // const uri = "http://localhost:8000/v1/chat/completions"
   const url = new URL(uri)
   const messages = generateMessages(story, initScenes, addedScenes, summary, firstSceneIndex, sendStartIndex)
@@ -58,7 +59,7 @@ export async function sendChatOpenAi(story: Story, initScenes: SceneType[], adde
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     const gptScene: SceneType = dataFromGPT.choices[0].message
     gptScene.id = 0
-    return [gptScene, dataFromGPT.usage]
+    return [gptScene, dataFromGPT.usage ?? zeroUsage]
   } else {
     return [null, zeroUsage]
   }

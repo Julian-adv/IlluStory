@@ -15,6 +15,7 @@ const defaultStory: Story = {
   title: '',
   image: '',
   api: Api.OpenAi,
+  apiUrl: 'https://api.openai.com/v1',
   temperature: 0.75,
   maxTokens: 300,
   contextSize: 4096,

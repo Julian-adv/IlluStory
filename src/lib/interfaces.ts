@@ -21,6 +21,7 @@ export interface Story {
   title: string;
   image: string;
   api: Api;
+  apiUrl: string;
   temperature: number;
   maxTokens: number;
   contextSize: number;

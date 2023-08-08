@@ -114,6 +114,7 @@
   <StringField label='Title' placeholder='Enter title' help='Title of this story.' bind:value={$story.title} save={autoSaveFunc} />
   <SelectField label='API' items={apis} help='API to use.' bind:value={$story.api} save={apiChange} />
   {#if $story.api === Api.OpenAi}
+    <StringField label='URL' placeholder='https://api.openai.com/v1' bind:value={$story.apiUrl} save={autoSaveFunc} />
     <SelectField label='Models' items={models} bind:value={$story.model} save={autoSaveFunc} >
       <p slot='helper'>
         See our <a href='https://platform.openai.com/docs/models/overview' target='_blank' on:click={onModelOverview} class='text-sky-500'>Model overview</a> for descriptions of them.
