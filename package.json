@@ -46,6 +46,7 @@
 		"gpt-tokenizer": "^2.1.1",
 		"llama-tokenizer-js": "^1.1.2",
 		"openai": "^3.3.0",
-		"tailwind-merge": "^1.14.0"
+		"tailwind-merge": "^1.14.0",
+		"tauri-plugin-fs-extra-api": "github:tauri-apps/tauri-plugin-fs-extra"
 	}
 }

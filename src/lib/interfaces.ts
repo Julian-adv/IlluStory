@@ -50,6 +50,7 @@ export interface Usage {
 export interface StoryCard {
   name: string;
   path: string;
+  modifiedAt: Date;
   image: string;
 }
 
