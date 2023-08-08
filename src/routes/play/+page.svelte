@@ -116,6 +116,7 @@
     $usage = zeroUsage
     $sessionPath = ''
     userInput = ''
+    $summarySceneIndex = 0
   }
 
   async function regenerate() {

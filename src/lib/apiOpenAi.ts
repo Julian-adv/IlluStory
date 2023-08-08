@@ -11,11 +11,16 @@ function generateMessages(story: Story, initScenes: SceneType[], addedScenes: Sc
       messages.push({ role: scene.role, content: scene.content })
     }
   } else {
-    for (const scene of initScenes) {
+    for (const scene of initScenes.slice(0, firstSceneIndex)) {
       if (scene.role !== startStory) {
         messages.push({ role: scene.role, content: scene.content })
       }
     }
+    if (sendStartIndex === 0) {  // not summarized yet
+      for (const scene of initScenes.slice(firstSceneIndex)) {
+        messages.push({ role: scene.role, content: scene.content })
+      }
+    } 
   }
 
   for (const scene of addedScenes.slice(sendStartIndex)) {
@@ -29,6 +34,7 @@ export async function sendChatOpenAi(story: Story, initScenes: SceneType[], adde
   // const uri = "http://localhost:8000/v1/chat/completions"
   const url = new URL(uri)
   const messages = generateMessages(story, initScenes, addedScenes, summary, firstSceneIndex, sendStartIndex)
+  // console.log('messages', messages)
   const respFromGPT = await fetch(url, {
     body: JSON.stringify({
       model: story.model,

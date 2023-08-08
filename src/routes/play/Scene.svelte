@@ -12,7 +12,9 @@
   let imageSize = 512 / window.devicePixelRatio
   let popoverId = 'pop123'
   let imagePrompt = ''
-  const regexp = /Visual: \[([^\]]+)\]/g
+  const visualStart = '<Visual>'
+  const visualEnd = '</Visual>'
+  const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
 
   function clearImagePrompt(str:string) {
     return str.replace(regexp, '').trim()
@@ -21,7 +23,7 @@
   function extractImagePrompt(scene: SceneType): [string, string] {
     // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const matches = scene.content.match(regexp) || []
-    const extractedContents = matches.map(str => str.slice(9, -1))
+    const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
     const cleanedInput = clearImagePrompt(scene.content)
     return [cleanedInput, extractedContents.join(',')]
   }
