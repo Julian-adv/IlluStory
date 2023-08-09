@@ -6,6 +6,7 @@
   import { saveImageToFile } from "$lib/fs"
   import { save } from "@tauri-apps/api/dialog"
   import { basename, downloadDir } from "@tauri-apps/api/path"
+  import { convertMarkdown } from "$lib/store"
 
   export let scene: SceneType
   let content: string
@@ -19,8 +20,15 @@
   const visualEnd = '</Visual>'
   const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
 
-  function clearImagePrompt(str:string) {
+  function clearImagePrompt(str: string) {
     return str.replace(regexp, '').trim()
+  }
+
+  function convertToMarkdown(str: string) {
+    if ($convertMarkdown) {
+      return str.replace(/"(.*?)"/g, '**"$1"**')
+    }
+    return str
   }
 
   function extractImagePrompt(scene: SceneType): [string, string] {
@@ -28,14 +36,14 @@
     const matches = scene.content.match(regexp) || []
     const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
     const cleanedInput = clearImagePrompt(scene.content)
-    return [cleanedInput, extractedContents.join(',')]
+    const markdown = convertToMarkdown(cleanedInput)
+    return [markdown, extractedContents.join(',')]
   }
 
   export function generateImageIfNeeded(_sceneParam: SceneType) {
     if (scene.image) {
-      showImage = true
-      let _cleaned;
-      [_cleaned, imagePrompt] = extractImagePrompt(scene)
+      showImage = true;
+      [content, imagePrompt] = extractImagePrompt(scene)
       imageFromSD = Promise.resolve(scene.image)
       return
     }
@@ -57,7 +65,7 @@
   }
 
   onMount(() => {
-    content = clearImagePrompt(scene.content)
+    content = convertToMarkdown(clearImagePrompt(scene.content))
     generateImageIfNeeded(scene)
   })
 
@@ -65,7 +73,7 @@
     if (scene.done) {
       generateImageIfNeeded(scene)
     } else {
-      content = clearImagePrompt(scene.content)
+      content = convertToMarkdown(clearImagePrompt(scene.content))
     }
   })
 

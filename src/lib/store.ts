@@ -53,3 +53,5 @@ export const summarizePrompt = writable('')
 
 const dict: StringDictionary = {}
 export const replaceDict = writable(dict)
+
+export const convertMarkdown = writable(true)

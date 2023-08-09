@@ -6,11 +6,11 @@
   import { changeApi, roles, countTokensApi, startStory } from "$lib/api"
   import { story, storyPath } from "$lib/store"
   import { Api } from "$lib/interfaces"
-  import StringField from "./StringField.svelte"
-  import SelectField from "./SelectField.svelte"
-  import NumberField from "./NumberField.svelte"
-  import ImageField from "./ImageField.svelte"
-  import TextField from "./TextField.svelte"
+  import StringField from "../common/StringField.svelte"
+  import SelectField from "../common/SelectField.svelte"
+  import NumberField from "../common/NumberField.svelte"
+  import ImageField from "../common/ImageField.svelte"
+  import TextField from "../common/TextField.svelte"
   import { countLines } from "$lib"
 
   let models = [{ value: '', name: '' }]

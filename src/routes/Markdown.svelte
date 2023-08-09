@@ -1,26 +1,26 @@
 <script lang="ts">
-  import { Editor, rootCtx, editorViewOptionsCtx, editorViewCtx, serializerCtx } from '@milkdown/core';
-  import type { Ctx } from '@milkdown/ctx';
-  import { listener, listenerCtx } from '@milkdown/plugin-listener';
-  import { history } from '@milkdown/plugin-history';
-  import { commonmark } from '@milkdown/preset-commonmark';
-  import { nord } from '@milkdown/theme-nord';
-  import { replaceAll } from '@milkdown/utils';
-  import { afterUpdate } from 'svelte';
+  import { Editor, rootCtx, editorViewOptionsCtx } from '@milkdown/core'
+  import type { Ctx } from '@milkdown/ctx'
+  import { listener, listenerCtx } from '@milkdown/plugin-listener'
+  import { history } from '@milkdown/plugin-history'
+  import { commonmark } from '@milkdown/preset-commonmark'
+  import { nord } from '@milkdown/theme-nord'
+  import { replaceAll } from '@milkdown/utils'
+  import { afterUpdate } from 'svelte'
   
-  export let value = '';
-  export let readOnly = true;
-  export let onEnter = (markdown: string) => {}
+  export let value = ''
+  export let readOnly = true
+  export let onEnter = (_markdown: string) => {}
 
-  let markdownEditor: Promise<Editor>;
-  const editable = () => !readOnly;
-  let internalEditor: Editor;
+  let markdownEditor: Promise<Editor>
+  const editable = () => !readOnly
+  let internalEditor: Editor
 
   function makeEditor(dom: HTMLDivElement) {
     // to obtain the editor instance we need to store a reference of the editor.
     markdownEditor = Editor.make()
       .config((ctx) => {
-        ctx.set(rootCtx, dom);
+        ctx.set(rootCtx, dom)
       })
       .config(nord)
       .config((ctx) => {
@@ -40,10 +40,10 @@
       .use(commonmark)
       .use(history)
       .use(listener)
-      .create();
+      .create()
   }
 
-  const placeHolder = '*Write a prompt.*\n';
+  const placeHolder = '*Write a prompt.*\n'
 
   function onFocus() {
     if (!readOnly && value === placeHolder) {
@@ -53,45 +53,45 @@
 
   function onMount() {
     markdownEditor.then((editor) => {
-      let text;
+      let text
       if (value) {
-        text = value;
+        text = value
       } else {
-        text = placeHolder;
+        text = placeHolder
       }
       editor.action(replaceAll(text))
-      internalEditor = editor;
+      internalEditor = editor
     })
   }
 
-  let dontUpdate = false;
+  let dontUpdate = false
 
   afterUpdate(() => {
     if (internalEditor && !dontUpdate) {
       internalEditor.action(replaceAll(value))
     }
-    dontUpdate = false;
+    dontUpdate = false
   })
 
-  let enterPressed = false;
+  let enterPressed = false
 
   function onUpdate(ctx: Ctx, markdown: string, prevMarkdown: string|null) {
-    dontUpdate = true;
+    dontUpdate = true
     if (enterPressed && prevMarkdown) {
-      value = prevMarkdown;
-      enterPressed = false;
+      value = prevMarkdown
+      enterPressed = false
     } else {
-      value = markdown;
+      value = markdown
     }
   }
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      enterPressed = true;
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      enterPressed = true
       internalEditor.action(replaceAll(''))
-      onEnter(value);
+      onEnter(value)
     }
   }
 </script>

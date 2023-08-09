@@ -1,24 +1,21 @@
 <script lang="ts">
-  import { Label, Input } from 'flowbite-svelte'
-  import { onMount } from 'svelte';
-  import { openAiApiKey } from '$lib/store';
-  import { loadSettings, saveSettings } from '$lib/fs';
+  import { onMount } from 'svelte'
+  import { convertMarkdown, openAiApiKey } from '$lib/store'
+  import { loadSettings, saveSettings } from '$lib/fs'
+  import StringField from '../common/StringField.svelte'
+  import CheckField from '../common/CheckField.svelte'
 
   onMount(async () => {
     await loadSettings()
-  });
+  })
 
   function save() {
-    saveSettings();
+    saveSettings()
   }
 </script>
 
 <h1 class='text-lg font-semibold mb-1'>Settings</h1>
-<div class='grid grid-cols-[8rem,1fr] gap-2'>
-  <div class='w-32 flex'>
-    <Label for='openAIKey' class='text-base self-center text-right w-full'>Open AI API Key</Label>
-  </div>
-  <div class=''>
-    <Input id='openAIKey' placeholder="sk-xxxxx" bind:value={$openAiApiKey} on:blur={save} />
-  </div>
+<div class='grid grid-cols-[9rem,5rem,1fr] gap-0'>
+  <StringField label='Open AI API Key' placeholder='sk-xxxxx' help='Open AI API key.' bind:value={$openAiApiKey} save={save} />
+  <CheckField label='Convert to Markdown' help='Decorate output of LLMs into markdown.' bind:value={$convertMarkdown} save={save} />
 </div>
