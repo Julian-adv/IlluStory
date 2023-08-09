@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte"
   import { onMount } from "svelte"
-  import { loadStory, saveStory, saveStoryQuietly } from "$lib/fs"
+  import { loadStoryDialog, saveStory, saveStoryQuietly } from "$lib/fs"
   import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
   import { changeApi, roles, countTokensApi, startStory } from "$lib/api"
@@ -36,7 +36,7 @@
   }
 
   async function load() {
-    const [tempStory, tempFilePath] = await loadStory()
+    const [tempStory, tempFilePath] = await loadStoryDialog()
     if (tempStory) {
       $story = tempStory
       $storyPath = tempFilePath

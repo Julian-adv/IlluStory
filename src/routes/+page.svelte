@@ -7,6 +7,7 @@
   import { sortAscending, sortDescending, sortTypeDate, sortTypeName, type Story, type StoryCard } from '$lib/interfaces'
   import { currentTab, story, storyPath, settings } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
+  import { loadStory } from '$lib/fs'
 
   let cards:StoryCard[] = []
   let loading = false
@@ -43,10 +44,10 @@
 
   function onClick(path:string) {
     return async (_ev: Event) => {
-      const storyText = await readTextFile(path)
-      if (storyText) {
+    const tempStory = await loadStory(path)
+      if (tempStory) {
         $storyPath = path
-        $story = JSON.parse(storyText)
+        $story = tempStory
         $currentTab = '/write'
       }
     }

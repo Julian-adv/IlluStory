@@ -4,13 +4,17 @@ import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { changeApi } from './api'
 
-export async function loadStory(): Promise<[Story|null, string]> {
+export async function loadStory(path: string) {
+  const json = await readTextFile(path)
+  const story = JSON.parse(json) as Story
+  changeApi(story.api)
+  return story
+}
+
+export async function loadStoryDialog(): Promise<[Story|null, string]> {
   const selected = await open({ filters: [{ name: '*', extensions: ['json']}]})
   if (typeof(selected) === 'string' ) {
-    const json = await readTextFile(selected)
-    const story = JSON.parse(json) as Story
-    changeApi(story.api)
-    return [story, selected]
+    return [await loadStory(selected), selected]
   }
   return [null, '']
 }
