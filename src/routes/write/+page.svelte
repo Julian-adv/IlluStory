@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte"
   import { onMount } from "svelte"
-  import { loadSettings, loadStory, saveStory, saveStoryQuietly } from "$lib/fs"
+  import { loadStory, saveStory, saveStoryQuietly } from "$lib/fs"
+  import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
   import { changeApi, roles, countTokensApi, startStory } from "$lib/api"
   import { story, storyPath } from "$lib/store"

@@ -6,7 +6,7 @@
   import { saveImageToFile } from "$lib/fs"
   import { save } from "@tauri-apps/api/dialog"
   import { basename, downloadDir } from "@tauri-apps/api/path"
-  import { convertMarkdown } from "$lib/store"
+  import { settings } from "$lib/store"
 
   export let scene: SceneType
   let content: string
@@ -25,7 +25,7 @@
   }
 
   function convertToMarkdown(str: string) {
-    if ($convertMarkdown) {
+    if ($settings.convertMarkdown) {
       return str.replace(/"(.*?)"/g, '**"$1"**')
     }
     return str

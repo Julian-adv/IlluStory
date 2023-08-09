@@ -1,6 +1,6 @@
 import { get } from "svelte/store"
 import type { Story, SceneType, Usage, Message } from "./interfaces"
-import { openAiApiKey, zeroUsage } from "./store"
+import { settings, zeroUsage } from "./store"
 import { startStory } from "./api"
 
 function generateMessages(story: Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number) {
@@ -48,7 +48,7 @@ export async function sendChatOpenAi(story: Story, initScenes: SceneType[], adde
       messages: messages,
     }),
     headers: {
-      "Authorization": "Bearer " + get(openAiApiKey),
+      "Authorization": "Bearer " + get(settings).openAiApiKey,
       "Content-Type": "application/json"
     },
     method: "POST",

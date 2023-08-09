@@ -1,11 +1,11 @@
 <script lang="ts">
   import '@milkdown/theme-nord/style.css'
   import { onMount } from 'svelte'
-  import { loadSettings } from '$lib/fs'
+  import { loadSettings, saveSettings } from '$lib/settings'
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
   import { Button, Card, Chevron, Dropdown, DropdownItem, Spinner } from 'flowbite-svelte'
-  import type { Story, StoryCard } from '$lib/interfaces'
-  import { currentTab, story, storyPath } from '$lib/store'
+  import { sortAscending, sortDescending, sortTypeDate, sortTypeName, type Story, type StoryCard } from '$lib/interfaces'
+  import { currentTab, story, storyPath, settings } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
 
   let cards:StoryCard[] = []
@@ -53,32 +53,26 @@
   }
 
   let sortOpen = false
-  const sortTypeName = 'Name'
-  const sortTypeDate = 'Modified Date'
-  let sortType = 'Name'
-  const sortAscending = 'a'
-  const sortDescending = 'd'
-  let sortOrder = sortAscending
 
   function resort() {
-    if (sortType === sortTypeName) {
+    if ($settings.sortType === sortTypeName) {
       cards.sort((cardA, cardB) => {
         if (cardA.name > cardB.name) {
-          return sortOrder === sortAscending ? 1 : -1
+          return $settings.sortOrder === sortAscending ? 1 : -1
         }
         if (cardA.name < cardB.name) {
-          return sortOrder === sortAscending ? -1 : 1
+          return $settings.sortOrder === sortAscending ? -1 : 1
         }
         return 0
       })
     }
-    if (sortType === sortTypeDate) {
+    if ($settings.sortType === sortTypeDate) {
       cards.sort((cardA, cardB) => {
         if (cardA.modifiedAt > cardB.modifiedAt) {
-          return sortOrder === sortAscending ? 1 : -1
+          return $settings.sortOrder === sortAscending ? 1 : -1
         }
         if (cardA.modifiedAt < cardB.modifiedAt) {
-          return sortOrder === sortAscending ? -1 : 1
+          return $settings.sortOrder === sortAscending ? -1 : 1
         }
         return 0
       })
@@ -88,29 +82,31 @@
 
   function changeSortType(newSortType: string) {
     sortOpen = false
-    sortType = newSortType
+    $settings.sortType = newSortType
     resort()
+    saveSettings()
   }
 
   function toggleSortOrder() {
-    if (sortOrder === sortAscending) {
-      sortOrder = sortDescending
+    if ($settings.sortOrder === sortAscending) {
+      $settings.sortOrder = sortDescending
     } else {
-      sortOrder = sortAscending
+      $settings.sortOrder = sortAscending
     }
     resort()
+    saveSettings()
   }
 </script>
 
 <main>
   <div class="my-1 flex gap-2">
-    <Button color="alternative" size="sm"><Chevron>{sortType}</Chevron></Button>
+    <Button color="alternative" size="sm"><Chevron>{$settings.sortType}</Chevron></Button>
     <Dropdown bind:open={sortOpen}>
       <DropdownItem on:click={() => {changeSortType(sortTypeName)}}>Name</DropdownItem>
       <DropdownItem on:click={() => {changeSortType(sortTypeDate)}}>Modified Date</DropdownItem>
     </Dropdown>
     <Button color="alternative" size="sm" on:click={toggleSortOrder}>
-      {#if sortOrder === sortAscending}
+      {#if $settings.sortOrder === sortAscending}
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
         </svg>

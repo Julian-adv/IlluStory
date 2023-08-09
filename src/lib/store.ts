@@ -1,8 +1,6 @@
 import { writable } from "svelte/store"
-import { Api } from "./interfaces"
-import type { SceneType, Story, StringDictionary } from "./interfaces"
-export const openAiApiKey = writable('')
-export const openAiModel = writable('')
+import type { SceneType, Story, StringDictionary, Settings } from "./interfaces"
+import { Api, sortAscending, sortTypeName } from './interfaces'
 
 const defaultScenes:SceneType[] = []
 
@@ -54,4 +52,11 @@ export const summarizePrompt = writable('')
 const dict: StringDictionary = {}
 export const replaceDict = writable(dict)
 
-export const convertMarkdown = writable(true)
+const defaultSettings: Settings = {
+  openAiApiKey: "",
+  sortOrder: sortAscending,
+  sortType: sortTypeName,
+  convertMarkdown: true
+}
+
+export const settings = writable(defaultSettings)

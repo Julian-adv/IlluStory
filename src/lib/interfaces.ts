@@ -57,3 +57,15 @@ export interface StoryCard {
 export type StringDictionary = {
   [key: string]: string;
 }
+
+export interface Settings {
+  openAiApiKey: string
+  sortOrder: string
+  sortType: string
+  convertMarkdown: boolean
+}
+
+export const sortTypeName = 'Name'
+export const sortTypeDate = 'Modified Date'
+export const sortAscending = 'a'
+export const sortDescending = 'd'
