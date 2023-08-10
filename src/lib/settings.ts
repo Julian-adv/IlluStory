@@ -1,5 +1,5 @@
 import { story, settings } from './store'
-import type { Settings, Story } from './interfaces'
+import { sortAscending, type Settings, type Story, sortTypeName } from './interfaces'
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { Configuration, OpenAIApi } from 'openai'
 import { get } from 'svelte/store'
@@ -12,11 +12,36 @@ let currentSettings: Settings
 story.subscribe(s => currentStory = s)
 settings.subscribe(s => currentSettings = s)
 
+function fixSettings(settings: Settings) {
+  if (!settings.sortOrder) {
+    settings.sortOrder = sortAscending
+  }
+  if (!settings.sortType) {
+    settings.sortType = sortTypeName
+  }
+  if (!settings.convertMarkdown) {
+    settings.convertMarkdown = true
+  }
+  if (!settings.dialogSettings) {
+    settings.dialogSettings = { bold: true, italic: false, color: '#0f0f0f' }
+  }
+  if (!settings.descriptionSettings) {
+    settings.descriptionSettings = { bold: false, italic: true, color: '#0f0f0f' }
+  }
+  if (!settings.userNameSettings) {
+    settings.userNameSettings = { bold: true, italic: false, color: '#0f0f1f' }
+  }
+  if (!settings.charNameSettings) {
+    settings.charNameSettings = { bold: true, italic: false, color: '#2f1f1f' }
+  }
+}
+
 export async function loadSettings() {
+  const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
+  settings.set(JSON.parse(settingsJson))
+  fixSettings(get(settings))
   if (currentStory.apiUrl && currentStory.apiUrl.startsWith('https://api.openai.com')) {
-    const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
-    settings.set(JSON.parse(settingsJson))
-    const configuration = new Configuration({
+      const configuration = new Configuration({
       apiKey: get(settings).openAiApiKey
     })
     const openai = new OpenAIApi(configuration)

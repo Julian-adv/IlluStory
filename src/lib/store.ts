@@ -56,7 +56,27 @@ const defaultSettings: Settings = {
   openAiApiKey: "",
   sortOrder: sortAscending,
   sortType: sortTypeName,
-  convertMarkdown: true
+  convertMarkdown: true,
+  dialogSettings: {
+    bold: true,
+    italic: false,
+    color: "#0f0f0f"
+  },
+  descriptionSettings: {
+    bold: false,
+    italic: true,
+    color: "#0f0f0f"
+  },
+  userNameSettings: {
+    bold: true,
+    italic: false,
+    color: "#0f0f0f"
+  },
+  charNameSettings: {
+    bold: true,
+    italic: false,
+    color: "#0f0f0f"
+  },
 }
 
 export const settings = writable(defaultSettings)

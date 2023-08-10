@@ -27,7 +27,7 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Checkbox id={label} bind:checked={value} on:blur={save} on:change={save} class='-mx-5 py-1 text-base'>
+  <Checkbox id={label} bind:checked={value} on:blur={save} on:change={save} class='py-1 text-base'>
     {label}
   </Checkbox>
 </div>

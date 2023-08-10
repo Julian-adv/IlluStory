@@ -58,11 +58,21 @@ export type StringDictionary = {
   [key: string]: string;
 }
 
+export interface TextSettings {
+  bold: boolean
+  italic: boolean
+  color: string
+}
+
 export interface Settings {
   openAiApiKey: string
   sortOrder: string
   sortType: string
   convertMarkdown: boolean
+  dialogSettings: TextSettings
+  descriptionSettings: TextSettings
+  userNameSettings: TextSettings
+  charNameSettings: TextSettings
 }
 
 export const sortTypeName = 'Name'

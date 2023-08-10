@@ -6,7 +6,7 @@
   import { saveImageToFile } from "$lib/fs"
   import { save } from "@tauri-apps/api/dialog"
   import { basename, downloadDir } from "@tauri-apps/api/path"
-  import { settings } from "$lib/store"
+  import { replaceDict, settings } from "$lib/store"
 
   export let scene: SceneType
   let content: string
@@ -26,7 +26,14 @@
 
   function convertToMarkdown(str: string) {
     if ($settings.convertMarkdown) {
-      return str.replace(/"(.*?)"/g, '<span class="dialog">"$1"</span>')
+      let text = str
+      text = text.replace(/(?!=)"([^"]+)"/g, "<em class='dialog'>\"$1\"</em>")
+      text = text.replace(/(?![<"])(.*?\.)(?=$|[ \n])/g, "<span class='description'>$1</span>")
+      const userNameRegex = new RegExp($replaceDict['user'], 'g')
+      text = text.replace(userNameRegex, "<span class='userName'>$&</span>")
+      const charNameRegex = new RegExp($replaceDict['char'], 'g')
+      text = text.replace(charNameRegex, "<span class='charName'>$&</span>")
+      return text
     }
     return str
   }
