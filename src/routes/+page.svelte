@@ -1,5 +1,4 @@
 <script lang="ts">
-  import '@milkdown/theme-nord/style.css'
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'

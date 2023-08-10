@@ -51,10 +51,3 @@
 <div>
   <Markdown bind:value={value} readOnly={false} onEnter={onEnter} />
 </div>
-
-<style>
-  /* Disable some style from ProseMirror */
-  :global(:focus-visible) {
-    outline: 0px;
-  }
-</style>

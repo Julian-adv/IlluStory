@@ -1,112 +1,46 @@
 <script lang="ts">
-  import { Editor, rootCtx, editorViewOptionsCtx } from '@milkdown/core'
-  import type { Ctx } from '@milkdown/ctx'
-  import { listener, listenerCtx } from '@milkdown/plugin-listener'
-  import { history } from '@milkdown/plugin-history'
-  import { commonmark } from '@milkdown/preset-commonmark'
-  import { nord } from '@milkdown/theme-nord'
-  import { replaceAll } from '@milkdown/utils'
-  import { afterUpdate } from 'svelte'
+  import { Textarea } from 'flowbite-svelte'
+  import { marked } from 'marked'
   
   export let value = ''
   export let readOnly = true
   export let onEnter = (_markdown: string) => {}
 
-  let markdownEditor: Promise<Editor>
-  const editable = () => !readOnly
-  let internalEditor: Editor
-
-  function makeEditor(dom: HTMLDivElement) {
-    // to obtain the editor instance we need to store a reference of the editor.
-    markdownEditor = Editor.make()
-      .config((ctx) => {
-        ctx.set(rootCtx, dom)
-      })
-      .config(nord)
-      .config((ctx) => {
-        // Add attributes to the editor container
-        ctx.update(editorViewOptionsCtx, (prev) => {
-          const bg = readOnly ? '' : 'p-2 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 border-gray-300 border focus:border-2 dark:border-gray-600 rounded-lg prompt'
-          return {
-            ...prev,
-            attributes: { class: `prose font-serif leading-relaxed z-0 ${bg}`, spellcheck: 'false' },
-            editable
-          }
-        })
-      })
-      .config((ctx) => {
-        ctx.get(listenerCtx).focus(onFocus).mounted(onMount).markdownUpdated(onUpdate)
-      })
-      .use(commonmark)
-      .use(history)
-      .use(listener)
-      .create()
-  }
-
-  const placeHolder = '*Write a prompt.*\n'
-
-  function onFocus() {
-    if (!readOnly && value === placeHolder) {
-      internalEditor.action(replaceAll(''))
-    }
-  }
-
-  function onMount() {
-    markdownEditor.then((editor) => {
-      let text
-      if (value) {
-        text = value
-      } else {
-        text = placeHolder
-      }
-      editor.action(replaceAll(text))
-      internalEditor = editor
-    })
-  }
-
-  let dontUpdate = false
-
-  afterUpdate(() => {
-    if (internalEditor && !dontUpdate) {
-      internalEditor.action(replaceAll(value))
-    }
-    dontUpdate = false
+  marked.use({
+    breaks: true,
+    gfm: true
   })
 
-  let enterPressed = false
-
-  function onUpdate(ctx: Ctx, markdown: string, prevMarkdown: string|null) {
-    dontUpdate = true
-    if (enterPressed && prevMarkdown) {
-      value = prevMarkdown
-      enterPressed = false
-    } else {
-      value = markdown
-    }
+  function onInput(this: HTMLElement) {
+    this.style.height = 'auto'
+    this.style.height = (this.scrollHeight) + 'px'
   }
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       event.stopImmediatePropagation()
-      enterPressed = true
-      internalEditor.action(replaceAll(''))
       onEnter(value)
+      value = ''
     }
   }
 </script>
   
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div use:makeEditor on:keydown={onKeyDown} />
+{#if readOnly}
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  <div class='font-serif prose leading-relaxed markdown text-gray-900'>{@html marked.parse(value)}</div>
+{:else}
+  <Textarea id='textarea_input' bind:value placeholder='Write a prompt.' rows='1' unWrappedClass='px-2 py-1.5 focus:ring-gray-200 focus:border-gray-200 focus:ring-4 font-serif prompt' on:input={onInput} on:keydown={onKeyDown}/>
+{/if}
 
 <style>
-  /* style for previous dialogues */
-  :global(.milkdown p em) {
-    color: rgb(82 82 82);
+  :global(.markdown .dialog) {
+    color: #52525b;
+    font-weight: bold;
   }
 
-  /* style for input field */
-  :global(.milkdown .prompt p em) {
-    color: rgb(163 163 163);
+  :global(textarea.prompt) {
+    overflow-y: hidden;
+    resize: none;
   }
 </style>
