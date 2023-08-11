@@ -7,7 +7,7 @@
   export let readOnly = true
   export let onEnter = (_markdown: string) => {}
 
-  $: cssVarStyles = `--dialog-color:${$settings.dialogSettings.color};--dialog-weight:${$settings.dialogSettings.bold ? 'bold' : 'normal'};--dialog-style:${$settings.dialogSettings.italic ? 'italic' : 'normal'};--desc-color:${$settings.descriptionSettings.color};--desc-weight:${$settings.descriptionSettings.bold ? 'bold' : 'normal'};--desc-style:${$settings.descriptionSettings.italic ? 'italic' : 'normal'};--userName-color:${$settings.userNameSettings.color};--userName-weight:${$settings.userNameSettings.bold ? 'bold' : 'normal'};--userName-style:${$settings.userNameSettings.italic ? 'italic' : 'normal'};--charName-color:${$settings.charNameSettings.color};--charName-weight:${$settings.charNameSettings.bold ? 'bold' : 'normal'};--charName-style:${$settings.charNameSettings.italic ? 'italic' : 'normal'};`
+  $: cssVarStyles = `--dialog-color:${$settings.dialogSettings.color};--dialog-weight:${$settings.dialogSettings.bold ? 'bold' : 'normal'};--dialog-style:${$settings.dialogSettings.italic ? 'italic' : 'normal'};--desc-color:${$settings.descriptionSettings.color};--desc-weight:${$settings.descriptionSettings.bold ? 'bold' : 'normal'};--desc-style:${$settings.descriptionSettings.italic ? 'italic' : 'normal'};--userName-color:${$settings.userNameSettings.color};--userName-weight:${$settings.userNameSettings.bold ? 'bold' : 'normal'};--userName-style:${$settings.userNameSettings.italic ? 'italic' : 'normal'};--charName-color:${$settings.charNameSettings.color};--charName-weight:${$settings.charNameSettings.bold ? 'bold' : 'normal'};--charName-style:${$settings.charNameSettings.italic ? 'italic' : 'normal'};--font-family:${$settings.fontFamily};--font-size:${$settings.fontSize}pt;`
   marked.use({
     breaks: true,
     gfm: true
@@ -40,24 +40,32 @@
     color: var(--dialog-color, black);
     font-weight: var(--dialog-weight, normal);
     font-style: var(--dialog-style, normal);
+    font-family: var(--font-family, Geogia);
+    font-size: var(--font-size, 12pt);
   }
 
   :global(.markdown .description) {
     color: var(--desc-color, black);
     font-weight: var(--desc-weight, normal);
     font-style: var(--desc-style, normal);
+    font-family: var(--font-family, Geogia);
+    font-size: var(--font-size, 12pt);
   }
 
   :global(.markdown .userName) {
     color: var(--userName-color, black);
     font-weight: var(--userName-weight, normal);
     font-style: var(--userName-style, normal);
+    font-family: var(--font-family, Geogia);
+    font-size: var(--font-size, 12pt);
   }
 
   :global(.markdown .charName) {
     color: var(--charName-color, black);
     font-weight: var(--charName-weight, normal);
     font-style: var(--charName-style, normal);
+    font-family: var(--font-family, Geogia);
+    font-size: var(--font-size, 12pt);
   }
 
   :global(textarea.prompt) {
