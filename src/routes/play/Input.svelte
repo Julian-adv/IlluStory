@@ -3,7 +3,8 @@
   import { sendChat } from "$lib/api"
   import { sessionPath, story, initialScenes, additionalScenes, usage, firstSceneIndex, summarySceneIndex, replaceDict } from "$lib/store"
   import { writeTextFile } from "@tauri-apps/api/fs"
-  import { newSceneId } from "$lib"
+  import { newSceneId, scrollToEnd } from "$lib"
+  import { tick } from "svelte"
 
   export let role = 'user'
   export let value = ''
@@ -38,11 +39,15 @@
       done: false
     }
     $additionalScenes = [...$additionalScenes, newScene]
+    await tick()
+    scrollToEnd()
     let addedScene;
     [addedScene, $usage] = await sendChat($story, $initialScenes, $additionalScenes, false, $firstSceneIndex, $summarySceneIndex)
     if (addedScene) {
       addedScene.id = newSceneId($initialScenes, $additionalScenes)
       $additionalScenes = [...$additionalScenes, addedScene]
+      await tick()
+      scrollToEnd()
     }
     saveScenes()
   }

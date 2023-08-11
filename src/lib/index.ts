@@ -39,3 +39,7 @@ let sequence = 0
 export function getUniqueId() {
   return 'id' + sequence++
 }
+
+export function scrollToEnd() {
+  window.scrollTo(0, document.body.scrollHeight)
+}

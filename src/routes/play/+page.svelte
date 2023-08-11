@@ -3,11 +3,11 @@
   import { Button, Select } from 'flowbite-svelte'
   import { charSetting, roles, sendChat, startStory, userSetting } from '$lib/api'
   import Input from './Input.svelte'
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict } from '$lib/store'
   import { savePath } from '$lib/fs'
   import type { SceneType } from '$lib/interfaces'
-  import { newSceneId } from '$lib'
+  import { newSceneId, scrollToEnd } from '$lib'
 
   let role = 'user'
   let userInput = ''
@@ -133,11 +133,14 @@
   }
 
   async function summarize() {
-    let [newScene, _usage] = await sendChat($story, $initialScenes, $additionalScenes, true, $firstSceneIndex, $summarySceneIndex)
+    let newScene
+    [newScene, $usage] = await sendChat($story, $initialScenes, $additionalScenes, true, $firstSceneIndex, $summarySceneIndex)
     if (newScene) {
       newScene.id = newSceneId($initialScenes, $additionalScenes)
       $summarySceneIndex = $additionalScenes.length
       $additionalScenes = [...$additionalScenes, newScene]
+      await tick()
+      scrollToEnd()
     }
   }
 
@@ -148,6 +151,8 @@
       updateInitialScenes()
     }
   })
+
+  $: warningTokens = $usage.total_tokens + $story.maxTokens > $story.contextSize
 </script>
 
 <main>
@@ -156,6 +161,11 @@
     <div class='col-span-2 text-sm text-stone-400'>
       Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total tokens: {$usage.total_tokens}
     </div>
+    {#if warningTokens}
+      <div class='col-span-2 text-sm text-red-400'>
+        Since the number of tokens can overflow the context size, you may want to summarize them.
+      </div>
+    {/if}
     <div class='col-span-2 text-sm text-stone-400'>
       <Button color='alternative' size='sm' on:click={newSession}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
