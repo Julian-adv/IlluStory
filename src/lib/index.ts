@@ -1,35 +1,41 @@
-import type { SceneType } from "./interfaces";
+import type { SceneType } from "./interfaces"
 
-export const helperClassVisible = "text-stone-700";
-export const helperClassHidden = "text-stone-400";
-export const linkClassVisible = "text-sky-600";
+export const helperClassVisible = "text-stone-700"
+export const helperClassHidden = "text-stone-400"
+export const linkClassVisible = "text-sky-600"
 
 export function newSceneId(initialScenes:SceneType[], additionalScenes:SceneType[]):number {
   if (additionalScenes.length > 0) {
-    return additionalScenes[additionalScenes.length - 1].id + 1;
+    return additionalScenes[additionalScenes.length - 1].id + 1
   }
   if (initialScenes.length > 0) {
-    return initialScenes[initialScenes.length - 1].id + 1;
+    return initialScenes[initialScenes.length - 1].id + 1
   }
-  return 1;
+  return 1
 }
 
 export function lastScene(scenes:SceneType[]):SceneType {
-  return scenes[scenes.length - 1];
+  return scenes[scenes.length - 1]
 }
 
 export function countLines(str: string): number {
-  let count = 1;
+  let count = 1
   for (let i = 0; i < str.length; i++) {
     if (str[i] === "\n") {
-      count++;
+      count++
     }
   }
   if (count < 4) {
-    count = 4;
+    count = 4
   }
   if (count > 15) {
-    count = 15;
+    count = 15
   }
-  return count;
+  return count
+}
+
+let sequence = 0
+
+export function getUniqueId() {
+  return 'id' + sequence++
 }

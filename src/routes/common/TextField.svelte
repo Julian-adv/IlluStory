@@ -1,35 +1,38 @@
 <script lang="ts">
-  import { Label, Helper, Textarea } from "flowbite-svelte";
-  import { onMount } from "svelte";
-  import { countLines, helperClassHidden, helperClassVisible } from "$lib";
+  import { Label, Helper } from "flowbite-svelte"
+  import { onMount } from "svelte"
+  import { getUniqueId, helperClassHidden, helperClassVisible } from "$lib"
+  import FlexibleTextarea from "./FlexibleTextarea.svelte"
 
-  export let label = '';
-  export let value = '';
-  export let help = '';
-  export let placeholder = '';
-  export let save = () => {};
+  export let label = ''
+  export let value = ''
+  export let help = ''
+  export let placeholder = ''
+  export let save = () => {}
 
-  let helperClass = helperClassHidden;
+  let id = getUniqueId()
+
+  let helperClass = helperClassHidden
   
   const showHelper = () => {
-    helperClass = helperClassVisible;
+    helperClass = helperClassVisible
   }
 
   const hideHelper = () => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   }
 
   onMount(() => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   })
 </script>
 
 <div class='w-36 flex p-1'>
-  <Label for={label} class='text-base self-center text-right w-full'>{label}</Label>
+  <Label for={id} class='text-base self-center text-right w-full'>{label}</Label>
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Textarea id={label} {placeholder} rows={countLines(value)} bind:value on:blur={save} class='px-2 py-1 text-base'/>
+  <FlexibleTextarea {id} {placeholder} bind:value on:blur={save} unWrappedClass='px-2 py-1 text-base prompt'/>
 </div>
 <div>
 </div>

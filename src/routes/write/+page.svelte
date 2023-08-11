@@ -12,7 +12,8 @@
   import NumberField from "../common/NumberField.svelte"
   import ImageField from "../common/ImageField.svelte"
   import TextField from "../common/TextField.svelte"
-  import { countLines } from "$lib"
+  import FlexibleTextarea from "../common/FlexibleTextarea.svelte";
+  import { getUniqueId } from "$lib";
 
   let models = [{ value: '', name: '' }]
   const apis = [
@@ -153,7 +154,7 @@
         <hr class='flex-grow border-t border-dashed border-stone-400'>
       {:else}
         <div class='flex flex-col w-full text-left'>
-          <Textarea id='prompt' placeholder="Write your prompt" rows={countLines(prompt.content)} value={prompt.content} 
+          <FlexibleTextarea id={getUniqueId()} placeholder="Write your prompt" value={prompt.content} 
            on:change={update(i, this.value)} on:blur={autoSaveFunc} />
           <span class='text-sm text-stone-400 px-2'>Tokens: {countTokens(prompt.content)}</span>
         </div>
