@@ -16,7 +16,7 @@
   export let sample = ''
   export let save = () => {}
 
-  $: cssVarStyles = `--sample-color:${value.color};--sample-weight:${value.bold ? 'bold' : 'normal'};--sample-style:${value.italic ? 'italic' : 'normal'};--sample-family:${$settings.fontFamily}`
+  $: cssVarStyles = `--sample-color:${value.color};--sample-weight:${value.bold ? 'bold' : 'normal'};--sample-style:${value.italic ? 'italic' : 'normal'};--sample-family:${$settings.fontFamily};--sample-size:${$settings.fontSize}pt`
 
   let helperClass = helperClassHidden
   
@@ -64,6 +64,7 @@
     font-weight: var(--sample-weight, normal);
     font-style: var(--sample-style, normal);
     font-family: var(--sample-family, Geogia);
+    font-size: var(--sample-size, 12pt);
   }
 
   div :global(.color-picker) {

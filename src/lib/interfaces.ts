@@ -74,6 +74,7 @@ export interface Settings {
   userNameSettings: TextSettings
   charNameSettings: TextSettings
   fontFamily: string
+  fontSize: number
 }
 
 export const sortTypeName = 'Name'

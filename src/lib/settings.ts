@@ -1,5 +1,5 @@
-import { story, settings } from './store'
-import { sortAscending, type Settings, type Story, sortTypeName } from './interfaces'
+import { story, settings, defaultSettings } from './store'
+import type { Settings, Story } from './interfaces'
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { Configuration, OpenAIApi } from 'openai'
 import { get } from 'svelte/store'
@@ -14,28 +14,31 @@ settings.subscribe(s => currentSettings = s)
 
 function fixSettings(settings: Settings) {
   if (!settings.sortOrder) {
-    settings.sortOrder = sortAscending
+    settings.sortOrder = defaultSettings.sortOrder
   }
   if (!settings.sortType) {
-    settings.sortType = sortTypeName
+    settings.sortType = defaultSettings.sortType
   }
   if (!settings.convertMarkdown) {
-    settings.convertMarkdown = true
+    settings.convertMarkdown = defaultSettings.convertMarkdown
   }
   if (!settings.dialogSettings) {
-    settings.dialogSettings = { bold: true, italic: false, color: '#0f0f0f' }
+    settings.dialogSettings = defaultSettings.dialogSettings
   }
   if (!settings.descriptionSettings) {
-    settings.descriptionSettings = { bold: false, italic: true, color: '#0f0f0f' }
+    settings.descriptionSettings = defaultSettings.descriptionSettings
   }
   if (!settings.userNameSettings) {
-    settings.userNameSettings = { bold: true, italic: false, color: '#0f0f1f' }
+    settings.userNameSettings = defaultSettings.userNameSettings
   }
   if (!settings.charNameSettings) {
-    settings.charNameSettings = { bold: true, italic: false, color: '#2f1f1f' }
+    settings.charNameSettings = defaultSettings.charNameSettings
   }
   if (!settings.fontFamily) {
-    settings.fontFamily = 'Georgia'
+    settings.fontFamily = defaultSettings.fontFamily
+  }
+  if (!settings.fontSize) {
+    settings.fontSize = defaultSettings.fontSize
   }
 }
 

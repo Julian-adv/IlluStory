@@ -7,6 +7,7 @@
 
   export let label = ''
   export let value = ''
+  export let size = 12
   export let help = ''
   export let sample = ''
   export let save = () => {}
@@ -15,7 +16,7 @@
   let dropdownOpen = false
   let searchStr = ''
 
-  $: cssVarStyles = `--sample-family:${value};`
+  $: cssVarStyles = `--sample-family:${value};--sample-size:${size}pt`
   $: filteredFonts = fonts.filter(str => str.toLowerCase().includes(searchStr.toLowerCase()))
 
   let helperClass = helperClassHidden
@@ -78,5 +79,6 @@
 <style>
   :global(.sample-font) {
     font-family: var(--sample-family, 'Geogia');
+    font-size: var(--sample-size, 12pt);
   }
 </style>

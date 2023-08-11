@@ -52,7 +52,7 @@ export const summarizePrompt = writable('')
 const dict: StringDictionary = {}
 export const replaceDict = writable(dict)
 
-const defaultSettings: Settings = {
+export const defaultSettings: Settings = {
   openAiApiKey: "",
   sortOrder: sortAscending,
   sortType: sortTypeName,
@@ -77,7 +77,8 @@ const defaultSettings: Settings = {
     italic: false,
     color: "#0f0f0f"
   },
-  fontFamily: 'Geogia'
+  fontFamily: 'Geogia',
+  fontSize: 12
 }
 
 export const settings = writable(defaultSettings)
