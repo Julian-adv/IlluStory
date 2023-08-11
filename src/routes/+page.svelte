@@ -2,7 +2,8 @@
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
-  import { Button, Card, Chevron, Dropdown, DropdownItem, Spinner } from 'flowbite-svelte'
+  import { Button, Card, Dropdown, DropdownItem, Spinner } from 'flowbite-svelte'
+  import { Icon } from 'flowbite-svelte-icons'
   import { sortAscending, sortDescending, sortTypeDate, sortTypeName, type Story, type StoryCard } from '$lib/interfaces'
   import { currentTab, story, storyPath, settings } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
@@ -100,7 +101,7 @@
 
 <main>
   <div class="my-1 flex gap-2">
-    <Button color="alternative" size="sm"><Chevron>{$settings.sortType}</Chevron></Button>
+    <Button color="alternative" size="sm">{$settings.sortType}<Icon name="chevron-down-solid" class="w-3 h-3 ml-2 text-white dark:text-white" /></Button>
     <Dropdown bind:open={sortOpen}>
       <DropdownItem on:click={() => {changeSortType(sortTypeName)}}>Name</DropdownItem>
       <DropdownItem on:click={() => {changeSortType(sortTypeDate)}}>Modified Date</DropdownItem>

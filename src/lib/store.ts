@@ -77,6 +77,7 @@ const defaultSettings: Settings = {
     italic: false,
     color: "#0f0f0f"
   },
+  fontFamily: 'Geogia'
 }
 
 export const settings = writable(defaultSettings)

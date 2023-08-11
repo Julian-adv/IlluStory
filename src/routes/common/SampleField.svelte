@@ -4,6 +4,7 @@
   import { helperClassHidden, helperClassVisible } from "$lib"
   import ColorPicker from 'svelte-awesome-color-picker'
   import type { TextSettings } from "$lib/interfaces"
+  import { settings } from "$lib/store"
 
   export let label = ''
   export let value: TextSettings = {
@@ -15,7 +16,7 @@
   export let sample = ''
   export let save = () => {}
 
-  $: cssVarStyles = `--sample-color:${value.color};--sample-weight:${value.bold ? 'bold' : 'normal'};--sample-style:${value.italic ? 'italic' : 'normal'}`
+  $: cssVarStyles = `--sample-color:${value.color};--sample-weight:${value.bold ? 'bold' : 'normal'};--sample-style:${value.italic ? 'italic' : 'normal'};--sample-family:${$settings.fontFamily}`
 
   let helperClass = helperClassHidden
   
@@ -30,13 +31,6 @@
   onMount(() => {
     helperClass = helperClassHidden
   })
-  
-  export function handleError({ error, event}) {
-    return {
-      meesage: "Settings error"
-    }
-  }
-
 </script>
 
 <div class='w-36 flex p-1'>
@@ -44,7 +38,7 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <span class="block sample font-serif" style={cssVarStyles}>{sample}</span>
+  <span class="block sample" style={cssVarStyles}>{sample}</span>
   {#if value}
   <div class="flex items-center gap-2">
     <Checkbox id={label} bind:checked={value.italic} on:blur={save} on:change={save} class='py-1 text-base inline'>
@@ -69,6 +63,7 @@
     color: var(--sample-color, black);
     font-weight: var(--sample-weight, normal);
     font-style: var(--sample-style, normal);
+    font-family: var(--sample-family, Geogia);
   }
 
   div :global(.color-picker) {

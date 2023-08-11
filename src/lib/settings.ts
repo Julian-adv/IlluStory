@@ -34,6 +34,9 @@ function fixSettings(settings: Settings) {
   if (!settings.charNameSettings) {
     settings.charNameSettings = { bold: true, italic: false, color: '#2f1f1f' }
   }
+  if (!settings.fontFamily) {
+    settings.fontFamily = 'Georgia'
+  }
 }
 
 export async function loadSettings() {

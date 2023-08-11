@@ -73,6 +73,7 @@ export interface Settings {
   descriptionSettings: TextSettings
   userNameSettings: TextSettings
   charNameSettings: TextSettings
+  fontFamily: string
 }
 
 export const sortTypeName = 'Name'
