@@ -75,6 +75,20 @@ export interface Settings {
   charNameSettings: TextSettings
   fontFamily: string
   fontSize: number
+  generateImage: boolean
+  sdURL: string
+  enableADetailer: boolean
+  imageWidth: number
+  imageHeight: number
+  steps: number
+  cfgScale: number
+  prompt: string
+  negativePrompt: string
+  sampler: string
+  enableHires: boolean
+  denoisingStrength: number
+  hiresScale: number
+  hiresUpscaler: string
 }
 
 export const sortTypeName = 'Name'

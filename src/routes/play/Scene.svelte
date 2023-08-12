@@ -86,26 +86,26 @@
   })
 
   async function generateImage(prompt: string): Promise<string> {
-    const uri = "http://localhost:7860/sdapi/v1/txt2img"
+    const uri = $settings.sdURL + "/sdapi/v1/txt2img"
     waitingImage = true
     const responseFromSD = await fetch(uri, {
       body: JSON.stringify({
-          "width": 512,
-          "height": 512,
+          "width": $settings.imageWidth,
+          "height": $settings.imageHeight,
           "seed": -1,
-          "steps": 30,
-          "cfg_scale": 7.0,
-          "prompt": `(masterpiece,best quality, intricate details:1.4),${prompt}`,
-          "negative_prompt": "(worst quality, low quality, normal quality:1.4)",
-          'sampler_name': "DPM++ SDE Karras",
-          "enable_hr": false,
-          "denoising_strength": 0.4,
-          "hr_scale": 2.0,
-          "hr_upscaler": "4x-UltraSharp",
+          "steps": $settings.steps,
+          "cfg_scale": $settings.cfgScale,
+          "prompt": `${$settings.prompt},${prompt}`,
+          "negative_prompt": $settings.negativePrompt,
+          'sampler_name': $settings.sampler,
+          "enable_hr": $settings.enableHires,
+          "denoising_strength": $settings.denoisingStrength,
+          "hr_scale": $settings.hiresScale,
+          "hr_upscaler": $settings.hiresUpscaler,
           "alwayson_scripts": {
               "adetailer": {
                   "args": [
-                      true,
+                      $settings.enableADetailer,
                       {'ad_model': 'face_yolov8n.pt', 'ad_prompt': '', 'ad_negative_prompt': '',
                         'ad_confidence': 0.3, 'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1,
                         'ad_x_offset': 0, 'ad_y_offset': 0, 'ad_dilate_erode': 4,

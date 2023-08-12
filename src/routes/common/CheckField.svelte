@@ -35,5 +35,8 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 pl-1 pb-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Helper class={helperClass}><em>{help}</em></Helper>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  <Helper class={helperClass}>
+    <slot name='helper'><em>{help}</em></slot>
+  </Helper>
 </div>

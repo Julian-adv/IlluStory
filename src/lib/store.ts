@@ -78,7 +78,21 @@ export const defaultSettings: Settings = {
     color: "#0f0f0f"
   },
   fontFamily: 'Geogia',
-  fontSize: 12
+  fontSize: 12,
+  generateImage: true,
+  sdURL: 'http://localhost:7860',
+  imageWidth: 512,
+  imageHeight: 512,
+  steps: 30,
+  cfgScale: 7.0,
+  prompt: '(masterpiece, best quality, realistic, finely detailed)',
+  negativePrompt: '(worst quality, low quality, normal quality)',
+  sampler: 'DPM++ SDE Karras',
+  enableHires: false,
+  denoisingStrength: 0.4,
+  hiresScale: 2.0,
+  hiresUpscaler: 'Latent',
+  enableADetailer: true
 }
 
 export const settings = writable(defaultSettings)

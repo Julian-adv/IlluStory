@@ -40,6 +40,48 @@ function fixSettings(settings: Settings) {
   if (!settings.fontSize) {
     settings.fontSize = defaultSettings.fontSize
   }
+  if (!settings.generateImage) {
+    settings.generateImage = defaultSettings.generateImage
+  }
+  if (!settings.sdURL) {
+    settings.sdURL = defaultSettings.sdURL
+  }
+  if (!settings.imageWidth) {
+    settings.imageWidth = defaultSettings.imageWidth
+  }
+  if (!settings.imageHeight) {
+    settings.imageHeight = defaultSettings.imageHeight
+  }
+  if (!settings.steps) {
+    settings.steps = defaultSettings.steps
+  }
+  if (!settings.cfgScale) {
+    settings.cfgScale = defaultSettings.cfgScale
+  }
+  if (!settings.prompt) {
+    settings.prompt = defaultSettings.prompt
+  }
+  if (!settings.negativePrompt) {
+    settings.negativePrompt = defaultSettings.negativePrompt
+  }
+  if (!settings.sampler) {
+    settings.sampler = defaultSettings.sampler
+  }
+  if (!settings.enableHires) {
+    settings.enableHires = defaultSettings.enableHires
+  }
+  if (!settings.denoisingStrength) {
+    settings.denoisingStrength = defaultSettings.denoisingStrength
+  }
+  if (!settings.hiresScale) {
+    settings.hiresScale = defaultSettings.hiresScale
+  }
+  if (!settings.hiresUpscaler) {
+    settings.hiresUpscaler = defaultSettings.hiresUpscaler
+  }
+  if (!settings.enableADetailer) {
+    settings.enableADetailer = defaultSettings.enableADetailer
+  }
 }
 
 export async function loadSettings() {
