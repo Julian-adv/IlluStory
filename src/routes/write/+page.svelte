@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte"
-  import { onMount } from "svelte"
+  import { onMount, tick } from "svelte"
   import { loadStoryDialog, saveStory, saveStoryQuietly } from "$lib/fs"
   import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
@@ -28,7 +28,8 @@
     models = await loadSettings()
   })
 
-  function addPrompt() {
+  async function addPrompt() {
+    await tick()
     $story.prompts = [...$story.prompts, { id: $story.prompts.length, role: 'system', content: '' } ]
   }
 
@@ -66,9 +67,7 @@
   }
 
   function update(i: number, value: string) {
-    return (_e: Event) => {
-      $story.prompts[i].content = value
-    }
+    $story.prompts[i].content = value
   }
 
   function updateRole(i: number, element: HTMLOptionElement) {
@@ -83,9 +82,12 @@
   }
 
   function countTokens(str: string) {
-    const tokens = countTokensApi(str)
-    totalTokens += tokens
-    return tokens
+    if (str) {
+      const tokens = countTokensApi(str)
+      totalTokens += tokens
+      return tokens
+    }
+    return 0
   }
 </script>
 <div class='mt-2 mb-5 flex gap-2'>
@@ -155,7 +157,7 @@
       {:else}
         <div class='flex flex-col w-full text-left'>
           <FlexibleTextarea id={getUniqueId()} placeholder="Write your prompt" value={prompt.content} 
-           on:change={update(i, this.value)} on:blur={autoSaveFunc} />
+           onUpdate={(text) => update(i, text)} save={autoSaveFunc} />
           <span class='text-sm text-stone-400 px-2'>Tokens: {countTokens(prompt.content)}</span>
         </div>
       {/if}

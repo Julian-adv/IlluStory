@@ -8,10 +8,15 @@
   export let unWrappedClass = ''
   export let onKeyDown = (_e: KeyboardEvent) => {}
   export let save = () => {}
+  export let onUpdate = (_str: string) => {}
 
   function onInput(this: HTMLElement) {
     this.style.height = 'auto'
     this.style.height = (this.scrollHeight) + 'px'
+  }
+
+  function onChange() {
+    onUpdate(value)
   }
 
   onMount(() => {
@@ -22,4 +27,4 @@
   })
 </script>
 
-<Textarea {id} {placeholder} {unWrappedClass} rows={1} bind:value on:blur={save} on:input={onInput} on:keydown={onKeyDown} class='px-2 py-1 text-base prompt'/>
+<Textarea {id} {placeholder} {unWrappedClass} rows={1} bind:value on:blur={save} on:input={onInput} on:keydown={onKeyDown} on:change={onChange} class='px-2 py-1 text-base prompt'/>
