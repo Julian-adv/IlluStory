@@ -78,6 +78,7 @@ npm run tauri dev
 1. Start new session
 1. Save current session to a file (but load is not implemented :)
 1. Go back to previous prompt. Press it if you want different AI response.
+1. If total tokens approach the model's context size, press this. It will summarize the conversation thus reduce token counts.
 1. Select role
 1. Write your dialogue here.
 
