@@ -1,13 +1,14 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
-  import { Button, Select } from 'flowbite-svelte'
-  import { charSetting, roles, sendChat, startStory, userSetting } from '$lib/api'
+  import { Button } from 'flowbite-svelte'
+  import { charSetting, chatRoles, sendChat, startStory, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict } from '$lib/store'
   import { savePath } from '$lib/fs'
-  import type { SceneType } from '$lib/interfaces'
   import { newSceneId, scrollToEnd } from '$lib'
+  import DropSelect from '../common/DropSelect.svelte'
+  import type { SceneType } from '$lib/interfaces'
 
   let role = 'user'
   let userInput = ''
@@ -197,7 +198,7 @@
       </Button>
     </div>
     <div class='w-32 flex'>
-      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' bind:value={role} placeholder="Role" />
+      <DropSelect items={chatRoles} size="sm" classStr='text-sm self-start text-center w-full' bind:value={role} />
     </div>
     <div>
       <Input {role} bind:value={userInput} />

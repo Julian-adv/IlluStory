@@ -12,9 +12,16 @@ export const roles = [
   { value: "system", name: "System" },
   { value: "assistant", name: "Assistant" },
   { value: "user", name: "User" },
+  { value: "-", name: "-" },
   { value: charSetting, name: 'Char setting' },
   { value: userSetting, name: 'User setting' },
   { value: startStory, name: "Start story" },
+]
+
+export const chatRoles = [
+  { value: "system", name: "System" },
+  { value: "assistant", name: "Assistant" },
+  { value: "user", name: "User" },
 ]
 
 export let sendChat = sendChatOobabooga

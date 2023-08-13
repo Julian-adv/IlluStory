@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Label, Input, Select, Button, Textarea, Checkbox } from "flowbite-svelte"
+  import { Label, Input, Button, Checkbox } from "flowbite-svelte"
   import { onMount, tick } from "svelte"
   import { loadStoryDialog, saveStory, saveStoryQuietly } from "$lib/fs"
   import { loadSettings } from "$lib/settings"
@@ -12,7 +12,8 @@
   import NumberField from "../common/NumberField.svelte"
   import ImageField from "../common/ImageField.svelte"
   import TextField from "../common/TextField.svelte"
-  import FlexibleTextarea from "../common/FlexibleTextarea.svelte";
+  import FlexibleTextarea from "../common/FlexibleTextarea.svelte"
+  import DropSelect from "../common/DropSelect.svelte"
   import { getUniqueId } from "$lib";
 
   let models = [{ value: '', name: '' }]
@@ -26,6 +27,7 @@
   onMount(async () => {
     totalTokens = 0
     models = await loadSettings()
+    models = models.sort((modelA, modelB) => (modelA.name < modelB.name ? -1 : (modelA.name > modelB.name ? 1 : 0)))
   })
 
   async function addPrompt() {
@@ -68,11 +70,13 @@
 
   function update(i: number, value: string) {
     $story.prompts[i].content = value
+    autoSaveFunc()
   }
 
-  function updateRole(i: number, element: HTMLOptionElement) {
-    return (_e: Event) => {
-      $story.prompts[i].role = element.value
+  function updateRole(i: number) {
+    return (value: string) => {
+      $story.prompts[i].role = value
+      autoSaveFunc()
     }
   }
 
@@ -90,6 +94,7 @@
     return 0
   }
 </script>
+
 <div class='mt-2 mb-5 flex gap-2'>
   <Button color='alternative' size='sm' on:click={load}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
@@ -116,10 +121,10 @@
 
   <ImageField label='Image' help='An image to show in the story card. If empty, the image from the first scene is used.' bind:value={$story.image} save={autoSaveFunc} />
   <StringField label='Title' placeholder='Enter title' help='Title of this story.' bind:value={$story.title} save={autoSaveFunc} />
-  <SelectField label='API' items={apis} help='API to use.' bind:value={$story.api} save={apiChange} />
+  <SelectField label='API' items={apis} help='API to use.' search={false} bind:value={$story.api} save={apiChange} />
   {#if $story.api === Api.OpenAi}
     <StringField label='URL' placeholder='https://api.openai.com/v1' bind:value={$story.apiUrl} save={autoSaveFunc} />
-    <SelectField label='Models' items={models} bind:value={$story.model} save={autoSaveFunc} >
+    <SelectField label='Models' items={models} search={true} bind:value={$story.model} save={autoSaveFunc} >
       <p slot='helper'>
         See our <a href='https://platform.openai.com/docs/models/overview' target='_blank' on:click={onModelOverview} class='text-sky-500'>Model overview</a> for descriptions of them.
       </p>
@@ -145,9 +150,9 @@
 
 <h1 class='text-lg font-semibold mb-1 mt-3'>Prompts</h1>
 <DragDropList bind:data={$story.prompts} onChange={autoSaveFunc} removesItems let:datum={prompt} let:i >
-  <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
-    <div class='w-32 flex'>
-      <Select items={roles} size="sm" class='text-sm self-start text-center w-full' value={prompt.role} on:change={updateRole(i, this)} />
+  <div class='grid grid-cols-[9rem,1fr] gap-2 mt-2'>
+    <div class=' w-36 flex'>
+      <DropSelect items={roles} size="sm" classStr='text-sm self-start text-center w-full' value={prompt.role} save={updateRole(i)} />
     </div>
     <div class='flex items-center w-full text-center'>
       {#if prompt.role === startStory}

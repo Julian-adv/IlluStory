@@ -95,3 +95,8 @@ export const sortTypeName = 'Name'
 export const sortTypeDate = 'Modified Date'
 export const sortAscending = 'a'
 export const sortDescending = 'd'
+
+export interface SelectItem {
+  name: string
+  value: string
+}

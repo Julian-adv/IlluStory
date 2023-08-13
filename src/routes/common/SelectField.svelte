@@ -1,27 +1,31 @@
 <script lang="ts">
-  import { Label, Helper, Select } from "flowbite-svelte";
-  import { onMount } from "svelte";
-  import { helperClassHidden, helperClassVisible } from "$lib";
+  import { Label, Helper } from "flowbite-svelte"
+  import { onMount } from "svelte"
+  import { helperClassHidden, helperClassVisible } from "$lib"
+  import DropSelect from "./DropSelect.svelte"
+  import type { SelectItem } from "$lib/interfaces"
 
-  export let label = '';
-  export let value = '';
-  export let help = '';
-  export let items = [{ value: '', name: ''}];
-  export let save = (value:string) => {};
+  export let label = ''
+  export let value = ''
+  export let help = ''
+  export let items: SelectItem[]
+  export let search = false
+  export let save = (_value:string) => {}
 
-  let helperClass = helperClassHidden;
-  
+  let helperClass = helperClassHidden
+
   const showHelper = () => {
-    helperClass = helperClassVisible;
+    helperClass = helperClassVisible
   }
 
   const hideHelper = () => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   }
 
   onMount(() => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   })
+
 </script>
 
 <div class='w-36 flex p-1'>
@@ -29,7 +33,7 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Select id={label} {items} bind:value on:change={() => {save(value);}} class='px-2 py-1 text-base'/>
+  <DropSelect id={label} {items} {search} {save} size='sm' bind:value />
 </div>
 <div>
 </div>
