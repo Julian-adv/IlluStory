@@ -114,7 +114,7 @@
     <Input id='filePath' size='sm' bind:value={$storyPath} disabled />
   </div>
 
-  <ImageField label='Image' help='An image to represent this story. If empty, the image from the first scene is used.' bind:value={$story.image} save={autoSaveFunc} />
+  <ImageField label='Image' help='An image to show in the story card. If empty, the image from the first scene is used.' bind:value={$story.image} save={autoSaveFunc} />
   <StringField label='Title' placeholder='Enter title' help='Title of this story.' bind:value={$story.title} save={autoSaveFunc} />
   <SelectField label='API' items={apis} help='API to use.' bind:value={$story.api} save={apiChange} />
   {#if $story.api === Api.OpenAi}

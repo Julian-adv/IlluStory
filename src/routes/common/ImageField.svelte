@@ -2,13 +2,12 @@
   import { Img, Label, Helper } from "flowbite-svelte"
   import { onMount } from "svelte"
   import { helperClassHidden, helperClassVisible } from "$lib"
-    import { loadImage } from "$lib/fs"
+  import { loadImage } from "$lib/fs"
 
   export let label = ''
   export let value = ''
   export let help = ''
   export let save = () => {}
-  let imageSize = 512/window.devicePixelRatio
 
   let helperClass = helperClassHidden
   
@@ -41,9 +40,11 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper} on:click={onClick}>
   {#if value}
-    <Img src={value} alt='Story Image'/>
+    <Img src={value} alt='Represent a story' size='max-w-xs'/>
   {:else}
-    <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300" style="--imageSize: {imageSize}px;"><div>Click to change</div></div>
+    <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300">
+      <div>Click to change</div>
+    </div>
   {/if}
 </div>
 <div>
@@ -55,7 +56,7 @@
 
 <style>
   .placeholder {
-    width: var(--imageSize);
-    height: var(--imageSize);
+    width: 20rem;
+    height: 20rem;
   }
 </style>

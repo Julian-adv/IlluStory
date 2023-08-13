@@ -7,18 +7,23 @@
   import { save } from "@tauri-apps/api/dialog"
   import { basename, downloadDir } from "@tauri-apps/api/path"
   import { replaceDict, settings } from "$lib/store"
+  import { realImageSize } from "$lib"
 
   export let scene: SceneType
   let content: string
   let showImage = false
   let imageFromSD = new Promise<string>((_resolve, _reject) => {})
   let waitingImage = false
-  let imageSize = 512 / window.devicePixelRatio
+  let imageWidth = realImageSize($settings.imageWidth)
+  let imageHeight = realImageSize($settings.imageHeight)
   let popoverId = 'pop123'
   let imagePrompt = ''
   const visualStart = '<Visual>'
   const visualEnd = '</Visual>'
   const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
+  $: imageClass = imageWidth > window.innerWidth / 2 ?
+                    'clear-both flex flex-col items-center z-10' :
+                    'flex flex-col float-left mr-5 z-10'
 
   function clearImagePrompt(str: string) {
     return str.replace(regexp, '').trim()
@@ -168,15 +173,15 @@
   }
 </script>
 
-<div class="block max-w-3xl">
+<div class="block w-full">
   {#if showImage}
-    <div class='flex flex-col float-left mr-5 z-10'>
+    <div class={imageClass}>
       {#await imageFromSD}
-        <div class="placeholder flex justify-center items-center bg-stone-300 rounded-lg mt-2" style="--imageSize: {imageSize}px;">
+        <div class="placeholder flex justify-center items-center bg-stone-300 rounded-lg mt-2" style="--imageWidth: {imageWidth}px;--imageHeight: {imageHeight}px;">
           <Spinner class="mr-3" size="4" />
         </div>
       {:then image}
-        <img id={popoverId} src={image} alt="scene #{scene.id}" class="placeholder rounded-lg mt-2 z-20" style="--imageSize: {imageSize}px;">
+        <div id={popoverId} class="placeholder mt-2" style="--imageWidth: {imageWidth}px;--imageHeight: {imageHeight}px;--imageSrc: url('{image}')"></div>
         <Popover class='w-80 h-auto text-sm z-30' triggeredBy={'#'+popoverId}>
           <span>{imagePrompt}</span>
         </Popover>
@@ -203,7 +208,41 @@
 
 <style>
   .placeholder {
-    width: var(--imageSize);
-    height: var(--imageSize);
+    width: var(--imageWidth);
+    height: var(--imageHeight);
+    background-image: var(--imageSrc);
+    background-size: contain;
+    background-repeat: no-repeat;
+    /* box-shadow: 0 0 16px 16px #ffffff inset; */
+    /* mask-image:
+      linear-gradient(to top, black 0%, black 100%),
+      linear-gradient(to top, transparent 0%, black 100%),
+      linear-gradient(to right, transparent 0%, black 100%),
+      linear-gradient(to bottom, transparent 0%, black 100%),
+      linear-gradient(to left, transparent 0%, black 100%);
+    mask-position:
+      center,
+      top,
+      right,
+      bottom,
+      left;
+    mask-size:
+      100% 100%,
+      100% 16px,
+      16px 100%,
+      100% 16px,
+      16px 100%;
+    mask-repeat:
+      no-repeat,
+      no-repeat,
+      no-repeat,
+      no-repeat,
+      no-repeat;
+    mask-composite:
+      subtract,
+      add,
+      add,
+      add,
+      add; */
   }
 </style>

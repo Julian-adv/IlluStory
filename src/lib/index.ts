@@ -43,3 +43,7 @@ export function getUniqueId() {
 export function scrollToEnd() {
   window.scrollTo(0, document.body.scrollHeight)
 }
+
+export function realImageSize(imageSize: number) {
+  return imageSize / window.devicePixelRatio
+}
