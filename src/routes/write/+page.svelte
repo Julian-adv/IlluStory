@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Label, Input, Button, Checkbox } from "flowbite-svelte"
+  import { Button, Checkbox } from "flowbite-svelte"
   import { onMount, tick } from "svelte"
-  import { loadStoryDialog, saveStory, saveStoryQuietly } from "$lib/fs"
+  import { loadStoryDialog, saveStory, saveObjQuietly } from "$lib/fs"
   import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
   import { changeApi, roles, countTokensApi, startStory } from "$lib/api"
@@ -14,7 +14,7 @@
   import TextField from "../common/TextField.svelte"
   import FlexibleTextarea from "../common/FlexibleTextarea.svelte"
   import DropSelect from "../common/DropSelect.svelte"
-  import { getUniqueId } from "$lib";
+  import { getUniqueId } from "$lib"
 
   let models = [{ value: '', name: '' }]
   const apis = [
@@ -63,7 +63,7 @@
         prompt.id = id++
       })
       $story.prompts = $story.prompts
-      saveStoryQuietly($storyPath, $story)
+      saveObjQuietly($storyPath, $story)
       totalTokens = 0
     }
   }
@@ -95,6 +95,7 @@
   }
 </script>
 
+<h1 class='text-lg font-semibold mb-1'>Story Editing</h1>
 <div class='mt-2 mb-5 flex gap-2'>
   <Button color='alternative' size='sm' on:click={load}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
@@ -112,13 +113,7 @@
   
 </div>
 <div class='grid grid-cols-[9rem,5rem,1fr] gap-0'>
-  <div class='w-36 flex p-1'>
-    <Label for='filePath' class='text-base self-center text-right w-full'>File path</Label>
-  </div>
-  <div class='col-span-2 p-1'>
-    <Input id='filePath' size='sm' bind:value={$storyPath} disabled />
-  </div>
-
+  <StringField label='File path' size='sm' disabled bind:value={$storyPath} />
   <ImageField label='Image' help='An image to show in the story card. If empty, the image from the first scene is used.' bind:value={$story.image} save={autoSaveFunc} />
   <StringField label='Title' placeholder='Enter title' help='Title of this story.' bind:value={$story.title} save={autoSaveFunc} />
   <SelectField label='API' items={apis} help='API to use.' search={false} bind:value={$story.api} save={apiChange} />

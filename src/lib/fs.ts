@@ -3,6 +3,7 @@ import type { Story } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { changeApi } from './api'
+import type { Char } from './charSettings'
 
 export async function loadStory(path: string) {
   const json = await readTextFile(path)
@@ -73,8 +74,8 @@ export function saveImageToFile(dataURI: string, filename: string) {
   document.body.removeChild(a)
 }
 
-export async function savePath(path: string, data: any) {
-  const filePath = await save({ defaultPath: path, filters: [{ name: '*', extensions: ['json'] }] })
+export async function savePath(path: string, ext: string, data: any) {
+  const filePath = await save({ defaultPath: path, filters: [{ name: '*', extensions: [ext] }] })
   if (filePath) {
     writeTextFile(filePath, JSON.stringify(data, null, 2))
   }
@@ -88,9 +89,9 @@ export async function saveStory(story: Story) {
   } else {
     fileName = fileName + '.json'
   }
-  return savePath(fileName, story)
+  return savePath(fileName, 'story', story)
 }
 
-export async function saveStoryQuietly(filePath:string, story:Story) {
-  writeTextFile(filePath, JSON.stringify(story, null, 2))
+export async function saveObjQuietly(filePath: string, obj: Story|Char) {
+  writeTextFile(filePath, JSON.stringify(obj, null, 2))
 }

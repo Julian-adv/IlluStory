@@ -43,6 +43,8 @@ module.exports = {
     "rules": {
         "semi": ["error", "never"],
         "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}]
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}],
+        "@typescript-eslint/no-explicit-any": "off",
+        "svelte/no-at-html-tags": "off"
     }
 }

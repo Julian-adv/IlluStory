@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SceneType } from "$lib/interfaces"
   import { afterUpdate, onMount } from "svelte"
-  import Markdown from "../Markdown.svelte"
+  import Markdown from "../common/Markdown.svelte"
   import { Button, Popover, Spinner } from "flowbite-svelte"
   import { saveImageToFile } from "$lib/fs"
   import { save } from "@tauri-apps/api/dialog"

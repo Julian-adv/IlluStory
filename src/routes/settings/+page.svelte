@@ -7,7 +7,7 @@
   import SampleField from '../common/SampleField.svelte'
   import FontField from '../common/FontField.svelte'
   import NumberField from '../common/NumberField.svelte'
-    import TextField from '../common/TextField.svelte';
+  import TextField from '../common/TextField.svelte'
 
   onMount(async () => {
     await loadSettings()

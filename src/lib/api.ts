@@ -28,7 +28,10 @@ export let sendChat = sendChatOobabooga
 const tokenLimit = 4096
 
 function countTokensGpt(str: string): number {
-  return isWithinTokenLimit(str, tokenLimit) || 0
+  if (str) {
+    return isWithinTokenLimit(str, tokenLimit) || 0
+  }
+  return 0
 }
 
 function countTokensLlama(str: string) {

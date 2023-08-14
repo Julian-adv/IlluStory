@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SelectItem } from "$lib/interfaces";
+  import type { SelectItem } from "$lib/interfaces"
   import { Button, Dropdown, DropdownDivider, DropdownItem, Search } from "flowbite-svelte"
   import { Icon } from "flowbite-svelte-icons"
   import { onMount } from "svelte"

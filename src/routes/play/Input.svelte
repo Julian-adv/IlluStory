@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Markdown from "../Markdown.svelte"
+  import Markdown from "../common/Markdown.svelte"
   import { sendChat } from "$lib/api"
   import { sessionPath, story, initialScenes, additionalScenes, usage, firstSceneIndex, summarySceneIndex, replaceDict } from "$lib/store"
   import { writeTextFile } from "@tauri-apps/api/fs"

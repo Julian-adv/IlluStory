@@ -3,7 +3,7 @@
   import { onMount } from "svelte"
   import { helperClassHidden, helperClassVisible } from "$lib"
   import { invoke } from '@tauri-apps/api/tauri'
-    import { Icon } from "flowbite-svelte-icons";
+  import { Icon } from "flowbite-svelte-icons"
 
   export let label = ''
   export let value = ''

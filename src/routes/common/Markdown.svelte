@@ -1,7 +1,7 @@
 <script lang="ts">
   import { settings } from '$lib/store'
   import { marked } from 'marked'
-    import FlexibleTextarea from './common/FlexibleTextarea.svelte';
+  import FlexibleTextarea from './FlexibleTextarea.svelte'
   
   export let value = ''
   export let readOnly = true
@@ -25,7 +25,6 @@
 </script>
   
 {#if readOnly}
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   <div class='font-serif prose leading-relaxed markdown text-gray-900' style={cssVarStyles}>{@html marked.parse(value)}</div>
 {:else}
   <FlexibleTextarea bind:value placeholder='Write a prompt.' unWrappedClass='px-2 py-1.5 focus:ring-gray-200 focus:border-gray-200 focus:ring-4 font-serif prompt' {onKeyDown}/>

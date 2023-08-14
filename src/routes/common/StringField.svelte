@@ -1,26 +1,29 @@
 <script lang="ts">
-  import { Label, Input, Helper } from "flowbite-svelte";
-  import { onMount } from "svelte";
-  import { helperClassHidden, helperClassVisible } from "$lib";
+  import { Label, Input, Helper } from "flowbite-svelte"
+  import { onMount } from "svelte"
+  import { helperClassHidden, helperClassVisible } from "$lib"
+  import type { FormSizeType } from "flowbite-svelte/dist/types"
 
-  export let label = '';
-  export let value = '';
-  export let help = '';
-  export let placeholder = '';
-  export let save = () => {};
+  export let label = ''
+  export let value = ''
+  export let help = ''
+  export let placeholder = ''
+  export let disabled = false
+  export let size: FormSizeType = 'md'
+  export let save = () => {}
 
-  let helperClass = helperClassHidden;
+  let helperClass = helperClassHidden
   
   const showHelper = () => {
-    helperClass = helperClassVisible;
+    helperClass = helperClassVisible
   }
 
   const hideHelper = () => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   }
 
   onMount(() => {
-    helperClass = helperClassHidden;
+    helperClass = helperClassHidden
   })
 </script>
 
@@ -29,7 +32,7 @@
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper}>
-  <Input id={label} {placeholder} bind:value on:blur={save} class='px-2 py-1 text-base'/>
+  <Input id={label} {placeholder} {size} {disabled} bind:value on:blur={save} class='px-2 py-1 text-base focus:ring-gray-200 focus:border-gray-200 focus:ring-4'/>
 </div>
 <div>
 </div>

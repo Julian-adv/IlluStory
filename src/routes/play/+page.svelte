@@ -98,7 +98,7 @@
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($storyPath), $additionalScenes)
+    const tempPath = await savePath(insertTimestamp($storyPath), 'session', $additionalScenes)
     if (tempPath) {
       $sessionPath = tempPath
     }
