@@ -47,3 +47,13 @@ export function scrollToEnd() {
 export function realImageSize(imageSize: number) {
   return imageSize / window.devicePixelRatio
 }
+
+export function removeCommonPrefix(a: string, b: string): string {
+    let i = 0
+
+    while (i < a.length && i < b.length && a[i] === b[i]) {
+        i++
+    }
+
+    return b.slice(i)
+}

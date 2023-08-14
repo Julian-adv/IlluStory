@@ -43,8 +43,6 @@ export const sessionPath = writable('')
 export const zeroUsage = {prompt_tokens: 0, completion_tokens: 0, total_tokens: 0}
 export const usage = writable(zeroUsage)
 
-export const currentTab = writable('/')
-
 export const firstSceneIndex = writable(0)
 export const summarySceneIndex = writable(0)
 export const summarizePrompt = writable('')
@@ -97,13 +95,17 @@ export const defaultSettings: Settings = {
 
 export const settings = writable(defaultSettings)
 
-const defaultChar: Char = {
+export const emptyChar: Char = {
   image: '',
-  name: '',
+  name: 'Click to load',
   gender: '',
   visual: '',
   description: ''
 }
 
-export const char = writable(defaultChar)
+export const curChar = writable(emptyChar)
+export const curCharPath = writable('')
+export const char = writable(emptyChar)
 export const charPath = writable('')
+export const user = writable(emptyChar)
+export const userPath = writable('')

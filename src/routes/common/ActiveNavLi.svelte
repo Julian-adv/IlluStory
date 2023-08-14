@@ -1,10 +1,10 @@
 <script lang="ts">
   import { NavLi } from "flowbite-svelte"
-  import { currentTab } from "$lib/store"
+  import { page } from "$app/stores"
 
   export let path:string
 </script>
 
-<NavLi href={path} active={path == $currentTab} on:click={() => {$currentTab = path}} activeClass='text-sky-400'>
+<NavLi href={path} active={path == $page.url.pathname} activeClass='text-sky-400'>
   <slot></slot>
 </NavLi>

@@ -4,11 +4,11 @@
   import { charSetting, chatRoles, sendChat, startStory, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
-  import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict } from '$lib/store'
+  import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict, char, user } from '$lib/store'
   import { savePath } from '$lib/fs'
   import { newSceneId, scrollToEnd } from '$lib'
   import DropSelect from '../common/DropSelect.svelte'
-  import type { SceneType } from '$lib/interfaces'
+  import type { Char, SceneType } from '$lib/interfaces'
 
   let role = 'user'
   let userInput = ''
@@ -35,28 +35,24 @@
     return scenes
   }
 
-  function matchSet(content: string, replKey: string) {
-    const match = content.match(/Name: *(.+)/)
-    if (match) {
-      $replaceDict[replKey] = match[1].trim()
-    }
-    const genderMatch = content.match(/Gender: *(.+)/)
-    if (genderMatch) {
-      $replaceDict[replKey + '_gender'] = genderMatch[1].trim()
-    }
+  function replaceCharSetting(replKey: string, char: Char, openTag: string, closeTag: string) {
+    $replaceDict[replKey] = char.name
+    $replaceDict[replKey + '_gender'] = char.gender
+    return `${openTag}\nName: ${char.name}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n${closeTag}`
   }
 
   function findNames(prompts: SceneType[]) {
     return prompts.map((prompt) => {
       let role = prompt.role
+      let content = prompt.content
       if (prompt.role === charSetting) {
-        matchSet(prompt.content, "char")
+        content = replaceCharSetting('char', $char, '<Character>', '</Character>')
         role = 'system'
       } else if (prompt.role === userSetting) {
-        matchSet(prompt.content, "user")
+        content = replaceCharSetting('user', $user, '<Me <user>>', '</Me <user>>')
         role = 'system'
       }
-      return { id: prompt.id, role: role, content: prompt.content, image: prompt.image }
+      return { id: prompt.id, role: role, content: content, image: prompt.image }
     })
   }
 

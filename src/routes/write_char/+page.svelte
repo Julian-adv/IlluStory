@@ -7,7 +7,9 @@
   import SelectField from "../common/SelectField.svelte"
   import TextField from "../common/TextField.svelte"
   import { countTokensApi } from "$lib/api"
-  import { char, charPath } from "$lib/store"
+  import { curChar, curCharPath, settings } from "$lib/store"
+  import { generateImage } from "$lib/imageApi"
+  import { onMount } from "svelte"
 
   let autoSave = true
   let totalTokens = 0
@@ -20,23 +22,23 @@
   async function load() {
     const [tempChar, tempFilePath] = await loadCharDialog()
     if (tempChar) {
-      $char = tempChar
-      $charPath = tempFilePath
+      $curChar = tempChar
+      $curCharPath = tempFilePath
       totalTokens = 0
     }
   }
 
   async function save() {
-    const tempFilePath = await saveChar($char)
+    const tempFilePath = await saveChar($curChar)
     if (tempFilePath) {
-      $charPath = tempFilePath
+      $curCharPath = tempFilePath
       totalTokens = 0
     }
   }
 
   async function autoSaveFunc() {
-    if (autoSave && $charPath !== '') {
-      saveObjQuietly($charPath, $char)
+    if (autoSave && $curCharPath !== '') {
+      saveObjQuietly($curCharPath, $curChar)
       totalTokens = 0
     }
   }
@@ -49,6 +51,14 @@
     }
     return 0
   }
+
+  async function regenerateImage() {
+    $curChar.image = await generateImage($settings, $curChar.visual)
+  }
+
+  onMount(() => {
+    totalTokens = 0
+  })
 </script>
 
 <h1 class='text-lg font-semibold mb-1'>Character Editing</h1>
@@ -68,14 +78,19 @@
   <Checkbox class='inline self-center' bind:checked={autoSave}>Auto save</Checkbox>
 </div>
 <div class='grid grid-cols-[9rem,5rem,1fr] gap-0'>
-  <StringField label='File path' size='sm' bind:value={$charPath} disabled />
-  <ImageField label='Image' bind:value={$char.image} save={autoSaveFunc} />
-  <StringField label='Name' bind:value={$char.name} save={autoSaveFunc} />
-  <SelectField label='Gender' items={genders} search={false} bind:value={$char.gender} save={autoSaveFunc} />
-  <TextField label='Visual' bind:value={$char.visual} save={autoSaveFunc} />
-  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens($char.visual)}</span>
-  <TextField label='Description' bind:value={$char.description} save={autoSaveFunc} />
-  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens($char.description)}</span>
+  <StringField label='File path' size='sm' bind:value={$curCharPath} disabled />
+  <ImageField label='Image' bind:value={$curChar.image} save={autoSaveFunc} />
+  <Button color='alternative' class='col-start-2 col-span-2 w-10 h-10 p-0 bg-stone-100 z-20 text-stone-200 border-stone-100 focus:ring-0' pill on:click={regenerateImage}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+    </svg>
+  </Button>
+  <StringField label='Name' bind:value={$curChar.name} save={autoSaveFunc} />
+  <SelectField label='Gender' items={genders} search={false} bind:value={$curChar.gender} save={autoSaveFunc} />
+  <TextField label='Visual' bind:value={$curChar.visual} save={autoSaveFunc} />
+  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens($curChar.visual)}</span>
+  <TextField label='Description' bind:value={$curChar.description} save={autoSaveFunc} />
+  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens($curChar.description)}</span>
   <Label for='totalTokens' class='text-base self-center text-right w-full'>Total tokens</Label>
   <div id='totalTokens' class='text-base p-3 col-start-2 col-span-2'>{totalTokens}</div>
 </div>

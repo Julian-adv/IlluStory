@@ -4,9 +4,9 @@
   import { loadStoryDialog, saveStory, saveObjQuietly } from "$lib/fs"
   import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
-  import { changeApi, roles, countTokensApi, startStory } from "$lib/api"
-  import { story, storyPath } from "$lib/store"
-  import { Api } from "$lib/interfaces"
+  import { changeApi, roles, countTokensApi, startStory, charSetting, userSetting } from "$lib/api"
+  import { story, storyPath, curChar, curCharPath, char, charPath, user, userPath } from "$lib/store"
+  import { Api, type Char, type Story } from "$lib/interfaces"
   import StringField from "../common/StringField.svelte"
   import SelectField from "../common/SelectField.svelte"
   import NumberField from "../common/NumberField.svelte"
@@ -14,7 +14,11 @@
   import TextField from "../common/TextField.svelte"
   import FlexibleTextarea from "../common/FlexibleTextarea.svelte"
   import DropSelect from "../common/DropSelect.svelte"
-  import { getUniqueId } from "$lib"
+  import { getUniqueId, removeCommonPrefix } from "$lib"
+  import { loadCharDialog, loadChar } from "$lib/charSettings"
+  import { goto } from "$app/navigation"
+  import CharCard from "../common/CharCard.svelte"
+  import { dirname, sep } from "@tauri-apps/api/path"
 
   let models = [{ value: '', name: '' }]
   const apis = [
@@ -39,11 +43,27 @@
     open('https://platform.openai.com/docs/models/overview')
   }
 
+  async function cardFromStory(story: Story, storyPath: string) {
+    const dir = await dirname(storyPath)
+    for (let prompt of story.prompts) {
+      if (prompt.role === charSetting) {
+        const path = dir + sep + prompt.content
+        $char = await loadChar(path)
+        $charPath = path
+      } else if (prompt.role === userSetting) {
+        const path = dir + sep + prompt.content
+        $user = await loadChar(path)
+        $userPath = path
+      }
+    }
+  }
+
   async function load() {
     const [tempStory, tempFilePath] = await loadStoryDialog()
     if (tempStory) {
       $story = tempStory
       $storyPath = tempFilePath
+      cardFromStory($story, $storyPath)
       totalTokens = 0
     }
   }
@@ -92,6 +112,52 @@
       return tokens
     }
     return 0
+  }
+
+  async function loadCharTo(charIndex: number): Promise<[Char|null, string]> {
+    const [tempChar, tempFilePath] = await loadCharDialog()
+    if (tempChar) {
+      const relativePath = removeCommonPrefix($storyPath, tempFilePath)
+      $story.prompts[charIndex].content = relativePath
+      autoSaveFunc()
+    }
+    return [tempChar, tempFilePath]
+  }
+
+  function onCharClick(charIndex: number) {
+    return async (ev: Event) => {
+      ev.stopPropagation()
+      const [tempChar, tempFilePath] = await loadCharTo(charIndex)
+      if (tempChar) {
+        $char = tempChar
+        $charPath = tempFilePath
+      }
+    }
+  }
+
+  function onUserClick(charIndex: number) {
+    return async (ev: Event) => {
+      ev.stopPropagation()
+      const [tempChar, tempFilePath] = await loadCharTo(charIndex)
+      if (tempChar) {
+        $user = tempChar
+        $userPath = tempFilePath
+      }
+    }
+  }
+
+  function onEditChar(ev: Event) {
+    ev.stopPropagation()
+    $curChar = $char
+    $curCharPath = $charPath
+    goto('/write_char')
+  }
+
+  function onEditUser(ev: Event) {
+    ev.stopPropagation()
+    $curChar = $user
+    $curCharPath = $userPath
+    goto('/write_char')
   }
 </script>
 
@@ -154,10 +220,14 @@
         <hr class='flex-grow border-t border-dashed border-stone-400'>
         <em class='px-2 text-sm text-stone-500'>The story begins from below.</em>
         <hr class='flex-grow border-t border-dashed border-stone-400'>
+      {:else if prompt.role === charSetting}
+        <CharCard char={$char} onCharClick={onCharClick(i)} {onEditChar} />
+      {:else if prompt.role === userSetting}
+        <CharCard char={$user} onCharClick={onUserClick(i)} onEditChar={onEditUser} />
       {:else}
         <div class='flex flex-col w-full text-left'>
           <FlexibleTextarea id={getUniqueId()} placeholder="Write your prompt" value={prompt.content} 
-           onUpdate={(text) => update(i, text)} save={autoSaveFunc} />
+           onUpdate={(text) => update(i, text)} on:blur={autoSaveFunc} />
           <span class='text-sm text-stone-400 px-2'>Tokens: {countTokens(prompt.content)}</span>
         </div>
       {/if}
