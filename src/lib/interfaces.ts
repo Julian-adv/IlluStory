@@ -100,3 +100,11 @@ export interface SelectItem {
   name: string
   value: string
 }
+
+export interface Char {
+  image: string
+  name: string
+  gender: string
+  visual: string
+  description: string
+}

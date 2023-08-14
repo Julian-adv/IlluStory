@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { loadCharDialog, type Char, saveChar } from "$lib/charSettings"
+  import { loadCharDialog, saveChar } from "$lib/charSettings"
   import { saveObjQuietly } from "$lib/fs"
   import { Button, Checkbox, Label } from "flowbite-svelte"
   import StringField from "../common/StringField.svelte"
@@ -7,16 +7,9 @@
   import SelectField from "../common/SelectField.svelte"
   import TextField from "../common/TextField.svelte"
   import { countTokensApi } from "$lib/api"
+  import { char, charPath } from "$lib/store"
 
   let autoSave = true
-  let char: Char = {
-    image: '',
-    name: '',
-    gender: '',
-    visual: '',
-    description: ''
-  }
-  let charPath = ''
   let totalTokens = 0
   const genders = [
     { name: 'Male', value: 'male' },
@@ -27,24 +20,23 @@
   async function load() {
     const [tempChar, tempFilePath] = await loadCharDialog()
     if (tempChar) {
-      char = tempChar
-      charPath = tempFilePath
+      $char = tempChar
+      $charPath = tempFilePath
       totalTokens = 0
-      console.log('load', char.gender)
     }
   }
 
   async function save() {
-    const tempFilePath = await saveChar(char)
+    const tempFilePath = await saveChar($char)
     if (tempFilePath) {
-      charPath = tempFilePath
+      $charPath = tempFilePath
       totalTokens = 0
     }
   }
 
   async function autoSaveFunc() {
-    if (autoSave && charPath !== '') {
-      saveObjQuietly(charPath, char)
+    if (autoSave && $charPath !== '') {
+      saveObjQuietly($charPath, $char)
       totalTokens = 0
     }
   }
@@ -76,14 +68,14 @@
   <Checkbox class='inline self-center' bind:checked={autoSave}>Auto save</Checkbox>
 </div>
 <div class='grid grid-cols-[9rem,5rem,1fr] gap-0'>
-  <StringField label='File path' size='sm' bind:value={charPath} disabled />
-  <ImageField label='Image' bind:value={char.image} save={autoSaveFunc} />
-  <StringField label='Name' bind:value={char.name} save={autoSaveFunc} />
-  <SelectField label='Gender' items={genders} search={false} bind:value={char.gender} save={autoSaveFunc} />
-  <TextField label='Visual' bind:value={char.visual} save={autoSaveFunc} />
-  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens(char.visual)}</span>
-  <TextField label='Description' bind:value={char.description} save={autoSaveFunc} />
-  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens(char.description)}</span>
+  <StringField label='File path' size='sm' bind:value={$charPath} disabled />
+  <ImageField label='Image' bind:value={$char.image} save={autoSaveFunc} />
+  <StringField label='Name' bind:value={$char.name} save={autoSaveFunc} />
+  <SelectField label='Gender' items={genders} search={false} bind:value={$char.gender} save={autoSaveFunc} />
+  <TextField label='Visual' bind:value={$char.visual} save={autoSaveFunc} />
+  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens($char.visual)}</span>
+  <TextField label='Description' bind:value={$char.description} save={autoSaveFunc} />
+  <span class='text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2'>Tokens: {countTokens($char.description)}</span>
   <Label for='totalTokens' class='text-base self-center text-right w-full'>Total tokens</Label>
   <div id='totalTokens' class='text-base p-3 col-start-2 col-span-2'>{totalTokens}</div>
 </div>

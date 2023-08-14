@@ -1,14 +1,7 @@
 import { readTextFile } from "@tauri-apps/api/fs"
 import { open } from '@tauri-apps/api/dialog'
 import { savePath } from "./fs"
-
-export interface Char {
-  image: string
-  name: string
-  gender: string
-  visual: string
-  description: string
-}
+import type { Char } from "./interfaces"
 
 export async function loadChar(path: string) {
   const json = await readTextFile(path)
