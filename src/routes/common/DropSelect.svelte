@@ -2,7 +2,6 @@
   import type { SelectItem } from "$lib/interfaces"
   import { Button, Dropdown, DropdownDivider, DropdownItem, Search } from "flowbite-svelte"
   import { Icon } from "flowbite-svelte-icons"
-  import { onMount } from "svelte"
 
   export let id = ''
   export let search = false
@@ -18,6 +17,15 @@
   let name = ''
 
   $: filteredItems = items.filter(item => item.name.toLowerCase().includes(searchStr.toLowerCase()))
+  $: name = findName(value)
+
+  function findName(str: string) {
+    const selected = items.find(item => (item.value === str))
+    if (selected) {
+      return selected.name
+    }
+    return ''
+  }
 
   function onClick(item: SelectItem) {
     return () => {
@@ -27,13 +35,6 @@
       save(value)
     }
   }
-    
-  onMount(() => {
-    const selected = items.find(item => (item.value === value))
-    if (selected) {
-      name = selected.name
-    }
-  })
 </script>
 
 <Button {id} color="alternative" {size} class={classStr}>{name} <Icon name="chevron-down-solid" class="w-3 h-3 ml-2 text-stone-400 dark:text-white" /></Button>
