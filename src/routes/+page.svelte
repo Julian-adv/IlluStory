@@ -2,15 +2,18 @@
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
-  import { Button, Card, Dropdown, DropdownItem, Spinner } from 'flowbite-svelte'
+  import { Button, Card, Dropdown, DropdownItem, Popover, Radio, Spinner } from 'flowbite-svelte'
   import { Icon } from 'flowbite-svelte-icons'
   import { sortAscending, sortDescending, sortTypeDate, sortTypeName, type Story, type StoryCard } from '$lib/interfaces'
-  import { currentTab, story, storyPath, settings } from '$lib/store'
+  import { story, storyPath, settings } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
-  import { loadStory } from '$lib/fs'
+  import { allExts, basenameOf, loadStory } from '$lib/fs'
+  import { allFlag, charExt, charFlag, sessionExt, sessionFlag, storyExt, storyFlag, extOf } from '$lib/fs'
 
-  let cards:StoryCard[] = []
+  let cards: StoryCard[] = []
+  let showingCards: StoryCard[] = []
   let loading = false
+  let defaultImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY/j//z8ABf4C/qc1gYQAAAAASUVORK5CYII='
 
   onMount(async () => {
     await loadSettings()
@@ -18,27 +21,31 @@
     loading = true
     const entries = await readDir('.', { dir: BaseDirectory.AppData, recursive: true })
     for (const entry of entries) {
-      if (entry.name?.endsWith('.json')) {
-        let storyText = await readTextFile(entry.path)
-        let story = JSON.parse(storyText) as Story
-        let image = ''
-        if (story) {
-          if (story.image) {
-            image = story.image
-          } else if (story.prompts && story.prompts.length > 0 && story.prompts[0].image) {
-            image = story.prompts[0].image
+      if (entry.name) {
+        const ext = extOf(entry.name)
+        if (allExts.includes(ext)) {
+          let storyText = await readTextFile(entry.path)
+          let story = JSON.parse(storyText) as Story
+          let image = defaultImage
+          if (story) {
+            if (story.image) {
+              image = story.image
+            } else if (story.prompts && story.prompts.length > 0 && story.prompts[0].image) {
+              image = story.prompts[0].image
+            }
           }
+          const stat = await metadata(entry.path)
+          cards.push({
+            name: basenameOf(entry.name),
+            path: entry.path,
+            modifiedAt: stat.modifiedAt,
+            image: image
+          })
         }
-        const stat = await metadata(entry.path)
-        cards.push({
-          name: entry.name.slice(0, -5),
-          path: entry.path,
-          modifiedAt: stat.modifiedAt,
-          image: image
-        })
       }
     }
     resort()
+    showingCards = filterExt(extFlag)
     loading = false
   })
 
@@ -48,7 +55,6 @@
       if (tempStory) {
         $storyPath = path
         $story = tempStory
-        $currentTab = '/write'
       }
     }
   }
@@ -97,6 +103,70 @@
     resort()
     saveSettings()
   }
+
+  let extFlag = allFlag
+
+  function filterExt(flag: number) {
+    return cards.filter(card => {
+      const ext = extOf(card.path)
+      if (ext === storyExt && flag === storyFlag) {
+        return true
+      } else if (ext === sessionExt && flag === sessionFlag) {
+        return true
+      } else if (ext === charExt && flag === charFlag) {
+        return true
+      } else if (flag === allFlag) {
+        return true
+      }
+      return false
+    })
+  }
+
+  $: showingCards = filterExt(extFlag)
+
+  function cardType(card: StoryCard) {
+    const ext = extOf(card.path)
+    if (ext === storyExt) {
+      return 'Story'
+    } else if (ext === sessionExt) {
+      return 'Session'
+    } else if (ext === charExt) {
+      return 'Character'
+    }
+    return 'Unknown'
+  }
+
+  function grad(card: StoryCard) {
+    const ext = extOf(card.path)
+    if (ext === storyExt) {
+      return 'linear-gradient(to bottom, #1e293b 60%, #020617 100%)'    // slate
+    } else if (ext === sessionExt) {
+      return 'linear-gradient(to bottom, #075985 60%, #082f49 100%)'    // sky
+    } else if (ext === charExt) {
+      return 'linear-gradient(to bottom, #115e59 60%, #042f2e 100%)'    // teal
+    }
+    return 'linear-gradient(to bottom, gray 60%, black 100%)'
+  }
+
+  function _isOverflowed(id: string) {
+    const elem = document.getElementById(id)
+    if (elem && elem.scrollWidth > elem.clientWidth) {
+      return true
+    }
+    return false
+  }
+
+  function hrefOf(card: StoryCard) {
+    const ext = extOf(card.path)
+    if (ext === storyExt) {
+      return '/write'
+    } else if (ext === charExt) {
+      return '/write_char'
+    } else if (ext === sessionExt) {
+      return '/play'
+    }
+    return '/'
+  }
 </script>
 
 <main>
@@ -117,6 +187,10 @@
         </svg>
       {/if}
     </Button>
+    <Radio bind:group={extFlag} value={allFlag}>All</Radio>
+    <Radio bind:group={extFlag} value={storyFlag}>Story</Radio>
+    <Radio bind:group={extFlag} value={charFlag}>Character</Radio>
+    <Radio bind:group={extFlag} value={sessionFlag}>Session</Radio>
   </div>
   {#if loading}
     <div class='flex w-full items-center justify-center' style='height: 80vh'>
@@ -124,11 +198,50 @@
     </div>
   {:else}
     <div class="flex flex-wrap flex-none gap-2">
-      {#each cards as card}
-        <Card href='/write' img={card.image} class='w-52' on:click={onClick(card.path)}>
-          <h2>{card.name}</h2>
+      {#each showingCards as card, i}
+        <Card href={hrefOf(card)} img={card.image} class='w-52 justify-between card' padding='none' style="--grad: {grad(card)};" on:click={onClick(card.path)}>
+          <div class='px-2 py-0'>
+            <h2 class='italic text-xs text-stone-100'>{cardType(card)}</h2>
+          </div>
+          <div class="flex items-center justify-center p-2 mt-[-0.8rem] text-stone-50 font-bold">
+            <h2 id={`card${i}`} class='text-ellipsis max-w-full overflow-hidden whitespace-nowrap'>{card.name}</h2>
+          </div>
+          {#if card.name.length > 19}
+            <Popover class='w-auto h-9 text-sm z-30' triggeredBy={`#card${i}`}>
+              <span>{card.name}</span>
+            </Popover>
+          {/if}
         </Card>
       {/each}
     </div>
   {/if}
 </main>
+
+<style>
+  :global(.card) {
+    background-image: var(--grad);
+  }
+
+  :global(.card img) {
+    max-width: fit-content;
+    mask-image: 
+      linear-gradient(to top, black 0%, black 100%),
+      linear-gradient(to bottom, transparent 0%, black 100%);
+    mask-position:
+      center,
+      bottom;
+    mask-size:
+      100% 100%,
+      100% 32px;
+    mask-repeat:
+      no-repeat,
+      no-repeat;
+    mask-composite: subtract, add;
+  }
+
+  :global(.card > div) {
+    margin-top: -1rem;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+  }
+</style>

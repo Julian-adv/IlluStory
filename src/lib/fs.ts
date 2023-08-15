@@ -1,9 +1,9 @@
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs'
-import type { Story } from './interfaces'
+import { sep } from '@tauri-apps/api/path'
+import type { Story, Char } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { changeApi } from './api'
-import type { Char } from './charSettings'
 
 export async function loadStory(path: string) {
   const json = await readTextFile(path)
@@ -13,7 +13,7 @@ export async function loadStory(path: string) {
 }
 
 export async function loadStoryDialog(): Promise<[Story|null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['json']}]})
+  const selected = await open({ filters: [{ name: '*', extensions: ['json', storyExt]}]})
   if (typeof(selected) === 'string' ) {
     return [await loadStory(selected), selected]
   }
@@ -94,4 +94,34 @@ export async function saveStory(story: Story) {
 
 export async function saveObjQuietly(filePath: string, obj: Story|Char) {
   writeTextFile(filePath, JSON.stringify(obj, null, 2))
+}
+
+export const storyExt = 'story'
+export const sessionExt = 'session'
+export const charExt = 'char'
+export const allExts = [storyExt, sessionExt, charExt]
+
+export const storyFlag = 1
+export const sessionFlag = 2
+export const charFlag = 3
+export const allFlag = 4
+
+export function basenameOf(path: string) {
+  let endIndex = path.lastIndexOf('.')
+  if (endIndex < 0) {
+    endIndex = path.length
+  }
+  let startIndex = path.lastIndexOf(sep)
+  if (startIndex < 0) {
+    startIndex = 0
+  }
+  return path.slice(startIndex, endIndex)
+}
+
+export function extOf(path: string) {
+  const index = path.lastIndexOf('.')
+  if (index < 0) {
+    return ''
+  }
+  return path.slice(index + 1)
 }
