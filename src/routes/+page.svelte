@@ -30,8 +30,13 @@
           if (story) {
             if (story.image) {
               image = story.image
-            } else if (story.prompts && story.prompts.length > 0 && story.prompts[0].image) {
-              image = story.prompts[0].image
+            } else if (story.prompts && story.prompts.length > 0) {
+              for (const prompt of story.prompts) {
+                if (prompt.image) {
+                  image = prompt.image
+                  break
+                }
+              }
             }
           }
           const stat = await metadata(entry.path)
@@ -143,7 +148,24 @@
     } else if (ext === sessionExt) {
       return 'linear-gradient(to bottom, #075985 60%, #082f49 100%)'    // sky
     } else if (ext === charExt) {
-      return 'linear-gradient(to bottom, #115e59 60%, #042f2e 100%)'    // teal
+      return 'linear-gradient(to bottom, #a1a1aa 60%, #52525b 100%)'    // zinc 600
+      // return 'linear-gradient(to bottom, #ec4899 60%, #831843 100%)'    // pink 900
+      // return 'linear-gradient(to bottom, #fbcfe8 60%, #f472b6 100%)'    // pink 400
+      // return 'linear-gradient(to bottom, #e11d48 60%, #9f1239 100%)'    // rose
+      // return 'linear-gradient(to bottom, #facc15 60%, #a16207 100%)'    // yellow
+      // return 'linear-gradient(to bottom, #115e59 60%, #042f2e 100%)'    // teal
+    }
+    return 'linear-gradient(to bottom, gray 60%, black 100%)'
+  }
+
+  function borderColor(card: StoryCard) {
+    const ext = extOf(card.path)
+    if (ext === storyExt) {
+      return 'border-slate-400'
+    } else if (ext === sessionExt) {
+      return 'border-sky-400'
+    } else if (ext === charExt) {
+      return 'border-yellow-400'
     }
     return 'linear-gradient(to bottom, gray 60%, black 100%)'
   }
@@ -199,11 +221,11 @@
   {:else}
     <div class="flex flex-wrap flex-none gap-2">
       {#each showingCards as card, i}
-        <Card href={hrefOf(card)} img={card.image} class='w-52 justify-between card' padding='none' style="--grad: {grad(card)};" on:click={onClick(card.path)}>
+        <Card href={hrefOf(card)} img={card.image} class='w-52 card {borderColor(card)} border-2' padding='none' style="--grad: {grad(card)};" on:click={onClick(card.path)}>
           <div class='px-2 py-0'>
             <h2 class='italic text-xs text-stone-100'>{cardType(card)}</h2>
           </div>
-          <div class="flex items-center justify-center p-2 mt-[-0.8rem] text-stone-50 font-bold">
+          <div class="flex items-center justify-center p-1 text-stone-50 font-bold">
             <h2 id={`card${i}`} class='text-ellipsis max-w-full overflow-hidden whitespace-nowrap'>{card.name}</h2>
           </div>
           {#if card.name.length > 19}
@@ -219,6 +241,7 @@
 
 <style>
   :global(.card) {
+    position: relative;
     background-image: var(--grad);
   }
 
@@ -226,22 +249,35 @@
     max-width: fit-content;
     mask-image: 
       linear-gradient(to top, black 0%, black 100%),
-      linear-gradient(to bottom, transparent 0%, black 100%);
+      linear-gradient(170deg, black 0%, transparent 55%),                              /* for card type */
+      linear-gradient(to bottom, transparent 0%,rgba(0, 0, 0, 0.8) 80%, black 100%); /* for card name */
     mask-position:
       center,
+      top left,
       bottom;
     mask-size:
       100% 100%,
-      100% 32px;
+      70% 1.8rem,
+      100% 1.8rem;
     mask-repeat:
       no-repeat,
+      no-repeat,
       no-repeat;
-    mask-composite: subtract, add;
+    mask-composite:
+      subtract,
+      add,
+      add;
+    border-radius: 0.5rem;
   }
 
   :global(.card > div) {
-    margin-top: -1rem;
-    border-bottom-left-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 </style>
