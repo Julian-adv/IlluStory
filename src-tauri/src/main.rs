@@ -2,6 +2,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use font_kit::source::SystemSource;
+use trash;
+
+#[tauri::command]
+fn trash_delete(path: String) -> String {
+    match trash::delete(path) {
+        Ok(()) => "Ok",
+        Err(_error) => "Error"
+    }.to_string()
+}
 
 fn get_fonts() -> Vec<String> {
     let source = SystemSource::new();
@@ -18,7 +27,7 @@ fn main() {
   tauri::Builder::default()
     .plugin(tauri_plugin_window_state::Builder::default().build())
     .plugin(tauri_plugin_fs_extra::init())
-    .invoke_handler(tauri::generate_handler![list_fonts])
+    .invoke_handler(tauri::generate_handler![list_fonts, trash_delete])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

@@ -5,10 +5,13 @@
   import { Button, Card, Dropdown, DropdownItem, Popover, Radio, Spinner } from 'flowbite-svelte'
   import { Icon } from 'flowbite-svelte-icons'
   import { sortAscending, sortDescending, sortTypeDate, sortTypeName, type Story, type StoryCard } from '$lib/interfaces'
-  import { story, storyPath, settings } from '$lib/store'
+  import { story, storyPath, settings, curCharPath, curChar } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
   import { allExts, basenameOf, loadStory } from '$lib/fs'
   import { allFlag, charExt, charFlag, sessionExt, sessionFlag, storyExt, storyFlag, extOf } from '$lib/fs'
+  import { invoke } from '@tauri-apps/api/tauri'
+  import { goto } from '$app/navigation'
+  import { loadChar } from '$lib/charSettings'
 
   let cards: StoryCard[] = []
   let showingCards: StoryCard[] = []
@@ -54,12 +57,25 @@
     loading = false
   })
 
-  function onClick(path:string) {
+  function onClick(card: StoryCard) {
     return async (_ev: Event) => {
-    const tempStory = await loadStory(path)
-      if (tempStory) {
-        $storyPath = path
-        $story = tempStory
+      const ext = extOf(card.path)
+      if (ext === storyExt) {
+        const tempStory = await loadStory(card.path)
+        if (tempStory) {
+          $storyPath = card.path
+          $story = tempStory
+          goto('/write')
+        }
+      } else if (ext === charExt) {
+        const tempChar = await loadChar(card.path)
+        if (tempChar) {
+          $curCharPath = card.path
+          $curChar = tempChar
+          goto('/write_char')
+        }
+      } else if (ext === sessionExt) {
+        goto('/play')
       }
     }
   }
@@ -165,7 +181,7 @@
     } else if (ext === sessionExt) {
       return 'border-sky-400'
     } else if (ext === charExt) {
-      return 'border-yellow-400'
+      return 'border-stone-400'
     }
     return 'linear-gradient(to bottom, gray 60%, black 100%)'
   }
@@ -178,16 +194,20 @@
     return false
   }
 
-  function hrefOf(card: StoryCard) {
-    const ext = extOf(card.path)
-    if (ext === storyExt) {
-      return '/write'
-    } else if (ext === charExt) {
-      return '/write_char'
-    } else if (ext === sessionExt) {
-      return '/play'
+  function onTrash(card: StoryCard) {
+    return async (ev: Event) => {
+      ev.stopPropagation()
+      let result = await invoke('trash_delete', { path: card.path })
+      if (result === 'Ok') {
+        const index = showingCards.findIndex(c => c.path === card.path)
+        if (index >= 0) {
+          showingCards.splice(index, 1)
+          showingCards = showingCards
+        }
+      } else {
+        alert(`Error can't move the card "${card.path}" to trash.`)
+      }
     }
-    return '/'
   }
 </script>
 
@@ -221,9 +241,14 @@
   {:else}
     <div class="flex flex-wrap flex-none gap-2">
       {#each showingCards as card, i}
-        <Card href={hrefOf(card)} img={card.image} class='w-52 card {borderColor(card)} border-2' padding='none' style="--grad: {grad(card)};" on:click={onClick(card.path)}>
-          <div class='px-2 py-0'>
+        <Card img={card.image} class='w-52 h-[310px] card {borderColor(card)} border-2 cursor-pointer' padding='none' style="--grad: {grad(card)};" on:click={onClick(card)}>
+          <div class='px-2 py-0 flex justify-between'>
             <h2 class='italic text-xs text-stone-100'>{cardType(card)}</h2>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 py-1" on:click={onTrash(card)}>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+            </svg>
           </div>
           <div class="flex items-center justify-center p-1 text-stone-50 font-bold">
             <h2 id={`card${i}`} class='text-ellipsis max-w-full overflow-hidden whitespace-nowrap'>{card.name}</h2>
@@ -250,7 +275,7 @@
     mask-image: 
       linear-gradient(to top, black 0%, black 100%),
       linear-gradient(170deg, black 0%, transparent 55%),                              /* for card type */
-      linear-gradient(to bottom, transparent 0%,rgba(0, 0, 0, 0.8) 80%, black 100%); /* for card name */
+      linear-gradient(to bottom, transparent 0%, black 100%); /* for card name */
     mask-position:
       center,
       top left,
@@ -258,7 +283,7 @@
     mask-size:
       100% 100%,
       70% 1.8rem,
-      100% 1.8rem;
+      100% 32px;
     mask-repeat:
       no-repeat,
       no-repeat,
