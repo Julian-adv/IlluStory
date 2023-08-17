@@ -1,13 +1,11 @@
 import { writable } from "svelte/store"
 import type { SceneType, Story, StringDictionary, Settings, Char } from "./interfaces"
-import { Api, sortAscending, sortTypeName } from './interfaces'
+import { Api, SortOrder, SortType } from './interfaces'
 
 const defaultScenes:SceneType[] = []
 
 export const initialScenes = writable(defaultScenes)
 export const additionalScenes = writable(defaultScenes)
-
-// export const startStoryId = writable(0);
 
 const defaultStory: Story = {
   title: '',
@@ -52,8 +50,8 @@ export const replaceDict = writable(dict)
 
 export const defaultSettings: Settings = {
   openAiApiKey: "",
-  sortOrder: sortAscending,
-  sortType: sortTypeName,
+  sortOrder: SortOrder.Ascending,
+  sortType: SortType.Name,
   convertMarkdown: true,
   dialogSettings: {
     bold: true,

@@ -66,8 +66,8 @@ export interface TextSettings {
 
 export interface Settings {
   openAiApiKey: string
-  sortOrder: string
-  sortType: string
+  sortOrder: SortOrder
+  sortType: SortType
   convertMarkdown: boolean
   dialogSettings: TextSettings
   descriptionSettings: TextSettings
@@ -91,10 +91,15 @@ export interface Settings {
   hiresUpscaler: string
 }
 
-export const sortTypeName = 'Name'
-export const sortTypeDate = 'Modified Date'
-export const sortAscending = 'a'
-export const sortDescending = 'd'
+export enum SortType {
+  Name = 'Name',
+  Date = 'Modified Date'
+}
+
+export enum SortOrder {
+  Ascending = 1,
+  Descending
+}
 
 export interface SelectItem {
   name: string
@@ -107,4 +112,11 @@ export interface Char {
   gender: string
   visual: string
   description: string
+}
+
+export enum FileType {
+  Story = 1,
+  Session,
+  Char,
+  All
 }

@@ -1,27 +1,32 @@
+<script lang="ts" context="module">
+  let cards: StoryCard[] = []
+  let unlisten:UnlistenFn
+</script>
 <script lang="ts">
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
   import { Button, Card, Dropdown, DropdownItem, Popover, Radio, Spinner } from 'flowbite-svelte'
   import { Icon } from 'flowbite-svelte-icons'
-  import { sortAscending, sortDescending, sortTypeDate, sortTypeName, type Story, type StoryCard } from '$lib/interfaces'
+  import { FileType, SortOrder, SortType, type Story, type StoryCard } from '$lib/interfaces'
   import { story, storyPath, settings, curCharPath, curChar } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
-  import { allExts, basenameOf, loadStory } from '$lib/fs'
-  import { allFlag, charExt, charFlag, sessionExt, sessionFlag, storyExt, storyFlag, extOf } from '$lib/fs'
+  import { extOf, allExts, basenameOf, loadStory, storyExt, charExt, sessionExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { loadChar } from '$lib/charSettings'
+  import { appDataDir } from '@tauri-apps/api/path'
+  import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
-  let cards: StoryCard[] = []
   let showingCards: StoryCard[] = []
+  let extFlag = FileType.All
   let loading = false
+  let working = false
   let defaultImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY/j//z8ABf4C/qc1gYQAAAAASUVORK5CYII='
 
-  onMount(async () => {
-    await loadSettings()
-
-    loading = true
+  async function reloadCards() {
+    working = true
+    cards = []
     const entries = await readDir('.', { dir: BaseDirectory.AppData, recursive: true })
     for (const entry of entries) {
       if (entry.name) {
@@ -54,7 +59,26 @@
     }
     resort()
     showingCards = filterExt(extFlag)
+    working = false
+  }
+
+  onMount(async () => {
+    if (cards.length > 0) {
+      return
+    }
+    await loadSettings()
+
+    loading = true
+    reloadCards()
     loading = false
+    if (!unlisten) {
+      invoke('start_watch', { path: await appDataDir() }).catch((err) => console.log(err))
+      unlisten = await listen<string>('change', (_event) => {
+        if (!working) {
+          reloadCards()
+        }
+      })
+    }
   })
 
   function onClick(card: StoryCard) {
@@ -83,24 +107,24 @@
   let sortOpen = false
 
   function resort() {
-    if ($settings.sortType === sortTypeName) {
+    if ($settings.sortType === SortType.Name) {
       cards.sort((cardA, cardB) => {
         if (cardA.name > cardB.name) {
-          return $settings.sortOrder === sortAscending ? 1 : -1
+          return $settings.sortOrder === SortOrder.Ascending ? 1 : -1
         }
         if (cardA.name < cardB.name) {
-          return $settings.sortOrder === sortAscending ? -1 : 1
+          return $settings.sortOrder === SortOrder.Ascending ? -1 : 1
         }
         return 0
       })
     }
-    if ($settings.sortType === sortTypeDate) {
+    if ($settings.sortType === SortType.Date) {
       cards.sort((cardA, cardB) => {
         if (cardA.modifiedAt > cardB.modifiedAt) {
-          return $settings.sortOrder === sortAscending ? 1 : -1
+          return $settings.sortOrder === SortOrder.Ascending ? 1 : -1
         }
         if (cardA.modifiedAt < cardB.modifiedAt) {
-          return $settings.sortOrder === sortAscending ? -1 : 1
+          return $settings.sortOrder === SortOrder.Ascending ? -1 : 1
         }
         return 0
       })
@@ -108,7 +132,7 @@
     cards = cards
   }
 
-  function changeSortType(newSortType: string) {
+  function changeSortType(newSortType: SortType) {
     sortOpen = false
     $settings.sortType = newSortType
     resort()
@@ -116,27 +140,25 @@
   }
 
   function toggleSortOrder() {
-    if ($settings.sortOrder === sortAscending) {
-      $settings.sortOrder = sortDescending
+    if ($settings.sortOrder === SortOrder.Ascending) {
+      $settings.sortOrder = SortOrder.Descending
     } else {
-      $settings.sortOrder = sortAscending
+      $settings.sortOrder = SortOrder.Ascending
     }
     resort()
     saveSettings()
   }
 
-  let extFlag = allFlag
-
   function filterExt(flag: number) {
     return cards.filter(card => {
       const ext = extOf(card.path)
-      if (ext === storyExt && flag === storyFlag) {
+      if (ext === storyExt && flag === FileType.Story) {
         return true
-      } else if (ext === sessionExt && flag === sessionFlag) {
+      } else if (ext === sessionExt && flag === FileType.Session) {
         return true
-      } else if (ext === charExt && flag === charFlag) {
+      } else if (ext === charExt && flag === FileType.Char) {
         return true
-      } else if (flag === allFlag) {
+      } else if (flag === FileType.All) {
         return true
       }
       return false
@@ -144,7 +166,7 @@
   }
 
   $: showingCards = filterExt(extFlag)
-
+  
   function cardType(card: StoryCard) {
     const ext = extOf(card.path)
     if (ext === storyExt) {
@@ -215,11 +237,11 @@
   <div class="my-1 flex gap-2">
     <Button color="alternative" size="sm">{$settings.sortType}<Icon name="chevron-down-solid" class="w-3 h-3 ml-2 text-white dark:text-white" /></Button>
     <Dropdown bind:open={sortOpen}>
-      <DropdownItem on:click={() => {changeSortType(sortTypeName)}}>Name</DropdownItem>
-      <DropdownItem on:click={() => {changeSortType(sortTypeDate)}}>Modified Date</DropdownItem>
+      <DropdownItem on:click={() => {changeSortType(SortType.Name)}}>Name</DropdownItem>
+      <DropdownItem on:click={() => {changeSortType(SortType.Date)}}>Modified Date</DropdownItem>
     </Dropdown>
     <Button color="alternative" size="sm" on:click={toggleSortOrder}>
-      {#if $settings.sortOrder === sortAscending}
+      {#if $settings.sortOrder === SortOrder.Ascending}
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
         </svg>
@@ -229,10 +251,10 @@
         </svg>
       {/if}
     </Button>
-    <Radio bind:group={extFlag} value={allFlag}>All</Radio>
-    <Radio bind:group={extFlag} value={storyFlag}>Story</Radio>
-    <Radio bind:group={extFlag} value={charFlag}>Character</Radio>
-    <Radio bind:group={extFlag} value={sessionFlag}>Session</Radio>
+    <Radio bind:group={extFlag} value={FileType.All}>All</Radio>
+    <Radio bind:group={extFlag} value={FileType.Story}>Story</Radio>
+    <Radio bind:group={extFlag} value={FileType.Char}>Character</Radio>
+    <Radio bind:group={extFlag} value={FileType.Session}>Session</Radio>
   </div>
   {#if loading}
     <div class='flex w-full items-center justify-center' style='height: 80vh'>

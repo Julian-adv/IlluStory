@@ -101,11 +101,6 @@ export const sessionExt = 'session'
 export const charExt = 'char'
 export const allExts = [storyExt, sessionExt, charExt]
 
-export const storyFlag = 1
-export const sessionFlag = 2
-export const charFlag = 3
-export const allFlag = 4
-
 export function basenameOf(path: string) {
   let endIndex = path.lastIndexOf('.')
   if (endIndex < 0) {
