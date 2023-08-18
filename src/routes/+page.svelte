@@ -14,7 +14,7 @@
   import { extOf, allExts, basenameOf, loadStory, storyExt, charExt, sessionExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
-  import { loadChar } from '$lib/charSettings'
+  import { cardFromStory, loadChar } from '$lib/charSettings'
   import { appDataDir } from '@tauri-apps/api/path'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
@@ -89,6 +89,7 @@
         if (tempStory) {
           $storyPath = card.path
           $story = tempStory
+          cardFromStory($story, $storyPath)
           goto('/write')
         }
       } else if (ext === charExt) {

@@ -5,7 +5,7 @@
   import type { FormSizeType } from "flowbite-svelte/dist/types"
 
   export let label = ''
-  export let value = ''
+  export let value: string|number = ''
   export let help = ''
   export let placeholder = ''
   export let disabled = false

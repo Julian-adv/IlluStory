@@ -17,26 +17,53 @@ export enum Api {
   Oobabooga = 'oobabooga'
 }
 
+export interface OpenAiParam {
+  apiUrl: string;
+  model: string;
+  temperature: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+  maxTokens: number;
+  contextSize: number;
+}
+
+export interface OobaboogaParam {
+  apiUrl: string;
+  maxTokens: number;
+  temperature: number;
+  topP: number;
+  topK: number;
+  typicalP: number;
+  topA: number;
+  repetitionPenalty: number;
+  encoderRepetitionPenalty: number;
+  noRepeatNgramSize: number;
+  minLength: number;
+  seed: number;
+  doSample: boolean;
+  penaltyAlpha:  number;
+  numBeams: number;
+  lengthPenalty: number;
+  earlyStopping: boolean;
+  truncationLength: number;
+  banEosToken: boolean;
+  addBosToken: boolean;
+  skipSpecialTokens: boolean;
+  contextSize: number;
+  systemPrefix: string;
+  userPrefix: string;
+  assistantPrefix: string;
+}
+
 export interface Story {
   title: string;
   image: string;
   api: Api;
-  apiUrl: string;
-  temperature: number;
-  maxTokens: number;
-  contextSize: number;
   summarizePrompt: string;
   // openAI
-  model: string;
-  frequencyPenalty: number;
-  presencePenalty: number;
+  openAi: OpenAiParam;
   // oobabooga
-  topP: number;
-  typicalP: number;
-  topK: number;
-  repetitionPenalty: number;
-  penaltyAlpha: number;
-  lengthPenalty: number;
+  oobabooga: OobaboogaParam;
 
   prompts: SceneType[]
 }

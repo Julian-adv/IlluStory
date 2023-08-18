@@ -28,7 +28,8 @@
   }
 
   function onClick(item: SelectItem) {
-    return () => {
+    return (ev: Event) => {
+      ev.stopPropagation()
       dropdownOpen = false
       value = item.value
       name = item.name

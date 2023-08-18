@@ -85,10 +85,9 @@ export async function savePath(path: string, ext: string, data: any) {
 export async function saveStory(story: Story) {
   let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim()
   if (fileName === '') {
-    fileName = 'story' + Date.now() + '.json'
-  } else {
-    fileName = fileName + '.json'
+    fileName = 'story' + Date.now()
   }
+  fileName += '.' + storyExt
   return savePath(fileName, 'story', story)
 }
 

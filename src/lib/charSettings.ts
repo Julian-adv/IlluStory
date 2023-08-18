@@ -1,7 +1,10 @@
 import { readTextFile } from "@tauri-apps/api/fs"
 import { open } from '@tauri-apps/api/dialog'
 import { savePath } from "./fs"
-import type { Char } from "./interfaces"
+import type { Char, Story } from "./interfaces"
+import { dirname, sep } from "@tauri-apps/api/path"
+import { charSetting, userSetting } from "./api"
+import { char, charPath, user, userPath } from "./store"
 
 export async function loadChar(path: string) {
   const json = await readTextFile(path)
@@ -25,4 +28,19 @@ export async function saveChar(char: Char) {
     fileName = fileName + '.char'
   }
   return savePath(fileName, 'char', char)
+}
+
+export async function cardFromStory(story: Story, storyPath: string) {
+  const dir = await dirname(storyPath)
+  for (const prompt of story.prompts) {
+    if (prompt.role === charSetting) {
+      const path = dir + sep + prompt.content
+      char.set(await loadChar(path))
+      charPath.set(path)
+    } else if (prompt.role === userSetting) {
+      const path = dir + sep + prompt.content
+      user.set(await loadChar(path))
+      userPath.set(path)
+    }
+  }
 }

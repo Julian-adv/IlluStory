@@ -19,7 +19,7 @@
   let changed = false
 
   function grab(clientY:number, element:HTMLElement, target:HTMLElement) {
-      if (target.nodeName === 'TEXTAREA') {
+      if (target.nodeName === 'TEXTAREA' || target.nodeName === 'BUTTON') {
         return
       }
       // modify grabbed element

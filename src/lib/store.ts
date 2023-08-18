@@ -11,24 +11,48 @@ const defaultStory: Story = {
   title: '',
   image: '',
   api: Api.OpenAi,
-  apiUrl: 'https://api.openai.com/v1',
-  temperature: 0.75,
-  maxTokens: 300,
-  contextSize: 4096,
   // This prompt is copied from https://arca.live/b/characterai/81890153
   // summarizePrompt: "This is part of the history of the last conversation between <char>(<char_gender>) and <user>(<user_gender>). Summarize, condense, approximately timestamp the content of the messages exchanged between <char> and <user>, focusing on concrete events and direct information from their conversation. Remove or simplify any content that appears to be redundant or repetitive. Use abbreviations, common language shortcuts. Lastly, add \"<Preiviously on <char> and <user>'s story>\" at the beginning of the output, and \"</Previously>\" at the end of the output. If any of these phrases are in the middle of the input you receive, delete them. They should only appear once, at the end of the output. Next, add a visual summary of what's going on. It is important to include details about character's appearance, clothing, posture, and surroundings in the visual summary. The description should be written in short phrases within \"<Visual>\" and \"</Visual>\", for example \"<Visual>blonde hair, big breasts, long legs, school uniform, lying in bed</Visual>\"",
   summarizePrompt: "This is part of the history of the last conversation between <char>(<char_gender>) and <user>(<user_gender>). Summarize, condense, approximately timestamp the content of the messages exchanged between <char> and <user>, focusing on concrete events and direct information from their conversation. Remove or simplify any content that appears to be redundant or repetitive. Use abbreviations, common language shortcuts. Lastly, add \"<Preiviously on <char> and <user>'s story>\" at the beginning of the output, and \"</Previously>\" at the end of the output. If any of these phrases are in the middle of the input you receive, delete them. They should only appear once, at the end of the output.",
-  // open ai
-  model: '',
-  frequencyPenalty: 0.4,
-  presencePenalty: 0.4,
+
+  openAi: {
+    apiUrl: 'https://api.openai.com/v1',
+    model: '',
+    frequencyPenalty: 0.4,
+    presencePenalty: 0.4,
+    temperature: 0.75,
+    maxTokens: 300,
+    contextSize: 4096,
+  },
+  
   // oobabooga
-  topP: 0.9,
-  typicalP: 1.0,
-  repetitionPenalty: 1.1,
-  topK: 0,
-  penaltyAlpha: 0,
-  lengthPenalty: 1,
+  oobabooga: {
+    apiUrl: 'http://localhost:5000/api/v1/generate',
+    maxTokens: 300,
+    temperature: 1.0,
+    topK: 0,
+    topP: 1.0,
+    typicalP: 1.0,
+    topA: 0,
+    repetitionPenalty: 1.0,
+    encoderRepetitionPenalty: 1,
+    noRepeatNgramSize: 0,
+    minLength: 0,
+    doSample: true,
+    penaltyAlpha: 0,
+    numBeams: 1,
+    lengthPenalty: 1,
+    earlyStopping: false,
+    truncationLength: 2048,
+    addBosToken: true,
+    banEosToken: false,
+    skipSpecialTokens: true,
+    seed: -1,
+    contextSize: 4096,
+    systemPrefix: "### Instruction:\n",
+    userPrefix: "### Input:\n",
+    assistantPrefix: "### Response:\n"
+  },
 
   prompts: []
 }

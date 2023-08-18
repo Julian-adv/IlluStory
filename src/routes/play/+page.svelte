@@ -8,7 +8,7 @@
   import { savePath } from '$lib/fs'
   import { newSceneId, scrollToEnd } from '$lib'
   import DropSelect from '../common/DropSelect.svelte'
-  import type { Char, SceneType } from '$lib/interfaces'
+  import { Api, type Char, type SceneType } from '$lib/interfaces'
 
   let role = 'user'
   let userInput = ''
@@ -149,7 +149,13 @@
     }
   })
 
-  $: warningTokens = $usage.total_tokens + $story.maxTokens > $story.contextSize
+  let warningTokens: boolean
+
+  $: if ($story.api === Api.OpenAi) {
+    warningTokens = $usage.total_tokens + $story.openAi.maxTokens > $story.openAi.contextSize 
+  } else {
+    warningTokens = $usage.total_tokens + $story.oobabooga.maxTokens > $story.oobabooga.contextSize 
+  }
 </script>
 
 <main>

@@ -34,7 +34,7 @@
     if ($settings.convertMarkdown) {
       let text = str
       text = text.replace(/(?!=)"([^"]+)"/g, "<em class='dialog'>\"$1\"</em>")
-      text = text.replace(/(?<=^|\n|> |[.!?] )([^<".\n]*?)(?=((\.+|!|\?)($| |\n|<em))|(, <em))/g, "<span class='description'>$1</span>")
+      text = text.replace(/(?<=^|\n|> |>, |[.!?] )([^<".\n]*?)(?=((\.+|!|\?)($| |\n|<em))|( <em))/g, "<span class='description'>$1</span>")
       text = text.replace(/(?<=>"[^"]*?)<span class='description'>(?=.*?"<)/g, "<span>")
       const userNameRegex = new RegExp($replaceDict['user'], 'g')
       text = text.replace(userNameRegex, "<span class='userName'>$&</span>")
