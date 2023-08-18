@@ -197,7 +197,7 @@
   {/if}
   {#if $story.api === Api.Oobabooga}
     <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
-    <NumberField label='Top k' help="The number of highest probability vocabulary tokens to keep for top-k-filtering." bind:value={$story.topK} min={0.0} max={2.0} save={autoSaveFunc} />
+    <NumberField label='Top k' help="The number of highest probability vocabulary tokens to keep for top-k-filtering." bind:value={$story.topK} min={0} max={100} step={1} save={autoSaveFunc} />
     <NumberField label='Top p' help="If set to float < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation." bind:value={$story.topP} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Typical p' help="If set to float < 1, the smallest set of the most locally typical tokens with probabilities that add up to typical_p or higher are kept for generation." bind:value={$story.typicalP} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Length penalty' help="length_penalty > 0.0 promotes longer sequences, while length_penalty < 0.0 encourages shorter sequences." bind:value={$story.lengthPenalty} min={-5.0} max={5.0} save={autoSaveFunc} />

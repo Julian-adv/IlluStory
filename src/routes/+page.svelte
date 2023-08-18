@@ -129,7 +129,7 @@
         return 0
       })
     }
-    cards = cards
+    showingCards = filterExt(extFlag)
   }
 
   function changeSortType(newSortType: SortType) {
