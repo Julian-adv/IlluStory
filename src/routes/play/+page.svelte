@@ -1,16 +1,14 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { charSetting, chatRoles, sendChat, startStory, userSetting } from '$lib/api'
+  import { charSetting, sendChat, startStory, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict, char, user } from '$lib/store'
   import { savePath } from '$lib/fs'
   import { newSceneId, scrollToEnd } from '$lib'
-  import DropSelect from '../common/DropSelect.svelte'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
 
-  let role = 'user'
   let userInput = ''
 
   function findFirstSceneIndex(scenes: SceneType[]) {
@@ -160,16 +158,16 @@
 
 <main>
   <SceneList />
-  <div class='grid grid-cols-[8rem,1fr] gap-2 mt-2'>
-    <div class='col-span-2 text-sm text-stone-400'>
+  <div class='grid grid-cols-[8rem,1fr,3rem] gap-2 mt-2'>
+    <div class='col-span-3 text-sm text-stone-400'>
       Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total tokens: {$usage.total_tokens}
     </div>
     {#if warningTokens}
-      <div class='col-span-2 text-sm text-red-400'>
+      <div class='col-span-3 text-sm text-red-400'>
         Since the number of tokens can overflow the context size, you may want to summarize them.
       </div>
     {/if}
-    <div class='col-span-2 text-sm text-stone-400'>
+    <div class='col-span-3 text-sm text-stone-400'>
       <Button color='alternative' size='sm' on:click={newSession}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
@@ -199,11 +197,6 @@
         <span class='pl-2'>Summarize</span>
       </Button>
     </div>
-    <div class='w-32 flex'>
-      <DropSelect items={chatRoles} size="sm" classStr='text-sm self-start text-center w-full' bind:value={role} />
-    </div>
-    <div>
-      <Input {role} bind:value={userInput} />
-    </div>
+    <Input bind:value={userInput} />
   </div>
 </main>

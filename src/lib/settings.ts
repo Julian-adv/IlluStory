@@ -82,6 +82,12 @@ function fixSettings(settings: Settings) {
   if (!settings.enableADetailer) {
     settings.enableADetailer = defaultSettings.enableADetailer
   }
+  if (!settings.aiLang) {
+    settings.aiLang = defaultSettings.aiLang
+  }
+  if (!settings.userLang) {
+    settings.userLang = defaultSettings.userLang
+  }
 }
 
 export async function loadSettings() {

@@ -6,6 +6,7 @@
   export let placeholder = ''
   export let value = ''
   export let unWrappedClass = ''
+  export let style = ''
   export let onKeyDown = (_e: KeyboardEvent) => {}
   export let onUpdate = (_str: string) => {}
 
@@ -31,4 +32,4 @@
   })
 </script>
 
-<Textarea {id} {placeholder} {unWrappedClass} rows={1} bind:value on:blur on:input={onInput} on:keydown={onKeyDown} on:change={onChange} class='px-2 py-1 text-base prompt focus:ring-gray-200 focus:border-gray-200 focus:ring-4'/>
+<Textarea {id} {placeholder} {unWrappedClass} {style} rows={1} bind:value on:blur on:input={onInput} on:keydown={onKeyDown} on:change={onChange} class='px-2 py-1 text-base prompt focus:ring-gray-200 focus:border-gray-200 focus:ring-4'/>

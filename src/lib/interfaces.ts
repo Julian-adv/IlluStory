@@ -2,7 +2,9 @@ export interface SceneType {
   id: number
   role: string
   content: string
+
   name?: string
+  translatedContent?: string
   image?: string
   done?: boolean
 }
@@ -116,6 +118,11 @@ export interface Settings {
   denoisingStrength: number
   hiresScale: number
   hiresUpscaler: string
+  deeplApiKey: string
+  aiLang: string
+  userLang: string
+  translateOutput: boolean
+  translateInput: boolean
 }
 
 export enum SortType {

@@ -112,7 +112,12 @@ export const defaultSettings: Settings = {
   denoisingStrength: 0.4,
   hiresScale: 2.0,
   hiresUpscaler: 'Latent',
-  enableADetailer: true
+  enableADetailer: true,
+  deeplApiKey: '',
+  aiLang: 'EN-US',
+  userLang: '',
+  translateOutput: false,
+  translateInput: false
 }
 
 export const settings = writable(defaultSettings)

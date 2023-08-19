@@ -172,11 +172,11 @@
     <StringField label='URL' placeholder='For example, https://api.openai.com/v1' bind:value={$story.openAi.apiUrl} save={autoSaveFunc} />
     <SelectField label='Models' items={models} search={true} bind:value={$story.openAi.model} save={autoSaveFunc} >
       <p slot='helper'>
-        See our <a href='https://platform.openai.com/docs/models/overview' target='_blank' on:click={onModelOverview} class='text-sky-500'>Model overview</a> for descriptions of them.
+        See Open AI's <a href='https://platform.openai.com/docs/models/overview' target='_blank' on:click={onModelOverview} class='text-sky-500'>Model overview</a> for descriptions of them.
       </p>
     </SelectField>
 
-    <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
+    <NumberField label='Temperature' help='Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.' bind:value={$story.openAi.temperature} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Frequency penalty' help="Positive values reduce the model's tendency to repeat itself." bind:value={$story.openAi.frequencyPenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Presence penalty' help="Positive values help the model to transition to new topics." bind:value={$story.openAi.presencePenalty} min={-2.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.openAi.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />

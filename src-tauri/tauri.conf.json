@@ -30,6 +30,10 @@
         "all": false,
         "asset": true,
         "assetScope": ["/"]
+      },
+      "http": {
+        "request": true,
+        "scope": ["https://api-free.deepl.com/v2/translate"]
       }
     },
     "bundle": {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SceneType } from "$lib/interfaces"
-  import { afterUpdate, onMount } from "svelte"
+  import { onMount } from "svelte"
   import Markdown from "../common/Markdown.svelte"
   import { Button, Popover, Spinner } from "flowbite-svelte"
   import { saveImageToFile } from "$lib/fs"
@@ -9,6 +9,7 @@
   import { replaceDict, settings } from "$lib/store"
   import { realImageSize } from "$lib"
   import { generateImage } from "$lib/imageApi"
+  import { translateText } from "$lib/deepLApi"
 
   export let scene: SceneType
   let content: string
@@ -19,6 +20,7 @@
   let imageHeight = realImageSize($settings.imageHeight)
   let popoverId = 'pop123'
   let imagePrompt = ''
+  let translated = false
   const visualStart = '<Visual>'
   const visualEnd = '</Visual>'
   const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
@@ -45,19 +47,33 @@
     return str
   }
 
-  function extractImagePrompt(scene: SceneType): [string, string] {
+  async function translateOutput(scene: SceneType, translate: boolean) {
+    let cleared = clearImagePrompt(scene.content)
+    if (translate) {
+      if (scene.translatedContent) {
+        cleared = scene.translatedContent
+      } else {
+        scene.translatedContent = cleared = await translateText($settings, $settings.userLang, cleared)
+      }
+      translated = true
+    } else {
+      translated = false
+    }
+    return convertToMarkdown(cleared)
+  }
+
+  async function extractImagePrompt(scene: SceneType): Promise<[string, string]> {
     // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const matches = scene.content.match(regexp) || []
     const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
-    const cleanedInput = clearImagePrompt(scene.content)
-    const markdown = convertToMarkdown(cleanedInput)
+    const markdown = await translateOutput(scene, $settings.translateOutput)
     return [markdown, extractedContents.join(',')]
   }
 
-  export function generateImageIfNeeded(_sceneParam: SceneType) {
+  export async function generateImageIfNeeded(_sceneParam: SceneType) {
     if (scene.image) {
       showImage = true;
-      [content, imagePrompt] = extractImagePrompt(scene)
+      [content, imagePrompt] = await extractImagePrompt(scene)
       imageFromSD = Promise.resolve(scene.image)
       return
     }
@@ -65,7 +81,7 @@
       return
     }
     let cleanedContent;
-    [cleanedContent, imagePrompt] = extractImagePrompt(scene)
+    [cleanedContent, imagePrompt] = await extractImagePrompt(scene)
     showImage = imagePrompt !== ''
     if (showImage) {
       content = cleanedContent
@@ -78,18 +94,21 @@
     }
   }
 
-  onMount(() => {
-    content = convertToMarkdown(clearImagePrompt(scene.content))
+  onMount(async () => {
+    content = await translateOutput(scene, $settings.translateOutput)
     generateImageIfNeeded(scene)
   })
 
-  afterUpdate(() => {
-    if (scene.done) {
-      generateImageIfNeeded(scene)
-    } else {
-      content = convertToMarkdown(clearImagePrompt(scene.content))
-    }
-  })
+  // afterUpdate(async () => {
+  //   if (scene.done) {
+  //     generateImageIfNeeded(scene)
+  //   } else {
+  //     const tempContent = await translateOutput(scene, $settings.translateOutput)
+  //     if (tempContent !== content) {
+  //       content = tempContent
+  //     }
+  //   }
+  // })
 
   function regenerateImage() {
     imageFromSD = generateImage($settings, imagePrompt)
@@ -108,6 +127,10 @@
         saveImageToFile(scene.image, fileName)
       }
     }
+  }
+
+  async function translate() {
+    content = await translateOutput(scene, !translated)
   }
 </script>
 
@@ -138,7 +161,12 @@
       </div>
     </div>
   {/if}
-  <Markdown value={content} />
+  <Markdown bind:value={content} />
+  <Button color='alternative' class='w-7 h-7 p-0 focus:ring-0' on:click={translate}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
+    </svg>
+  </Button>
 </div>
 <div class="clear-both p-2"></div>
 

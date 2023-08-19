@@ -8,13 +8,51 @@
   import FontField from '../common/FontField.svelte'
   import NumberField from '../common/NumberField.svelte'
   import TextField from '../common/TextField.svelte'
+  import SelectField from '../common/SelectField.svelte';
 
+  const languages = [
+    { value: "BG", name: "Bulgarian" },
+    { value: "CS", name: "Czech" },
+    { value: "DA", name: "Danish" },
+    { value: "DE", name: "German" },
+    { value: "EL", name: "Greek" },
+    { value: "EN-GB", name: "English (British)" },
+    { value: "EN-US", name: "English (American)" },
+    { value: "ES", name: "Spanish" },
+    { value: "ET", name: "Estonian" },
+    { value: "FI", name: "Finnish" },
+    { value: "FR", name: "French" },
+    { value: "HU", name: "Hungarian" },
+    { value: "ID", name: "Indonesian" },
+    { value: "IT", name: "Italian" },
+    { value: "JA", name: "Japanese" },
+    { value: "KO", name: "Korean" },
+    { value: "LT", name: "Lithuanian" },
+    { value: "LV", name: "Latvian" },
+    { value: "NB", name: "Norwegian (Bokmål)" },
+    { value: "NL", name: "Dutch" },
+    { value: "PL", name: "Polish" },
+    { value: "PT-BR", name: "Portuguese (Brazilian)" },
+    { value: "PT-PT", name: "Portuguese (all Portuguese varieties excluding Brazilian Portuguese)" },
+    { value: "RO", name: "Romanian" },
+    { value: "RU", name: "Russian" },
+    { value: "SK", name: "Slovak" },
+    { value: "SL", name: "Slovenian" },
+    { value: "SV", name: "Swedish" },
+    { value: "TR", name: "Turkish" },
+    { value: "UK", name: "Ukrainian" },
+    { value: "ZH", name: "Chinese (simplified)" },
+  ]
   onMount(async () => {
     await loadSettings()
   })
 
   function save() {
     saveSettings()
+  }
+  
+  function onDeepLApi() {
+    open('https://www.deepl.com/pro-api?cta=header-pro-api')
   }
 </script>
 
@@ -47,6 +85,16 @@
     {/if}
     <CheckField label='Use ADetailer' help="Whether to use ADetailer. You need to install adetailer in web UI extensions. It will enhace faces in the image." bind:value={$settings.enableADetailer} save={save} />
   {/if}
+  <h1 class='text-lg font-semibold mt-4 col-span-3'>Translation</h1>
+  <StringField label='DeepL API Key' placeholder='xxxxx' help='' bind:value={$settings.deeplApiKey} save={save}>
+    <p slot='helper'>
+      DeepL API key. You can get it from <a href='https://www.deepl.com/pro-api?cta=header-pro-api' target='_blank' on:click={onDeepLApi} class='text-sky-500'>DeepL API</a>.
+    </p>
+  </StringField>
+  <SelectField label='AI language' items={languages} help='Language to pass to the AI.' search={true} bind:value={$settings.aiLang} save={save} />
+  <SelectField label='User language' items={languages} help='The language the user speaks.' search={true} bind:value={$settings.userLang} save={save} />
+  <CheckField label="Automatically translate the AI's output" help="" bind:value={$settings.translateOutput} save={save} />
+  <CheckField label="Automatically translate user input" help="" bind:value={$settings.translateInput} save={save} />
   <h1 class='text-lg font-semibold mt-4 col-span-3'>Formatting</h1>
   <CheckField label='Convert to Markdown' help="Convert the AI's output to markdown." bind:value={$settings.convertMarkdown} save={save} />
   <FontField label='Font' help="" bind:value={$settings.fontFamily} bind:size={$settings.fontSize} sample='The body of the story is displayed in this font.' save={save} />
