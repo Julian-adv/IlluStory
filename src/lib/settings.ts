@@ -1,5 +1,5 @@
 import { story, settings, defaultSettings } from './store'
-import type { Settings, Story } from './interfaces'
+import { Api, type Settings, type Story } from './interfaces'
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { Configuration, OpenAIApi } from 'openai'
 import { get } from 'svelte/store'
@@ -88,7 +88,7 @@ export async function loadSettings() {
   const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
   settings.set(JSON.parse(settingsJson))
   fixSettings(get(settings))
-  if (currentStory.apiUrl && currentStory.apiUrl.startsWith('https://api.openai.com')) {
+  if (currentStory.api === Api.OpenAi && currentStory.openAi.apiUrl && currentStory.openAi.apiUrl.startsWith('https://api.openai.com')) {
       const configuration = new Configuration({
       apiKey: get(settings).openAiApiKey
     })
@@ -100,17 +100,10 @@ export async function loadSettings() {
 
     return models
   } else {
-    // console.log('url', tempStory.apiUrl)
-    // const url = new URL(tempStory.apiUrl + '/models')
-    // const respFromGPT = await fetch(url, {
-    //   body: "",
-    //   headers: {},
-    //   method: "POST",
-    //   signal: null
-    // })
-    // const dataFromGPT = await respFromGPT.json()
-    // console.log('dataFromGPT', dataFromGPT)
+    // Open AI compatible API
     return [
+      { value: "gpt-3.5-turbo", name: "gpt-3.5-turbo"},
+      { value: "gpt-3.5-turbo-16k", name: "gpt-3.5-turbo-16k"},
       { value: "gpt-4", name: "gpt-4"},
       { value: "gpt-4-32k", name: "gpt-4-32k"}
     ]
