@@ -8,7 +8,7 @@
   import FontField from '../common/FontField.svelte'
   import NumberField from '../common/NumberField.svelte'
   import TextField from '../common/TextField.svelte'
-  import SelectField from '../common/SelectField.svelte';
+  import SelectField from '../common/SelectField.svelte'
 
   const languages = [
     { value: "BG", name: "Bulgarian" },

@@ -4,7 +4,7 @@
   import { loadStoryDialog, saveStory, saveObjQuietly } from "$lib/fs"
   import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
-  import { changeApi, roles, countTokensApi, startStory, charSetting, userSetting } from "$lib/api"
+  import { changeApi, roles, countTokensApi, startStory, charSetting, userSetting, systemRole } from "$lib/api"
   import { story, storyPath, curChar, curCharPath, char, charPath, user, userPath } from "$lib/store"
   import { Api, type Char } from "$lib/interfaces"
   import StringField from "../common/StringField.svelte"
@@ -36,7 +36,7 @@
 
   async function addPrompt() {
     await tick()
-    $story.prompts = [...$story.prompts, { id: $story.prompts.length, role: 'system', content: '' } ]
+    $story.prompts = [...$story.prompts, { id: $story.prompts.length, role: systemRole, content: '' } ]
   }
 
   function onModelOverview() {
@@ -209,6 +209,7 @@
     <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$story.oobabooga.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />
     <NumberField label='Context size' help="Represents the model's context size. If story tokens near this, the chat history will be summarized." bind:value={$story.oobabooga.contextSize} min={512} max={32768} step={1} save={autoSaveFunc} />
   {/if}
+  <TextField label='Visualize prompt' help="The prompt to use for visualize the conversation." bind:value={$story.visualizePrompt} save={autoSaveFunc} />
   <TextField label='Summarize prompt' help="The prompt to use for summarizing the conversation." bind:value={$story.summarizePrompt} save={autoSaveFunc} />
 </div>
 

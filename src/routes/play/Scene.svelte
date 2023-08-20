@@ -10,6 +10,7 @@
   import { realImageSize } from "$lib"
   import { generateImage } from "$lib/imageApi"
   import { translateText } from "$lib/deepLApi"
+  import { assistantRole, systemRole } from "$lib/api"
 
   export let scene: SceneType
   let content: string
@@ -23,15 +24,15 @@
   let translated = false
   const visualStart = '<Visual>'
   const visualEnd = '</Visual>'
-  const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
-  $: imageClass = imageWidth > window.innerWidth / 2 ?
+    const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
+    $: imageClass = imageWidth > window.innerWidth / 2 ?
                     'clear-both flex flex-col items-center z-10' :
                     'flex flex-col float-left mr-5 z-10'
 
   function clearImagePrompt(str: string) {
-    return str.replace(regexp, '').trim()
-  }
-
+          return str.replace(regexp, '').trim()
+    }
+    
   function convertToMarkdown(str: string) {
     if ($settings.convertMarkdown) {
       let text = str
@@ -66,7 +67,7 @@
     // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const matches = scene.content.match(regexp) || []
     const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
-    const markdown = await translateOutput(scene, $settings.translateOutput)
+        const markdown = await translateOutput(scene, $settings.translateOutput)
     return [markdown, extractedContents.join(',')]
   }
 
@@ -77,7 +78,7 @@
       imageFromSD = Promise.resolve(scene.image)
       return
     }
-    if (waitingImage || !(scene.role === 'system' || scene.role === 'assistant')) {
+    if (waitingImage || !(scene.role === systemRole || scene.role === assistantRole)) {
       return
     }
     let cleanedContent;

@@ -1,14 +1,15 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { charSetting, sendChat, startStory, userSetting } from '$lib/api'
+  import { charSetting, sendChat, startStory, systemRole, userRole, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict, char, user } from '$lib/store'
   import { savePath } from '$lib/fs'
-  import { newSceneId, scrollToEnd } from '$lib'
+  import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
 
+  let translatedInput = ''
   let userInput = ''
 
   function findFirstSceneIndex(scenes: SceneType[]) {
@@ -45,10 +46,10 @@
       let content = prompt.content
       if (prompt.role === charSetting) {
         content = replaceCharSetting('char', $char, '<Character>', '</Character>')
-        role = 'system'
+        role = systemRole
       } else if (prompt.role === userSetting) {
-        content = replaceCharSetting('user', $user, '<Me <user>>', '</Me <user>>')
-        role = 'system'
+        content = replaceCharSetting('user', $user, '<User <user>>', '</User <user>>')
+        role = systemRole
       }
       return { id: prompt.id, role: role, content: content, image: prompt.image }
     })
@@ -111,20 +112,30 @@
     $usage = zeroUsage
     $sessionPath = ''
     userInput = ''
+    translatedInput = ''
     $summarySceneIndex = 0
   }
 
-  async function regenerate() {
-    if ($additionalScenes.length == 0) {
+  async function goBack() {
+    if ($additionalScenes.length < 2) {
       return
     }
+    // pop output of AI
     $additionalScenes.pop()
-    const scene = $additionalScenes.pop()
-    if (scene) {
-      const userNameLabel = $replaceDict['user'] + ": "
-      userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content
+    if (lastScene($additionalScenes).role === userRole) {
+      const scene = $additionalScenes.pop()
+      if (scene) {
+        const userNameLabel = $replaceDict['user'] + ": "
+        if (scene.translatedContent) {
+          translatedInput = scene.content
+          userInput = ''
+        } else {
+          translatedInput = ''
+          userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content
+        }
+      }
+      $additionalScenes = $additionalScenes
     }
-    $additionalScenes = $additionalScenes
   }
 
   async function summarize() {
@@ -184,7 +195,7 @@
           <span class='pl-2'>Save as ...</span>
         </Button>
       {/if}
-      <Button color='alternative' size='sm' on:click={regenerate}>
+      <Button color='alternative' size='sm' on:click={goBack}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
         </svg>
@@ -197,6 +208,6 @@
         <span class='pl-2'>Summarize</span>
       </Button>
     </div>
-    <Input bind:value={userInput} />
+    <Input {translatedInput} bind:value={userInput} />
   </div>
 </main>

@@ -33,7 +33,7 @@
       },
       "http": {
         "request": true,
-        "scope": ["https://api-free.deepl.com/v2/translate"]
+        "scope": ["https://api-free.deepl.com/v2/translate", "http://*"]
       }
     },
     "bundle": {

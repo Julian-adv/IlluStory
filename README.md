@@ -5,11 +5,11 @@ IlluStory is a frontend for chatting with LLMs. Still in development.
 ## Installation
 
 #### 1. (Optional) Install [Automatic1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
-#### 1-1. Run Automatic1111's Web UI with --api --cors-allow-origins option.
+#### 1-1. Run Automatic1111's Web UI with --api option.
 
 *webui-user.bat*
 ``` bat
-set COMMANDLINE_ARGS=--xformers --api --autolaunch --cors-allow-origins=*
+set COMMANDLINE_ARGS=--xformers --api --autolaunch
 ```
 
 #### 2. (Optional) Install [Oobabooga's Text generation web UI](https://github.com/oobabooga/text-generation-webui)
@@ -31,6 +31,10 @@ npm run tauri dev
 #### 5. Enter your OpenAI API Key in settings
 
 ![Settings API](screenshots/screen-api-key.png)
+
+#### 6. Enter your DeepL API key in settings (if you want automatic translation)
+
+![Settings API](screenshots/setting-deepl-key.png)
 
 #### 6. Write story settings
 

@@ -14,6 +14,10 @@ export async function translateText(settings: Settings, lang: string, text: stri
       "Content-Type": "application/json"
     }
   })
-  console.log('response', response)
-  return response.data.translations[0].text
+  if (response.ok) {
+    return response.data.translations[0].text
+  } else {
+    console.log('response from deepl', response)
+    return text
+  }
 }

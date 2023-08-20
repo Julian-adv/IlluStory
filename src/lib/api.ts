@@ -4,14 +4,17 @@ import { sendChatOpenAi } from './apiOpenAi'
 import { isWithinTokenLimit } from 'gpt-tokenizer'
 import llamaTokenizer from 'llama-tokenizer-js'
 
+export const systemRole = 'system'
+export const assistantRole = 'assistant'
+export const userRole = 'user'
 export const charSetting = 'set_char'
 export const userSetting = 'set_user'
 export const startStory = 'start_story'
 
 export const roles = [
-  { value: "system", name: "System" },
-  { value: "assistant", name: "Assistant" },
-  { value: "user", name: "User" },
+  { value: systemRole, name: "System" },
+  { value: assistantRole, name: "Assistant" },
+  { value: userRole, name: "User" },
   { value: "-", name: "-" },
   { value: charSetting, name: 'Char setting' },
   { value: userSetting, name: 'User setting' },
@@ -19,9 +22,9 @@ export const roles = [
 ]
 
 export const chatRoles = [
-  { value: "system", name: "System" },
-  { value: "assistant", name: "Assistant" },
-  { value: "user", name: "User" },
+  { value: systemRole, name: "System" },
+  { value: assistantRole, name: "Assistant" },
+  { value: userRole, name: "User" },
 ]
 
 export let sendChat = sendChatOobabooga

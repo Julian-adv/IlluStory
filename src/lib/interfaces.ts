@@ -61,10 +61,9 @@ export interface Story {
   title: string;
   image: string;
   api: Api;
+  visualizePrompt: string;
   summarizePrompt: string;
-  // openAI
   openAi: OpenAiParam;
-  // oobabooga
   oobabooga: OobaboogaParam;
 
   prompts: SceneType[]

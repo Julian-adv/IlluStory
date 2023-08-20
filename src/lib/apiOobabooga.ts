@@ -1,14 +1,14 @@
 import { get } from "svelte/store"
 import type { SceneType, Story, Usage } from "./interfaces"
 import { replaceDict, zeroUsage } from "./store"
-import { countTokensApi } from "./api"
+import { assistantRole, countTokensApi, systemRole, userRole } from "./api"
 
 function addRolePrefix(story: Story, scene: SceneType) {
-  if (scene.role === 'system') {
+  if (scene.role === systemRole) {
     return story.oobabooga.systemPrefix
-  } else if (scene.role === 'assistant') {
+  } else if (scene.role === assistantRole) {
     return story.oobabooga.assistantPrefix
-  } else if (scene.role === 'user') {
+  } else if (scene.role === userRole) {
     return story.oobabooga.userPrefix
   }
   return ''
@@ -35,6 +35,7 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
       prompt += addRolePrefix(story, scene) + scene.content + '\n'
     })
   }
+  prompt += story.visualizePrompt + '\n'
   prompt += story.oobabooga.assistantPrefix
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
@@ -85,7 +86,7 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
     const newScene: SceneType = {
       id: 0,
-      role: 'assistant',
+      role: assistantRole,
       content: dataFromOoga.results[0].text
     }
     usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text)
@@ -169,7 +170,7 @@ export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[],
 
   const newScene: SceneType = {
     id: 0,
-    role: 'assistant',
+    role: assistantRole,
     content: ''
   }
   scenes = [...scenes, newScene]

@@ -11,9 +11,10 @@
 
   export let role = 'user'
   export let value = ''
-  let translatedInput = ''
+  export let translatedInput = ''
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
+  let history: string[] = []
 
   function saveScenes() {
     if ($sessionPath !== '') {
@@ -60,6 +61,7 @@
     }
 
     const trimmed = markdown.trim()
+    history.push(trimmed)
     let content
     if (trimmed[0] === '"') {
       content = `${$replaceDict['user']}: ` + trimmed 
@@ -72,6 +74,15 @@
       return
     }
     sendInput(content)
+  }
+
+  async function onArrowUp() {
+    if (history.length > 0) {
+      const last = history.pop()
+      if (last) {
+        value = last
+      }
+    }
   }
 
   async function translate() {
@@ -92,7 +103,7 @@
   <DropSelect items={chatRoles} size="sm" classStr='text-sm self-start text-center w-full' bind:value={role} />
 </div>
 <div>
-  <Markdown bind:value={value} readOnly={false} {placeholder} onEnter={onEnter} />
+  <Markdown bind:value={value} readOnly={false} {placeholder} {onEnter} {onArrowUp} />
 </div>
 <div>
   <Button color='alternative' size='sm' class='px-[0.5rem]' on:click={translate}>

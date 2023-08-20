@@ -1,12 +1,12 @@
 import { get } from "svelte/store"
 import type { Story, SceneType, Usage, Message } from "./interfaces"
 import { settings, zeroUsage } from "./store"
-import { startStory } from "./api"
+import { startStory, systemRole } from "./api"
 
 function generateMessages(story: Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number) {
   const messages: Message[] = []
   if (summary) {
-    messages.push({ role: 'system', content: story.summarizePrompt })
+    messages.push({ role: systemRole, content: story.summarizePrompt })
     for (const scene of initScenes.slice(firstSceneIndex)) {
       messages.push({ role: scene.role, content: scene.content })
     }
@@ -30,7 +30,7 @@ function generateMessages(story: Story, initScenes: SceneType[], addedScenes: Sc
 }
 
 export async function sendChatOpenAi(story: Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
-  const uri = story.apiUrl + '/chat/completions'
+  const uri = story.openAi.apiUrl + '/chat/completions'
   // const uri = "https://api.openai.com/v1/chat/completions"
   // const uri = "http://localhost:8000/v1/chat/completions"
   const url = new URL(uri)
@@ -38,12 +38,12 @@ export async function sendChatOpenAi(story: Story, initScenes: SceneType[], adde
   // console.log('messages', messages)
   const respFromGPT = await fetch(url, {
     body: JSON.stringify({
-      model: story.model,
+      model: story.openAi.model,
       // model: "vicuna-13b-v1.5-16k",
-      temperature: story.temperature.toFixed,
-      frequency_penalty: story.frequencyPenalty.toFixed,
-      presence_penalty: story.presencePenalty.toFixed,
-      max_tokens: story.maxTokens.toFixed,
+      temperature: story.openAi.temperature.toFixed,
+      frequency_penalty: story.openAi.frequencyPenalty.toFixed,
+      presence_penalty: story.openAi.presencePenalty.toFixed,
+      max_tokens: story.openAi.maxTokens.toFixed,
       stream: false,
       messages: messages,
     }),
