@@ -88,6 +88,12 @@ function fixSettings(settings: Settings) {
   if (!settings.userLang) {
     settings.userLang = defaultSettings.userLang
   }
+  if (!settings.history) {
+    settings.history = []
+  }
+  if (!settings.maxHistory) {
+    settings.maxHistory = defaultSettings.maxHistory
+  }
 }
 
 export async function loadSettings() {

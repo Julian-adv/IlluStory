@@ -35,8 +35,8 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
       prompt += addRolePrefix(story, scene) + scene.content + '\n'
     })
   }
-  prompt += story.visualizePrompt + '\n'
   prompt += story.oobabooga.assistantPrefix
+  // console.log('prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
   const userName = get(replaceDict)['user']

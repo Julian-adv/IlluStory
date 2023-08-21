@@ -122,6 +122,8 @@ export interface Settings {
   userLang: string
   translateOutput: boolean
   translateInput: boolean
+  history: string[]
+  maxHistory: number
 }
 
 export enum SortType {

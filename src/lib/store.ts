@@ -117,7 +117,9 @@ export const defaultSettings: Settings = {
   aiLang: 'EN-US',
   userLang: '',
   translateOutput: false,
-  translateInput: false
+  translateInput: false,
+  history: [],
+  maxHistory: 500
 }
 
 export const settings = writable(defaultSettings)

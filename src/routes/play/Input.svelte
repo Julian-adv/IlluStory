@@ -8,13 +8,15 @@
   import { tick } from "svelte"
   import { Button } from "flowbite-svelte"
   import { translateText } from "$lib/deepLApi"
+  import { getNextHistory, getPrevHistory, pushHistory } from "$lib/history"
 
   export let role = 'user'
   export let value = ''
   export let translatedInput = ''
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
-  let history: string[] = []
+
+  let currentIndex = 0
 
   function saveScenes() {
     if ($sessionPath !== '') {
@@ -57,32 +59,31 @@
       sendInput(translatedInput)
       translatedInput = ''
       placeholder = enterPrompt
-      return
-    }
-
-    const trimmed = markdown.trim()
-    history.push(trimmed)
-    let content
-    if (trimmed[0] === '"') {
-      content = `${$replaceDict['user']}: ` + trimmed 
     } else {
-      content = trimmed
+      const trimmed = markdown.trim()
+      let content
+      if (trimmed[0] === '"') {
+        content = `${$replaceDict['user']}: ` + trimmed 
+      } else {
+        content = trimmed
+      }
+      pushHistory($settings, trimmed)
+      currentIndex = history.length
+      if ($settings.translateInput) {
+        translatedInput = await translateText($settings, $settings.aiLang, content)
+        placeholder = 'Enter one more time to send. Up arrow to modify.'
+      } else {
+        sendInput(content)
+      }
     }
-    if ($settings.translateInput) {
-      translatedInput = await translateText($settings, $settings.aiLang, content)
-      placeholder = 'Enter one more time to send. Up arrow to modify.'
-      return
-    }
-    sendInput(content)
   }
 
   async function onArrowUp() {
-    if (history.length > 0) {
-      const last = history.pop()
-      if (last) {
-        value = last
-      }
-    }
+    [value, currentIndex] = getPrevHistory($settings, currentIndex)
+  }
+
+  async function onArrowDown() {
+    [value, currentIndex] = getNextHistory($settings, currentIndex)
   }
 
   async function translate() {
@@ -103,7 +104,7 @@
   <DropSelect items={chatRoles} size="sm" classStr='text-sm self-start text-center w-full' bind:value={role} />
 </div>
 <div>
-  <Markdown bind:value={value} readOnly={false} {placeholder} {onEnter} {onArrowUp} />
+  <Markdown bind:value={value} readOnly={false} {placeholder} {onEnter} {onArrowUp} {onArrowDown} />
 </div>
 <div>
   <Button color='alternative' size='sm' class='px-[0.5rem]' on:click={translate}>

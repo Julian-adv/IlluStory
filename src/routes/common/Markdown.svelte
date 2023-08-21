@@ -8,6 +8,7 @@
   export let placeholder = 'Write a prompt.'
   export let onEnter = (_markdown: string) => {}
   export let onArrowUp = () => {}
+  export let onArrowDown = () => {}
 
   $: cssVarStyles = `--dialog-color:${$settings.dialogSettings.color};--dialog-weight:${$settings.dialogSettings.bold ? 'bold' : 'normal'};--dialog-style:${$settings.dialogSettings.italic ? 'italic' : 'normal'};--desc-color:${$settings.descriptionSettings.color};--desc-weight:${$settings.descriptionSettings.bold ? 'bold' : 'normal'};--desc-style:${$settings.descriptionSettings.italic ? 'italic' : 'normal'};--userName-color:${$settings.userNameSettings.color};--userName-weight:${$settings.userNameSettings.bold ? 'bold' : 'normal'};--userName-style:${$settings.userNameSettings.italic ? 'italic' : 'normal'};--charName-color:${$settings.charNameSettings.color};--charName-weight:${$settings.charNameSettings.bold ? 'bold' : 'normal'};--charName-style:${$settings.charNameSettings.italic ? 'italic' : 'normal'};--font-family:${$settings.fontFamily};--font-size:${$settings.fontSize}pt;`
 
@@ -22,10 +23,20 @@
       event.stopImmediatePropagation()
       onEnter(value)
       value = ''
-    } else if (event.key === 'ArrowUp' && value === '') {
-      event.preventDefault()
-      event.stopImmediatePropagation()
-      onArrowUp()
+    } else if (event.key === 'ArrowUp') {
+      const textarea = event.target as HTMLTextAreaElement
+      if (textarea.selectionStart == 0) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        onArrowUp()
+      }
+    } else if (event.key === 'ArrowDown') {
+      const textarea = event.target as HTMLTextAreaElement
+      if (textarea.selectionStart == textarea.textLength) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        onArrowDown()
+      }
     }
   }
 </script>
