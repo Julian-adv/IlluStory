@@ -14,6 +14,8 @@
 
   export let scene: SceneType
   let content: string
+  let translatedContent: string
+  let translated: boolean
   let showImage = false
   let imageFromSD = new Promise<string>((_resolve, _reject) => {})
   let waitingImage = false
@@ -21,17 +23,17 @@
   let imageHeight = realImageSize($settings.imageHeight)
   let popoverId = 'pop123'
   let imagePrompt = ''
-  let translated = false
   const visualStart = '<Visual>'
   const visualEnd = '</Visual>'
-    const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
-    $: imageClass = imageWidth > window.innerWidth / 2 ?
+  const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
+
+  $: imageClass = imageWidth > window.innerWidth / 2 ?
                     'clear-both flex flex-col items-center z-10' :
                     'flex flex-col float-left mr-5 z-10'
 
   function clearImagePrompt(str: string) {
-          return str.replace(regexp, '').trim()
-    }
+    return str.replace(regexp, '').trim()
+  }
     
   function convertToMarkdown(str: string) {
     if ($settings.convertMarkdown) {
@@ -51,14 +53,10 @@
   async function translateOutput(scene: SceneType, translate: boolean) {
     let cleared = clearImagePrompt(scene.content)
     if (translate) {
-      if (scene.translatedContent) {
-        cleared = scene.translatedContent
-      } else {
-        scene.translatedContent = cleared = await translateText($settings, $settings.userLang, cleared)
+      if (!scene.translatedContent) {
+        scene.translatedContent = await translateText($settings, $settings.userLang, cleared)
       }
-      translated = true
-    } else {
-      translated = false
+      translatedContent = convertToMarkdown(scene.translatedContent)
     }
     return convertToMarkdown(cleared)
   }
@@ -67,7 +65,7 @@
     // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
     const matches = scene.content.match(regexp) || []
     const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
-        const markdown = await translateOutput(scene, $settings.translateOutput)
+    const markdown = await translateOutput(scene, $settings.translateOutput)
     return [markdown, extractedContents.join(',')]
   }
 
@@ -98,6 +96,7 @@
   onMount(async () => {
     content = await translateOutput(scene, $settings.translateOutput)
     generateImageIfNeeded(scene)
+    translated = translatedContent !== ''
   })
 
   // afterUpdate(async () => {
@@ -130,8 +129,8 @@
     }
   }
 
-  async function translate() {
-    content = await translateOutput(scene, !translated)
+  async function onTranslate() {
+    translateOutput(scene, true)
   }
 </script>
 
@@ -162,12 +161,7 @@
       </div>
     </div>
   {/if}
-  <Markdown bind:value={content} />
-  <Button color='alternative' class='w-7 h-7 p-0 focus:ring-0' on:click={translate}>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
-    </svg>
-  </Button>
+  <Markdown bind:value={content} bind:translatedValue={translatedContent} bind:translated={translated} {onTranslate} />
 </div>
 <div class="clear-both p-2"></div>
 
