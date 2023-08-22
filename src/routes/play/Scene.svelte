@@ -7,13 +7,12 @@
   import { save } from "@tauri-apps/api/dialog"
   import { basename, downloadDir } from "@tauri-apps/api/path"
   import { settings } from "$lib/store"
-  import { realImageSize } from "$lib"
+  import { realImageSize, visualEnd, visualStart } from "$lib"
   import { generateImage } from "$lib/imageApi"
   import { translateText } from "$lib/deepLApi"
   import { assistantRole, systemRole } from "$lib/api"
 
   export let scene: SceneType
-  let content: string
   let translated: boolean
   let showImage = false
   let imageFromSD = new Promise<string>((_resolve, _reject) => {})
@@ -21,9 +20,6 @@
   let imageWidth = realImageSize($settings.imageWidth)
   let imageHeight = realImageSize($settings.imageHeight)
   let popoverId = 'pop123'
-  let imagePrompt = ''
-  const visualStart = '<Visual>'
-  const visualEnd = '</Visual>'
   const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
 
   $: imageClass = imageWidth > window.innerWidth / 2 ?
@@ -34,54 +30,40 @@
     return str.replace(regexp, '').trim()
   }
     
-  async function translateOutput(scene: SceneType, translate: boolean): Promise<[string, string]> {
-    let cleared = clearImagePrompt(scene.content)
-    if (!scene.translatedContent) {
-      if (translate) {
-        scene.translatedContent = await translateText($settings, $settings.userLang, cleared)
-      } else {
-        scene.translatedContent = ''
-      }
-    }
-    return [cleared, scene.translatedContent]
-  }
-
-  async function extractImagePrompt(scene: SceneType): Promise<[string, string]> {
-    // const matches = scene.content.match(/\[\[([^\]]+)\]\]/g) || [];
+  async function extractImagePrompt(scene: SceneType) {
     const matches = scene.content.match(regexp) || []
     const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
-    const cleanedContent = clearImagePrompt(scene.content)
-    return [cleanedContent, extractedContents.join(',')]
+    scene.textContent = clearImagePrompt(scene.content)
+    scene.visualContent = extractedContents.join(',')
+    if ($settings.translateOutput && !scene.translatedContent) {
+      scene.translatedContent = await translateText($settings, $settings.userLang, scene.textContent)
+    }
   }
 
   export async function generateImageIfNeeded(_sceneParam: SceneType) {
     if (scene.image) {
-      showImage = true;
-      [content, imagePrompt] = await extractImagePrompt(scene)
+      showImage = true
       imageFromSD = Promise.resolve(scene.image)
-      return
-    }
-    if (waitingImage || !(scene.role === systemRole || scene.role === assistantRole)) {
-      return
-    }
-    let cleanedContent;
-    [cleanedContent, imagePrompt] = await extractImagePrompt(scene)
-    showImage = imagePrompt !== ''
-    if (showImage) {
-      content = cleanedContent
-      popoverId = 'image' + scene.id
-      imageFromSD = generateImage($settings, imagePrompt)
-        .then(result => {
-          scene.image = result
-          return result
-        })
+    } else {
+      if (!waitingImage && (scene.role === systemRole || scene.role === assistantRole)) {
+        showImage = !!scene.visualContent
+        if (showImage) {
+          popoverId = 'image' + scene.id
+          imageFromSD = generateImage($settings, scene.visualContent?? '')
+            .then(result => {
+              scene.image = result
+              return result
+            })
+        }
+      }
     }
   }
 
   onMount(async () => {
-    [content, scene.translatedContent] = await translateOutput(scene, $settings.translateOutput)
+    await extractImagePrompt(scene)
+    scene = scene
     generateImageIfNeeded(scene)
-    translated = scene.translatedContent !== ''
+    translated = !!scene.translatedContent
   })
 
   // afterUpdate(async () => {
@@ -96,7 +78,7 @@
   // })
 
   function regenerateImage() {
-    imageFromSD = generateImage($settings, imagePrompt)
+    imageFromSD = generateImage($settings, scene.visualContent?? '')
       .then(result => {
         scene.image = result
         return result
@@ -115,7 +97,16 @@
   }
 
   async function onTranslate() {
-    translateOutput(scene, true)
+    scene.translatedContent = await translateText($settings, $settings.userLang, scene.textContent?? '')
+  }
+
+  async function onEditDone(content: string) {
+    scene.content = content
+    scene.translatedContent = ''
+    scene.image = ''
+    await extractImagePrompt(scene)
+    scene = scene
+    generateImageIfNeeded(scene)
   }
 </script>
 
@@ -129,7 +120,7 @@
       {:then image}
         <div id={popoverId} class="placeholder mt-2" style="--imageWidth: {imageWidth}px;--imageHeight: {imageHeight}px;--imageSrc: url('{image}')"></div>
         <Popover class='w-80 h-auto text-sm z-30' triggeredBy={'#'+popoverId}>
-          <span>{imagePrompt}</span>
+          <span>{scene.visualContent}</span>
         </Popover>
       {/await}
       <div class='flex gap-2'>
@@ -146,7 +137,7 @@
       </div>
     </div>
   {/if}
-  <Markdown bind:value={content} bind:translatedValue={scene.translatedContent} bind:translated={translated} {onTranslate} />
+  <Markdown bind:value={scene.textContent} bind:translatedValue={scene.translatedContent} bind:visualValue={scene.visualContent} bind:translated={translated} {onTranslate} {onEditDone}/>
 </div>
 <div class="clear-both p-2"></div>
 

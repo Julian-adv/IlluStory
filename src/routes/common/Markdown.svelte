@@ -3,10 +3,11 @@
   import { marked } from 'marked'
   import FlexibleTextarea from './FlexibleTextarea.svelte'
   import { Button } from 'flowbite-svelte'
-  import { getUniqueId } from '$lib'
+  import { getUniqueId, visualEnd, visualStart } from '$lib'
   
   export let value = ''
   export let translatedValue = ''
+  export let visualValue = ''
   export let translated = false
   export let readOnly = true
   export let placeholder = 'Write a prompt.'
@@ -14,6 +15,7 @@
   export let onArrowUp = () => {}
   export let onArrowDown = () => {}
   export let onTranslate = () => {}
+  export let onEditDone = (_content: string) => {}
   const id = getUniqueId()
 
   $: markdown = convertToMarkdown(value)
@@ -55,12 +57,14 @@
     onTranslate()
   }
 
-  function stopEditing(_markdown: string) {
+  function stopEditing(markdown: string) {
     readOnly = true
+    onEditDone(markdown)
   }
 
   function edit() {
     readOnly = false
+    value = value + `\n${visualStart}${visualValue}${visualEnd}`
     const textarea = document.getElementById(id) as HTMLTextAreaElement
     if (textarea) {
       textarea.style.height = 'auto'

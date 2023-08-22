@@ -4,6 +4,8 @@ export interface SceneType {
   content: string
 
   name?: string
+  textContent?: string
+  visualContent?: string
   translatedContent?: string
   image?: string
   done?: boolean
