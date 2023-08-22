@@ -5,7 +5,7 @@
   import { sessionPath, story, initialScenes, additionalScenes, usage, firstSceneIndex, summarySceneIndex, replaceDict, settings } from "$lib/store"
   import { writeTextFile } from "@tauri-apps/api/fs"
   import { newSceneId, scrollToEnd } from "$lib"
-  import { tick } from "svelte"
+  import { onMount, tick } from "svelte"
   import { Button } from "flowbite-svelte"
   import { translateText } from "$lib/deepLApi"
   import { getNextHistory, getPrevHistory, pushHistory } from "$lib/history"
@@ -69,6 +69,7 @@
       }
       pushHistory($settings, trimmed)
       currentIndex = history.length
+      value = ''
       if ($settings.translateInput) {
         translatedInput = await translateText($settings, $settings.aiLang, content)
         placeholder = 'Enter one more time to send. Up arrow to modify.'
@@ -93,6 +94,10 @@
       translatedInput = await translateText($settings, $settings.aiLang, value)
     }
   }
+
+  onMount(() => {
+    currentIndex = $settings.history.length
+  })
 </script>
 
 <div></div>

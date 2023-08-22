@@ -15,6 +15,7 @@ export async function translateText(settings: Settings, lang: string, text: stri
     }
   })
   if (response.ok) {
+    console.log('data from deepL:', response.data)
     return response.data.translations[0].text
   } else {
     console.log('response from deepl', response)
