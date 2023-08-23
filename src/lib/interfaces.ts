@@ -1,3 +1,8 @@
+export interface ImageSize {
+  width: number
+  height: number
+}
+
 export interface SceneType {
   id: number
   role: string
@@ -8,6 +13,7 @@ export interface SceneType {
   visualContent?: string
   translatedContent?: string
   image?: string
+  imageSize?: ImageSize
   done?: boolean
 }
 
@@ -155,9 +161,4 @@ export enum FileType {
   Session,
   Char,
   All
-}
-
-export interface ImageSize {
-  width: number
-  height: number
 }

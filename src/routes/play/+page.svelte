@@ -28,6 +28,7 @@
       let scene = newScenes[i]
       if (i >= newFirstSceneIndex) {
         scene.image = oldScenes[i].image
+        scene.imageSize = oldScenes[i].imageSize
       }
       scenes.push(scene)
     }
@@ -51,7 +52,7 @@
         content = replaceCharSetting('user', $user, '<User <user>>', '</User <user>>')
         role = systemRole
       }
-      return { id: prompt.id, role: role, content: content, image: prompt.image }
+      return {...prompt, role, content }
     })
   }
 
@@ -64,7 +65,7 @@
         const regex2 = new RegExp(`<${key}>`, 'g')
         content = content.replace(regex2, value)
       }
-      return { id: prompt.id, role: prompt.role, content: content, image: prompt.image }
+      return {...prompt, content }
     })
   }
 
@@ -150,13 +151,13 @@
     }
   }
 
-  onMount(() => {
-    if ($additionalScenes.length == 0) {
-      newSession()
-    } else {
-      updateInitialScenes()
-    }
-  })
+  // onMount(() => {
+  //   if ($additionalScenes.length == 0) {
+  //     newSession()
+  //   } else {
+  //     updateInitialScenes()
+  //   }
+  // })
 
   let warningTokens: boolean
 

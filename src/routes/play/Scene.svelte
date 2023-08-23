@@ -17,7 +17,7 @@
   let showImage = false
   let imageFromSD = new Promise<string>((_resolve, _reject) => {})
   let waitingImage = false
-  let imageSize: ImageSize = { width: 512, height: 512 }
+  let imageSize: ImageSize = scene.imageSize ?? { width: 512, height: 512 }
   let popoverId = 'pop123'
   const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
 
@@ -54,6 +54,7 @@
           imageFromSD = generateImage($settings, imageSize.width, imageSize.height, scene.visualContent?? '')
             .then(result => {
               scene.image = result
+              scene.imageSize = imageSize
               return result
             })
         }
@@ -62,10 +63,10 @@
   }
 
   onMount(async () => {
-    await extractImagePrompt(scene)
-    scene = scene
-    generateImageIfNeeded(scene)
-    translated = !!scene.translatedContent
+  await extractImagePrompt(scene)
+  scene = scene
+  generateImageIfNeeded(scene)
+  translated = !!scene.translatedContent
   })
 
   // afterUpdate(async () => {
@@ -92,6 +93,7 @@
     imageFromSD = generateImage($settings, imageSize.width, imageSize.height, scene.visualContent?? '')
       .then(result => {
         scene.image = result
+        scene.imageSize = imageSize
         return result
       })
   }

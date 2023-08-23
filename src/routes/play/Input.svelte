@@ -69,12 +69,12 @@
       }
       pushHistory($settings, trimmed)
       currentIndex = history.length
-      value = ''
       if ($settings.translateInput) {
         translatedInput = await translateText($settings, $settings.aiLang, content)
-        placeholder = 'Enter one more time to send. Up arrow to modify.'
+        value = translatedInput
       } else {
         sendInput(content)
+        value = ''
       }
     }
   }
@@ -100,11 +100,6 @@
   })
 </script>
 
-<div></div>
-<div>
-  {translatedInput}
-</div>
-<div></div>
 <div class='w-32 flex'>
   <DropSelect items={chatRoles} size="sm" classStr='text-sm self-start text-center w-full' bind:value={role} />
 </div>
