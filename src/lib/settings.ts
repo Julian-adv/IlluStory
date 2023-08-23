@@ -46,11 +46,8 @@ function fixSettings(settings: Settings) {
   if (!settings.sdURL) {
     settings.sdURL = defaultSettings.sdURL
   }
-  if (!settings.imageWidth) {
-    settings.imageWidth = defaultSettings.imageWidth
-  }
-  if (!settings.imageHeight) {
-    settings.imageHeight = defaultSettings.imageHeight
+  if (!settings.imageSizes) {
+    settings.imageSizes = defaultSettings.imageSizes
   }
   if (!settings.steps) {
     settings.steps = defaultSettings.steps

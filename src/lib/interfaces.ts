@@ -108,8 +108,7 @@ export interface Settings {
   generateImage: boolean
   sdURL: string
   enableADetailer: boolean
-  imageWidth: number
-  imageHeight: number
+  imageSizes: string
   steps: number
   cfgScale: number
   prompt: string
@@ -156,4 +155,9 @@ export enum FileType {
   Session,
   Char,
   All
+}
+
+export interface ImageSize {
+  width: number
+  height: number
 }

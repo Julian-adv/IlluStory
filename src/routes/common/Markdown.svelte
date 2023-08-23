@@ -84,7 +84,7 @@
       text = text.replace(charNameRegex, "<span class='charName'>$&</span>")
       return text
     }
-    return str
+    return str ? str : ''
   }
 </script>
   

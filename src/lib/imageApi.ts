@@ -1,12 +1,12 @@
 import type { Settings } from "./interfaces"
 import { Body, getClient } from "@tauri-apps/api/http"
 
-export async function generateImage(settings: Settings, prompt: string): Promise<string> {
+export async function generateImage(settings: Settings, width: number, height: number, prompt: string): Promise<string> {
   const client = await getClient()
   const responseFromSD = await client.post(settings.sdURL + "/sdapi/v1/txt2img",
     Body.json({
-      "width": settings.imageWidth,
-      "height": settings.imageHeight,
+      "width": width,
+      "height": height,
       "seed": -1,
       "steps": settings.steps,
       "cfg_scale": settings.cfgScale,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SceneType } from "$lib/interfaces"
+  import type { ImageSize, SceneType } from "$lib/interfaces"
   import { onMount } from "svelte"
   import Markdown from "../common/Markdown.svelte"
   import { Button, Popover, Spinner } from "flowbite-svelte"
@@ -17,11 +17,12 @@
   let showImage = false
   let imageFromSD = new Promise<string>((_resolve, _reject) => {})
   let waitingImage = false
-  let imageWidth = realImageSize($settings.imageWidth)
-  let imageHeight = realImageSize($settings.imageHeight)
+  let imageSize: ImageSize = { width: 512, height: 512 }
   let popoverId = 'pop123'
   const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
 
+  $: imageWidth = realImageSize(imageSize.width)
+  $: imageHeight = realImageSize(imageSize.height)
   $: imageClass = imageWidth > window.innerWidth / 2 ?
                     'clear-both flex flex-col items-center z-10' :
                     'flex flex-col float-left mr-5 z-10'
@@ -49,7 +50,8 @@
         showImage = !!scene.visualContent
         if (showImage) {
           popoverId = 'image' + scene.id
-          imageFromSD = generateImage($settings, scene.visualContent?? '')
+          imageSize = getRandomSize($settings.imageSizes)
+          imageFromSD = generateImage($settings, imageSize.width, imageSize.height, scene.visualContent?? '')
             .then(result => {
               scene.image = result
               return result
@@ -77,8 +79,17 @@
   //   }
   // })
 
+  function getRandomSize(sizes: string): ImageSize {
+    const sizeArray = sizes.split(",")
+    const randomSize = sizeArray[Math.floor(Math.random() * sizeArray.length)]
+    const [width, height] = randomSize.split("x").map(Number)
+
+    return { width, height }
+  }
+
   function regenerateImage() {
-    imageFromSD = generateImage($settings, scene.visualContent?? '')
+    imageSize = getRandomSize($settings.imageSizes)
+    imageFromSD = generateImage($settings, imageSize.width, imageSize.height, scene.visualContent?? '')
       .then(result => {
         scene.image = result
         return result

@@ -70,8 +70,7 @@
     </CheckField>
   {#if $settings.generateImage}
     <StringField label='URL' placeholder='' help="Automatic1111's Stable Diffusion web UI server URL. Usually http://localhost:7860" bind:value={$settings.sdURL} save={save} />
-    <NumberField label='Image width' help='' bind:value={$settings.imageWidth} min={512} max={1536} step={8} save={save} />
-    <NumberField label='Image height' help='' bind:value={$settings.imageHeight} min={512} max={1536} step={8} save={save} />
+    <StringField label='Image sizes' help='A comma-separated list of image sizes. Example: 512x768, 768x512. One of which is chosen at random.' bind:value={$settings.imageSizes} save={save} />
     <NumberField label='Steps' help='Sampling steps' bind:value={$settings.steps} min={20} max={150} step={1} save={save} />
     <NumberField label='CFG Scale' help='The CFG scale adjusts how much the image looks closer to the prompt.' bind:value={$settings.cfgScale} min={1} max={30} step={0.5} save={save} />
     <TextField label='Prompt' help='Prompts that should always be included.' bind:value={$settings.prompt} save={save} />
