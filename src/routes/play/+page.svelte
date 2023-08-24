@@ -127,13 +127,7 @@
       const scene = $additionalScenes.pop()
       if (scene) {
         const userNameLabel = $replaceDict['user'] + ": "
-        if (scene.translatedContent) {
-          translatedInput = scene.content
-          userInput = ''
-        } else {
-          translatedInput = ''
-          userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content
-        }
+        userInput = scene.content.startsWith(userNameLabel) ? scene.content.slice(userNameLabel.length) : scene.content
       }
       $additionalScenes = $additionalScenes
     }
@@ -207,6 +201,6 @@
         <span class='pl-2'>Summarize</span>
       </Button>
     </div>
-    <Input {translatedInput} bind:value={userInput} />
+    <Input bind:value={userInput} />
   </div>
 </main>

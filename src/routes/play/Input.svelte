@@ -12,7 +12,6 @@
 
   export let role = 'user'
   export let value = ''
-  export let translatedInput = ''
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
   
@@ -166,6 +165,15 @@
   })
 
   $: transButtonClass = `px-[0.5rem] ${translateButtonClass(state.state === 'translated')}`
+  $: {
+    if (value) {
+      state.state = 'translated'
+      state.value = value
+      state.entered = value
+      state.translated = value
+      value = ''
+    }
+  }
 </script>
 
 <div class='w-32 flex'>
