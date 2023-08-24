@@ -59,3 +59,7 @@ export function removeCommonPrefix(a: string, b: string): string {
 
     return b.slice(i)
 }
+
+export function translateButtonClass(translated: boolean) {
+  return translated ? 'text-sky-700 focus:text-sky-700' : 'text-stone-400 focus:text-stone-400'
+}

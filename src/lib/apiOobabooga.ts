@@ -70,6 +70,7 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
         "### USER",
         "### INSTRUCTION",
         "### Instruction",
+        "\n```",
         "\nUser:",
         "\nuser:",
         `\n${userName}:`,

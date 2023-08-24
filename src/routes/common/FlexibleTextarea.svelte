@@ -7,14 +7,15 @@
   export let value = ''
   export let unWrappedClass = ''
   export let style = ''
-  export let onKeyDown = (_e: KeyboardEvent) => {}
   export let onUpdate = (_str: string) => {}
+  export let onInput = (_str: string) => {}
 
   let textarea: HTMLElement|null
 
-  function onInput(this: HTMLElement) {
+  function onInputHandler(this: HTMLElement) {
     this.style.height = 'auto'
     this.style.height = (this.scrollHeight) + 'px'
+    onInput(value)
   }
 
   function onChange() {
@@ -27,9 +28,9 @@
 
   afterUpdate(() => {
     if (textarea) {
-      onInput.call(textarea)
+      onInputHandler.call(textarea)
     }
   })
 </script>
 
-<Textarea {id} {placeholder} {unWrappedClass} {style} rows={1} bind:value on:blur on:input={onInput} on:keydown={onKeyDown} on:change={onChange} class='px-2 py-1 text-base prompt focus:ring-gray-200 focus:border-gray-200 focus:ring-4'/>
+<Textarea {id} {placeholder} {unWrappedClass} {style} rows={1} bind:value on:blur on:input={onInputHandler} on:keydown on:change={onChange} class='px-2 py-1 text-base prompt focus:ring-gray-200 focus:border-gray-200 focus:ring-4'/>

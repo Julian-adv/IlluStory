@@ -151,13 +151,11 @@
     }
   }
 
-  // onMount(() => {
-  //   if ($additionalScenes.length == 0) {
-  //     newSession()
-  //   } else {
-  //     updateInitialScenes()
-  //   }
-  // })
+  onMount(() => {
+    if ($initialScenes.length == 0) {
+      newSession()
+    }
+  })
 
   let warningTokens: boolean
 

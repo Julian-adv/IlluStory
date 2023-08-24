@@ -3,7 +3,7 @@
   import { marked } from 'marked'
   import FlexibleTextarea from './FlexibleTextarea.svelte'
   import { Button } from 'flowbite-svelte'
-  import { getUniqueId, visualEnd, visualStart } from '$lib'
+  import { getUniqueId, translateButtonClass, visualEnd, visualStart } from '$lib'
   
   export let value = ''
   export let translatedValue = ''
@@ -16,6 +16,7 @@
   export let onArrowDown = () => {}
   export let onTranslate = () => {}
   export let onEditDone = (_content: string) => {}
+  export let onModify = (_content: string) => {}
   const id = getUniqueId()
 
   $: markdown = convertToMarkdown(value)
@@ -27,6 +28,8 @@
     breaks: true,
     gfm: true
   })
+
+  let edited = false
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -47,10 +50,28 @@
         event.stopImmediatePropagation()
         onArrowDown()
       }
+    } else {
+      const ignoredKeys = [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
+        'Shift', 'Control', 'Alt', 'Escape', 'Tab'
+      ]
+
+      if (!ignoredKeys.includes(event.key)) {
+        edited = true
+      } else {
+        edited = false
+      }
     }
   }
 
-  $: transButtonClass = translated ? 'text-sky-700 focus:text-sky-700' : 'text-stone-400 focus:text-stone-400'
+  function onInput(str: string) {
+    if (edited) {
+      onModify(str)
+      edited = false
+    }
+  }
+
+  $: transButtonClass = translateButtonClass(translated)
 
   async function toggleTranslate() {
     translated = !translated
@@ -107,7 +128,7 @@
     </Button>
   </div>
 {:else}
-  <FlexibleTextarea {id} bind:value {placeholder} unWrappedClass='px-2 py-1.5 focus:ring-gray-200 focus:border-gray-200 focus:ring-4 font-serif prompt' style={cssVarStyles} {onKeyDown}/>
+  <FlexibleTextarea {id} bind:value {placeholder} unWrappedClass='px-2 py-1.5 focus:ring-gray-200 focus:border-gray-200 focus:ring-4 font-serif prompt' style={cssVarStyles} on:keydown={onKeyDown} {onInput} />
 {/if}
 
 <style>
