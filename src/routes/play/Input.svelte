@@ -130,11 +130,17 @@
   }
 
   async function onArrowUp() {
-    [value, currentIndex] = getPrevHistory($settings, currentIndex)
+    [state.value, currentIndex] = getPrevHistory($settings, currentIndex)
+    state.state = 'modified'
+    state.entered = state.value
+    state.translated = ''
   }
 
   async function onArrowDown() {
-    [value, currentIndex] = getNextHistory($settings, currentIndex)
+    [state.value, currentIndex] = getNextHistory($settings, currentIndex)
+    state.state = 'modified'
+    state.entered = state.value
+    state.translated = ''
   }
 
   async function translate() {

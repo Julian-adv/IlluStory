@@ -14,17 +14,17 @@ export function getHistory(settings: Settings, index: number) {
 export function getPrevHistory(settings: Settings, index: number): [string, number] {
   if (index > 0) {
     --index
-    return [settings.history[index], index]
-  } else {
-    return ['', index]
   }
+  return [settings.history[index], index]
 }
 
 export function getNextHistory(settings: Settings, index: number): [string, number] {
   if (index < settings.history.length) {
     ++index
-    return [settings.history[index], index]
+  }
+  if (index >= settings.history.length) {
+    return ['', settings.history.length]
   } else {
-    return ['', index]
+    return [settings.history[index], index]
   }
 }

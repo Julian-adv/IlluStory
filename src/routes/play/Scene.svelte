@@ -63,10 +63,10 @@
   }
 
   onMount(async () => {
-  await extractImagePrompt(scene)
-  scene = scene
-  generateImageIfNeeded(scene)
-  translated = !!scene.translatedContent
+    await extractImagePrompt(scene)
+    scene = scene
+    generateImageIfNeeded(scene)
+    translated = !!scene.translatedContent
   })
 
   // afterUpdate(async () => {
@@ -91,6 +91,17 @@
   function regenerateImage() {
     imageSize = getRandomSize($settings.imageSizes)
     imageFromSD = generateImage($settings, imageSize.width, imageSize.height, scene.visualContent?? '')
+      .then(result => {
+        scene.image = result
+        scene.imageSize = imageSize
+        return result
+      })
+  }
+
+  function generateNewImage() {
+    showImage = true
+    imageSize = getRandomSize($settings.imageSizes)
+    imageFromSD = generateImage($settings, imageSize.width, imageSize.height, scene.textContent?? '')
       .then(result => {
         scene.image = result
         scene.imageSize = imageSize
@@ -150,7 +161,7 @@
       </div>
     </div>
   {/if}
-  <Markdown bind:value={scene.textContent} bind:translatedValue={scene.translatedContent} bind:visualValue={scene.visualContent} bind:translated={translated} {onTranslate} {onEditDone}/>
+  <Markdown bind:value={scene.textContent} bind:translatedValue={scene.translatedContent} bind:visualValue={scene.visualContent} bind:translated={translated} {onTranslate} {onEditDone} {generateNewImage} />
 </div>
 <div class="clear-both p-2"></div>
 
