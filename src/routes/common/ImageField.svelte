@@ -40,7 +40,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class='col-span-2 p-1' on:mouseenter={showHelper} on:mouseleave={hideHelper} on:click={onClick}>
   {#if value}
-    <Img src={value} alt='Represent a story' size='max-w-xs'/>
+    <Img src={value} alt='Represent a preset' size='max-w-xs'/>
   {:else}
     <div class="placeholder float-left mr-5 flex justify-center items-center bg-stone-300">
       <div>Click to change</div>

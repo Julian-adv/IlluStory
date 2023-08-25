@@ -65,7 +65,7 @@ export interface OobaboogaParam {
   assistantPrefix: string;
 }
 
-export interface Story {
+export interface Preset {
   title: string;
   image: string;
   api: Api;
@@ -157,7 +157,7 @@ export interface Char {
 }
 
 export enum FileType {
-  Story = 1,
+  Preset = 1,
   Session,
   Char,
   All

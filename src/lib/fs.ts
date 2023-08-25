@@ -1,21 +1,21 @@
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { sep } from '@tauri-apps/api/path'
-import type { Story, Char } from './interfaces'
+import type { Preset, Char } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { changeApi } from './api'
 
-export async function loadStory(path: string) {
+export async function loadPreset(path: string) {
   const json = await readTextFile(path)
-  const story = JSON.parse(json) as Story
-  changeApi(story.api)
-  return story
+  const preset = JSON.parse(json) as Preset
+  changeApi(preset.api)
+  return preset
 }
 
-export async function loadStoryDialog(): Promise<[Story|null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['json', storyExt]}]})
+export async function loadPresetDialog(): Promise<[Preset|null, string]> {
+  const selected = await open({ filters: [{ name: '*', extensions: ['json', presetExt]}]})
   if (typeof(selected) === 'string' ) {
-    return [await loadStory(selected), selected]
+    return [await loadPreset(selected), selected]
   }
   return [null, '']
 }
@@ -82,23 +82,23 @@ export async function savePath(path: string, ext: string, data: any) {
   return filePath
 }
 
-export async function saveStory(story: Story) {
-  let fileName = story.title.replace(/[<>:"/\\|?*]/g, '_').trim()
+export async function savePreset(preset: Preset) {
+  let fileName = preset.title.replace(/[<>:"/\\|?*]/g, '_').trim()
   if (fileName === '') {
-    fileName = 'story' + Date.now()
+    fileName = 'preset' + Date.now()
   }
-  fileName += '.' + storyExt
-  return savePath(fileName, 'story', story)
+  fileName += '.' + presetExt
+  return savePath(fileName, presetExt, preset)
 }
 
-export async function saveObjQuietly(filePath: string, obj: Story|Char) {
+export async function saveObjQuietly(filePath: string, obj: Preset|Char) {
   writeTextFile(filePath, JSON.stringify(obj, null, 2))
 }
 
-export const storyExt = 'story'
+export const presetExt = 'preset'
 export const sessionExt = 'session'
 export const charExt = 'char'
-export const allExts = [storyExt, sessionExt, charExt]
+export const allExts = [presetExt, sessionExt, charExt]
 
 export function basenameOf(path: string) {
   let endIndex = path.lastIndexOf('.')

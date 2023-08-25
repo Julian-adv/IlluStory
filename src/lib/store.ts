@@ -1,13 +1,13 @@
 import { writable } from "svelte/store"
-import type { SceneType, Story, StringDictionary, Settings, Char } from "./interfaces"
+import type { SceneType, Preset, StringDictionary, Settings, Char } from "./interfaces"
 import { Api, SortOrder, SortType } from './interfaces'
 
-const defaultScenes:SceneType[] = []
+const defaultScenes: SceneType[] = []
 
 export const initialScenes = writable(defaultScenes)
 export const additionalScenes = writable(defaultScenes)
 
-const defaultStory: Story = {
+const defaultPreset: Preset = {
   title: '',
   image: '',
   api: Api.OpenAi,
@@ -57,9 +57,9 @@ const defaultStory: Story = {
   prompts: []
 }
 
-export const story = writable(defaultStory)
+export const preset = writable(defaultPreset)
 
-export const storyPath = writable('')
+export const presetPath = writable('')
 export const sessionPath = writable('')
 
 export const zeroUsage = {prompt_tokens: 0, completion_tokens: 0, total_tokens: 0}

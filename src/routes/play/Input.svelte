@@ -2,7 +2,7 @@
   import Markdown from "../common/Markdown.svelte"
   import DropSelect from "../common/DropSelect.svelte"
   import { chatRoles, sendChat } from "$lib/api"
-  import { sessionPath, story, initialScenes, additionalScenes, usage, firstSceneIndex, summarySceneIndex, replaceDict, settings } from "$lib/store"
+  import { sessionPath, preset, initialScenes, additionalScenes, usage, firstSceneIndex, summarySceneIndex, replaceDict, settings } from "$lib/store"
   import { writeTextFile } from "@tauri-apps/api/fs"
   import { newSceneId, scrollToEnd, translateButtonClass } from "$lib"
   import { onMount, tick } from "svelte"
@@ -66,7 +66,7 @@
     await tick()
     scrollToEnd()
     let addedScene;
-    [addedScene, $usage] = await sendChat($story, $initialScenes, $additionalScenes, false, $firstSceneIndex, $summarySceneIndex)
+    [addedScene, $usage] = await sendChat($preset, $initialScenes, $additionalScenes, false, $firstSceneIndex, $summarySceneIndex)
     if (addedScene) {
       addedScene.id = newSceneId($initialScenes, $additionalScenes)
       $additionalScenes = [...$additionalScenes, addedScene]

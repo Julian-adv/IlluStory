@@ -4,12 +4,11 @@
   import { charSetting, sendChat, startStory, systemRole, userRole, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
-  import { story, initialScenes, additionalScenes, usage, storyPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict, char, user } from '$lib/store'
+  import { preset, initialScenes, additionalScenes, usage, presetPath, sessionPath, zeroUsage, firstSceneIndex, summarySceneIndex, replaceDict, char, user } from '$lib/store'
   import { savePath } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
 
-  let translatedInput = ''
   let userInput = ''
 
   function findFirstSceneIndex(scenes: SceneType[]) {
@@ -94,15 +93,15 @@
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($storyPath), 'session', $additionalScenes)
+    const tempPath = await savePath(insertTimestamp($presetPath), 'session', $additionalScenes)
     if (tempPath) {
       $sessionPath = tempPath
     }
   }
 
   function updateInitialScenes() {
-    $firstSceneIndex = findFirstSceneIndex($story.prompts)
-    $initialScenes = mergeScenes($initialScenes, $firstSceneIndex, $story.prompts, $firstSceneIndex)
+    $firstSceneIndex = findFirstSceneIndex($preset.prompts)
+    $initialScenes = mergeScenes($initialScenes, $firstSceneIndex, $preset.prompts, $firstSceneIndex)
     $initialScenes = findNames($initialScenes)
     $initialScenes = replaceNames($initialScenes)
   }
@@ -113,7 +112,6 @@
     $usage = zeroUsage
     $sessionPath = ''
     userInput = ''
-    translatedInput = ''
     $summarySceneIndex = 0
   }
 
@@ -135,7 +133,7 @@
 
   async function summarize() {
     let newScene
-    [newScene, $usage] = await sendChat($story, $initialScenes, $additionalScenes, true, $firstSceneIndex, $summarySceneIndex)
+    [newScene, $usage] = await sendChat($preset, $initialScenes, $additionalScenes, true, $firstSceneIndex, $summarySceneIndex)
     if (newScene) {
       newScene.id = newSceneId($initialScenes, $additionalScenes)
       $summarySceneIndex = $additionalScenes.length
@@ -153,10 +151,10 @@
 
   let warningTokens: boolean
 
-  $: if ($story.api === Api.OpenAi) {
-    warningTokens = $usage.total_tokens + $story.openAi.maxTokens > $story.openAi.contextSize 
+  $: if ($preset.api === Api.OpenAi) {
+    warningTokens = $usage.total_tokens + $preset.openAi.maxTokens > $preset.openAi.contextSize 
   } else {
-    warningTokens = $usage.total_tokens + $story.oobabooga.maxTokens > $story.oobabooga.contextSize 
+    warningTokens = $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize 
   }
 </script>
 

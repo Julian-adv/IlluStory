@@ -1,12 +1,12 @@
 import { get } from "svelte/store"
-import type { Story, SceneType, Usage, Message } from "./interfaces"
+import type { Preset, SceneType, Usage, Message } from "./interfaces"
 import { settings, zeroUsage } from "./store"
 import { startStory, systemRole } from "./api"
 
-function generateMessages(story: Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number) {
+function generateMessages(preset: Preset, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number) {
   const messages: Message[] = []
   if (summary) {
-    messages.push({ role: systemRole, content: story.summarizePrompt })
+    messages.push({ role: systemRole, content: preset.summarizePrompt })
     for (const scene of initScenes.slice(firstSceneIndex)) {
       messages.push({ role: scene.role, content: scene.content })
     }
@@ -29,21 +29,21 @@ function generateMessages(story: Story, initScenes: SceneType[], addedScenes: Sc
   return messages
 }
 
-export async function sendChatOpenAi(story: Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
-  const uri = story.openAi.apiUrl + '/chat/completions'
+export async function sendChatOpenAi(preset: Preset, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
+  const uri = preset.openAi.apiUrl + '/chat/completions'
   // const uri = "https://api.openai.com/v1/chat/completions"
   // const uri = "http://localhost:8000/v1/chat/completions"
   const url = new URL(uri)
-  const messages = generateMessages(story, initScenes, addedScenes, summary, firstSceneIndex, sendStartIndex)
+  const messages = generateMessages(preset, initScenes, addedScenes, summary, firstSceneIndex, sendStartIndex)
   // console.log('messages', messages)
   const respFromGPT = await fetch(url, {
     body: JSON.stringify({
-      model: story.openAi.model,
+      model: preset.openAi.model,
       // model: "vicuna-13b-v1.5-16k",
-      temperature: story.openAi.temperature.toFixed,
-      frequency_penalty: story.openAi.frequencyPenalty.toFixed,
-      presence_penalty: story.openAi.presencePenalty.toFixed,
-      max_tokens: story.openAi.maxTokens.toFixed,
+      temperature: preset.openAi.temperature.toFixed,
+      frequency_penalty: preset.openAi.frequencyPenalty.toFixed,
+      presence_penalty: preset.openAi.presencePenalty.toFixed,
+      max_tokens: preset.openAi.maxTokens.toFixed,
       stream: false,
       messages: messages,
     }),

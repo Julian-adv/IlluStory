@@ -1,26 +1,26 @@
 import { get } from "svelte/store"
-import type { SceneType, Story, Usage } from "./interfaces"
+import type { SceneType, Preset, Usage } from "./interfaces"
 import { replaceDict, zeroUsage } from "./store"
 import { assistantRole, countTokensApi, systemRole, userRole } from "./api"
 
-function addRolePrefix(story: Story, scene: SceneType) {
+function addRolePrefix(preset: Preset, scene: SceneType) {
   if (scene.role === systemRole) {
-    return story.oobabooga.systemPrefix
+    return preset.oobabooga.systemPrefix
   } else if (scene.role === assistantRole) {
-    return story.oobabooga.assistantPrefix
+    return preset.oobabooga.assistantPrefix
   } else if (scene.role === userRole) {
-    return story.oobabooga.userPrefix
+    return preset.oobabooga.userPrefix
   }
   return ''
 }
 
-export async function sendChatOobabooga(story:Story, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
+export async function sendChatOobabooga(preset: Preset, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
   const uri = "http://localhost:5000/api/v1/generate"
   const url = new URL(uri)
   let prompt = ''
   if (summary) {
-    prompt += story.oobabooga.systemPrefix
-    prompt += story.summarizePrompt + '\n'
+    prompt += preset.oobabooga.systemPrefix
+    prompt += preset.summarizePrompt + '\n'
     initScenes.slice(firstSceneIndex).forEach(scene => {
       prompt += scene.content + '\n'
     })
@@ -29,13 +29,13 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
     })
   } else {
     initScenes.forEach(scene => {
-      prompt += addRolePrefix(story, scene) + scene.content + '\n'
+      prompt += addRolePrefix(preset, scene) + scene.content + '\n'
     })
     addedScenes.slice(sendStartIndex).forEach(scene => {
-      prompt += addRolePrefix(story, scene) + scene.content + '\n'
+      prompt += addRolePrefix(preset, scene) + scene.content + '\n'
     })
   }
-  prompt += story.oobabooga.assistantPrefix
+  prompt += preset.oobabooga.assistantPrefix
   // console.log('prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
@@ -43,26 +43,26 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
 
   const respFromOoga = await fetch(url, {
     body: JSON.stringify({
-      "max_new_tokens": story.oobabooga.maxTokens,
-      "temperature": story.oobabooga.temperature,
-      "top_k": story.oobabooga.topK,
-      "top_p": story.oobabooga.topP,
-      "typical_p": story.oobabooga.typicalP,
-      "top_a": story.oobabooga.topA,
-      "repetition_penalty": story.oobabooga.repetitionPenalty,
-      "encoder_repetition_penalty": story.oobabooga.encoderRepetitionPenalty,
-      "no_repeat_ngram_size": story.oobabooga.noRepeatNgramSize,
-      "min_length": story.oobabooga.minLength,
-      "do_sample": story.oobabooga.doSample,
-      "penalty_alpha": story.oobabooga.penaltyAlpha,
-      "num_beams": story.oobabooga.numBeams,
-      "length_penalty": story.oobabooga.lengthPenalty,
-      "early_stopping": story.oobabooga.earlyStopping,
-      "truncation_length": story.oobabooga.truncationLength,
-      "add_bos_token": story.oobabooga.addBosToken,
-      "ban_eos_token": story.oobabooga.banEosToken,
-      "skip_special_tokens": story.oobabooga.skipSpecialTokens,
-      "seed": story.oobabooga.seed,
+      "max_new_tokens": preset.oobabooga.maxTokens,
+      "temperature": preset.oobabooga.temperature,
+      "top_k": preset.oobabooga.topK,
+      "top_p": preset.oobabooga.topP,
+      "typical_p": preset.oobabooga.typicalP,
+      "top_a": preset.oobabooga.topA,
+      "repetition_penalty": preset.oobabooga.repetitionPenalty,
+      "encoder_repetition_penalty": preset.oobabooga.encoderRepetitionPenalty,
+      "no_repeat_ngram_size": preset.oobabooga.noRepeatNgramSize,
+      "min_length": preset.oobabooga.minLength,
+      "do_sample": preset.oobabooga.doSample,
+      "penalty_alpha": preset.oobabooga.penaltyAlpha,
+      "num_beams": preset.oobabooga.numBeams,
+      "length_penalty": preset.oobabooga.lengthPenalty,
+      "early_stopping": preset.oobabooga.earlyStopping,
+      "truncation_length": preset.oobabooga.truncationLength,
+      "add_bos_token": preset.oobabooga.addBosToken,
+      "ban_eos_token": preset.oobabooga.banEosToken,
+      "skip_special_tokens": preset.oobabooga.skipSpecialTokens,
+      "seed": preset.oobabooga.seed,
       "stopping_strings": [
         "### INPUT",
         "### Input",
@@ -98,7 +98,7 @@ export async function sendChatOobabooga(story:Story, initScenes: SceneType[], ad
   }
 }
 
-export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[], received: (text: string) => void,
+export async function sendChatOobaboogaStream(preset: Preset, scenes: SceneType[], received: (text: string) => void,
                                         closedCallback: () => void): Promise<[SceneType[], Usage]> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream')
   const userName = get(replaceDict)['user']
@@ -109,26 +109,26 @@ export async function sendChatOobaboogaStream(story: Story, scenes: SceneType[],
       prompt += scene.content + '\n'
     })
     const request = {
-      "max_new_tokens": story.oobabooga.maxTokens,
-      "temperature": story.oobabooga.temperature,
-      "top_k": story.oobabooga.topK,
-      "top_p": story.oobabooga.topP,
-      "typical_p": story.oobabooga.typicalP,
-      "top_a": story.oobabooga.topA,
-      "repetition_penalty": story.oobabooga.repetitionPenalty,
-      "encoder_repetition_penalty": story.oobabooga.encoderRepetitionPenalty,
-      "no_repeat_ngram_size": story.oobabooga.noRepeatNgramSize,
-      "min_length": story.oobabooga.minLength,
-      "do_sample": story.oobabooga.doSample,
-      "penalty_alpha": story.oobabooga.penaltyAlpha,
-      "num_beams": story.oobabooga.numBeams,
-      "length_penalty": story.oobabooga.lengthPenalty,
-      "early_stopping": story.oobabooga.earlyStopping,
-      "truncation_length": story.oobabooga.truncationLength,
-      "add_bos_token": story.oobabooga.addBosToken,
-      "ban_eos_token": story.oobabooga.banEosToken,
-      "skip_special_tokesn": story.oobabooga.skipSpecialTokens,
-      "seed": story.oobabooga.seed,
+      "max_new_tokens": preset.oobabooga.maxTokens,
+      "temperature": preset.oobabooga.temperature,
+      "top_k": preset.oobabooga.topK,
+      "top_p": preset.oobabooga.topP,
+      "typical_p": preset.oobabooga.typicalP,
+      "top_a": preset.oobabooga.topA,
+      "repetition_penalty": preset.oobabooga.repetitionPenalty,
+      "encoder_repetition_penalty": preset.oobabooga.encoderRepetitionPenalty,
+      "no_repeat_ngram_size": preset.oobabooga.noRepeatNgramSize,
+      "min_length": preset.oobabooga.minLength,
+      "do_sample": preset.oobabooga.doSample,
+      "penalty_alpha": preset.oobabooga.penaltyAlpha,
+      "num_beams": preset.oobabooga.numBeams,
+      "length_penalty": preset.oobabooga.lengthPenalty,
+      "early_stopping": preset.oobabooga.earlyStopping,
+      "truncation_length": preset.oobabooga.truncationLength,
+      "add_bos_token": preset.oobabooga.addBosToken,
+      "ban_eos_token": preset.oobabooga.banEosToken,
+      "skip_special_tokesn": preset.oobabooga.skipSpecialTokens,
+      "seed": preset.oobabooga.seed,
       "stopping_strings": [
         "### INPUT",
         "### Input",

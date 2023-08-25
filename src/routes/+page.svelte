@@ -8,13 +8,13 @@
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
   import { Button, Card, Dropdown, DropdownItem, Popover, Radio, Spinner } from 'flowbite-svelte'
   import { Icon } from 'flowbite-svelte-icons'
-  import { FileType, SortOrder, SortType, type Story, type StoryCard } from '$lib/interfaces'
-  import { story, storyPath, settings, curCharPath, curChar } from '$lib/store'
+  import { FileType, SortOrder, SortType, type Preset, type StoryCard } from '$lib/interfaces'
+  import { preset, presetPath, settings, curCharPath, curChar } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
-  import { extOf, allExts, basenameOf, loadStory, storyExt, charExt, sessionExt } from '$lib/fs'
+  import { extOf, allExts, basenameOf, loadPreset, presetExt, charExt, sessionExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
-  import { cardFromStory, loadChar } from '$lib/charSettings'
+  import { cardFromPreset, loadChar } from '$lib/charSettings'
   import { appDataDir } from '@tauri-apps/api/path'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
@@ -32,14 +32,14 @@
       if (entry.name) {
         const ext = extOf(entry.name)
         if (allExts.includes(ext)) {
-          let storyText = await readTextFile(entry.path)
-          let story = JSON.parse(storyText) as Story
+          let presetText = await readTextFile(entry.path)
+          let preset = JSON.parse(presetText) as Preset
           let image = defaultImage
-          if (story) {
-            if (story.image) {
-              image = story.image
-            } else if (story.prompts && story.prompts.length > 0) {
-              for (const prompt of story.prompts) {
+          if (preset) {
+            if (preset.image) {
+              image = preset.image
+            } else if (preset.prompts && preset.prompts.length > 0) {
+              for (const prompt of preset.prompts) {
                 if (prompt.image) {
                   image = prompt.image
                   break
@@ -84,12 +84,12 @@
   function onClick(card: StoryCard) {
     return async (_ev: Event) => {
       const ext = extOf(card.path)
-      if (ext === storyExt) {
-        const tempStory = await loadStory(card.path)
-        if (tempStory) {
-          $storyPath = card.path
-          $story = tempStory
-          cardFromStory($story, $storyPath)
+      if (ext === presetExt) {
+        const tempPreset = await loadPreset(card.path)
+        if (tempPreset) {
+          $presetPath = card.path
+          $preset = tempPreset
+          cardFromPreset($preset, $presetPath)
           goto('/write')
         }
       } else if (ext === charExt) {
@@ -153,7 +153,7 @@
   function filterExt(flag: number) {
     return cards.filter(card => {
       const ext = extOf(card.path)
-      if (ext === storyExt && flag === FileType.Story) {
+      if (ext === presetExt && flag === FileType.Preset) {
         return true
       } else if (ext === sessionExt && flag === FileType.Session) {
         return true
@@ -170,8 +170,8 @@
   
   function cardType(card: StoryCard) {
     const ext = extOf(card.path)
-    if (ext === storyExt) {
-      return 'Story'
+    if (ext === presetExt) {
+      return 'Preset'
     } else if (ext === sessionExt) {
       return 'Session'
     } else if (ext === charExt) {
@@ -182,7 +182,7 @@
 
   function grad(card: StoryCard) {
     const ext = extOf(card.path)
-    if (ext === storyExt) {
+    if (ext === presetExt) {
       return 'linear-gradient(to bottom, #1e293b 60%, #020617 100%)'    // slate
     } else if (ext === sessionExt) {
       return 'linear-gradient(to bottom, #075985 60%, #082f49 100%)'    // sky
@@ -199,7 +199,7 @@
 
   function borderColor(card: StoryCard) {
     const ext = extOf(card.path)
-    if (ext === storyExt) {
+    if (ext === presetExt) {
       return 'border-slate-400'
     } else if (ext === sessionExt) {
       return 'border-sky-400'
@@ -253,7 +253,7 @@
       {/if}
     </Button>
     <Radio bind:group={extFlag} value={FileType.All}>All</Radio>
-    <Radio bind:group={extFlag} value={FileType.Story}>Story</Radio>
+    <Radio bind:group={extFlag} value={FileType.Preset}>Preset</Radio>
     <Radio bind:group={extFlag} value={FileType.Char}>Character</Radio>
     <Radio bind:group={extFlag} value={FileType.Session}>Session</Radio>
   </div>

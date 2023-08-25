@@ -1,15 +1,15 @@
-import { story, settings, defaultSettings } from './store'
-import { Api, type Settings, type Story } from './interfaces'
+import { preset, settings, defaultSettings } from './store'
+import { Api, type Settings, type Preset } from './interfaces'
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { Configuration, OpenAIApi } from 'openai'
 import { get } from 'svelte/store'
 
 const settingsPath = 'settings.json'
 
-let currentStory: Story
+let currentPreset: Preset
 let currentSettings: Settings
 
-story.subscribe(s => currentStory = s)
+preset.subscribe(s => currentPreset = s)
 settings.subscribe(s => currentSettings = s)
 
 function fixSettings(settings: Settings) {
@@ -97,7 +97,7 @@ export async function loadSettings() {
   const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
   settings.set(JSON.parse(settingsJson))
   fixSettings(get(settings))
-  if (currentStory.api === Api.OpenAi && currentStory.openAi.apiUrl && currentStory.openAi.apiUrl.startsWith('https://api.openai.com')) {
+  if (currentPreset.api === Api.OpenAi && currentPreset.openAi.apiUrl && currentPreset.openAi.apiUrl.startsWith('https://api.openai.com')) {
       const configuration = new Configuration({
       apiKey: get(settings).openAiApiKey
     })
