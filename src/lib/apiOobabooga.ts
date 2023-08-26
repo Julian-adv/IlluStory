@@ -1,7 +1,7 @@
 import { get } from "svelte/store"
 import type { SceneType, Preset, Usage } from "./interfaces"
 import { replaceDict, zeroUsage } from "./store"
-import { assistantRole, countTokensApi, systemRole, userRole } from "./api"
+import { assistantRole, countTokensApi, startStory, systemRole, userRole } from "./api"
 
 function addRolePrefix(preset: Preset, scene: SceneType) {
   if (scene.role === systemRole) {
@@ -14,6 +14,20 @@ function addRolePrefix(preset: Preset, scene: SceneType) {
   return ''
 }
 
+function generatePrompt(preset: Preset, initScenes: SceneType[]) {
+  let prompt = ''
+  initScenes.forEach(scene => {
+    if (scene.role !== startStory) {
+      if (scene.content.startsWith("<Character>") || scene.content.startsWith("<User")) {
+        prompt += scene.content + '\n'
+      } else {
+        prompt += addRolePrefix(preset, scene) + scene.content + '\n'
+      }
+    }
+  })
+  return prompt
+}
+
 export async function sendChatOobabooga(preset: Preset, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
   const uri = "http://localhost:5000/api/v1/generate"
   const url = new URL(uri)
@@ -21,16 +35,12 @@ export async function sendChatOobabooga(preset: Preset, initScenes: SceneType[],
   if (summary) {
     prompt += preset.oobabooga.systemPrefix
     prompt += preset.summarizePrompt + '\n'
-    initScenes.slice(firstSceneIndex).forEach(scene => {
-      prompt += scene.content + '\n'
-    })
+    prompt += generatePrompt(preset, initScenes)
     addedScenes.slice(sendStartIndex).forEach(scene => {
       prompt += scene.content + '\n'
     })
   } else {
-    initScenes.forEach(scene => {
-      prompt += addRolePrefix(preset, scene) + scene.content + '\n'
-    })
+    prompt += generatePrompt(preset, initScenes)
     addedScenes.slice(sendStartIndex).forEach(scene => {
       prompt += addRolePrefix(preset, scene) + scene.content + '\n'
     })

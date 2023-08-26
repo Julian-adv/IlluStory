@@ -76,8 +76,10 @@
   function update(i: number, value: string) {
     if ($preset.prompts[i].content !== value) {
       $preset.prompts[i].content = value
-      // invalidate oldScenes[i]
-      $initialScenes[i].content = ''
+      if ($initialScenes[i]) {
+        // invalidate oldScenes[i]
+        $initialScenes[i].content = ''
+      }
     }
     autoSaveFunc()
   }
@@ -208,9 +210,9 @@
     <CheckField label='Ban the EOS token' help="Forces the model to never end the generation prematurely." bind:value={$preset.oobabooga.banEosToken} save={autoSaveFunc} />
     <CheckField label='Add the BOS token to the beginning of prompts' help="Disabling this can make the replies more creative." bind:value={$preset.oobabooga.addBosToken} save={autoSaveFunc} />
     <CheckField label='Skip special tokens' help="Some specific models need this unset." bind:value={$preset.oobabooga.skipSpecialTokens} save={autoSaveFunc} />
-    <StringField label='System prefix' help="String to prefix system role prompt." bind:value={$preset.oobabooga.systemPrefix} save={autoSaveFunc} />
-    <StringField label='User prefix' help="String to prefix user role prompt." bind:value={$preset.oobabooga.userPrefix} save={autoSaveFunc} />
-    <StringField label='Assistant prefix' help="String to prefix assistant role prompt." bind:value={$preset.oobabooga.assistantPrefix} save={autoSaveFunc} />
+    <TextField label='System prefix' help="String to prefix system role prompt." bind:value={$preset.oobabooga.systemPrefix} save={autoSaveFunc} />
+    <TextField label='User prefix' help="String to prefix user role prompt." bind:value={$preset.oobabooga.userPrefix} save={autoSaveFunc} />
+    <TextField label='Assistant prefix' help="String to prefix assistant role prompt." bind:value={$preset.oobabooga.assistantPrefix} save={autoSaveFunc} />
     <NumberField label='Max tokens' help="The maximum number of tokens to generate in the completion." bind:value={$preset.oobabooga.maxTokens} min={50} max={1000} step={1} save={autoSaveFunc} />
     <NumberField label='Context size' help="Represents the model's context size. If story tokens near this, the chat history will be summarized." bind:value={$preset.oobabooga.contextSize} min={512} max={32768} step={1} save={autoSaveFunc} />
   {/if}
