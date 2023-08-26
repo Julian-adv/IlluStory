@@ -33,6 +33,7 @@ const defaultPreset: Preset = {
     topK: 0,
     topP: 1.0,
     typicalP: 1.0,
+    tfs: 1.0,
     topA: 0,
     repetitionPenalty: 1.0,
     encoderRepetitionPenalty: 1,

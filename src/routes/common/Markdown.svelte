@@ -3,7 +3,8 @@
   import { marked } from 'marked'
   import FlexibleTextarea from './FlexibleTextarea.svelte'
   import { Button } from 'flowbite-svelte'
-  import { getUniqueId, translateButtonClass, visualEnd, visualStart } from '$lib'
+  import { getUniqueId, translateButtonClass } from '$lib'
+  import { visualEnd, visualStart } from '$lib/image'
   
   export let value = ''
   export let translatedValue = ''

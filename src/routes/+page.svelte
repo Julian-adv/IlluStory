@@ -6,10 +6,10 @@
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
   import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
-  import { Button, Card, Dropdown, DropdownItem, Popover, Radio, Spinner } from 'flowbite-svelte'
+  import { Button, Card, Dropdown, DropdownItem, Popover, Radio, Spinner, Toast } from 'flowbite-svelte'
   import { Icon } from 'flowbite-svelte-icons'
-  import { FileType, SortOrder, SortType, type Preset, type StoryCard } from '$lib/interfaces'
-  import { preset, presetPath, settings, curCharPath, curChar } from '$lib/store'
+  import { FileType, SortOrder, SortType, type StoryCard } from '$lib/interfaces'
+  import { preset, presetPath, settings, curCharPath, curChar, additionalScenes, sessionPath } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
   import { extOf, allExts, basenameOf, loadPreset, presetExt, charExt, sessionExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
@@ -17,6 +17,8 @@
   import { cardFromPreset, loadChar } from '$lib/charSettings'
   import { appDataDir } from '@tauri-apps/api/path'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
+  import { loadSession } from '$lib/session'
+  import { slide } from 'svelte/transition'
 
   let showingCards: StoryCard[] = []
   let extFlag = FileType.All
@@ -33,15 +35,22 @@
         const ext = extOf(entry.name)
         if (allExts.includes(ext)) {
           let presetText = await readTextFile(entry.path)
-          let preset = JSON.parse(presetText) as Preset
+          let obj = JSON.parse(presetText)
           let image = defaultImage
-          if (preset) {
-            if (preset.image) {
-              image = preset.image
-            } else if (preset.prompts && preset.prompts.length > 0) {
-              for (const prompt of preset.prompts) {
+          if (obj) {
+            if (obj.image) {
+              image = obj.image
+            } else if (obj.prompts && obj.prompts.length > 0) {
+              for (const prompt of obj.prompts) {
                 if (prompt.image) {
                   image = prompt.image
+                  break
+                }
+              }
+            } else if (obj.length > 0) {
+              for (const scene of obj) {
+                if (scene.image) {
+                  image = scene.image
                   break
                 }
               }
@@ -81,6 +90,17 @@
     }
   })
 
+  let toastOpen = false
+
+  function closeToast() {
+    toastOpen = false
+  }
+
+  function showToast() {
+    toastOpen = true
+    setTimeout(closeToast, 3000)
+  }
+
   function onClick(card: StoryCard) {
     return async (_ev: Event) => {
       const ext = extOf(card.path)
@@ -100,7 +120,16 @@
           goto('/write_char')
         }
       } else if (ext === sessionExt) {
-        goto('/play')
+        if (!$presetPath) {
+          showToast()
+        } else {
+          const tempSession = await loadSession(card.path)
+          if (tempSession) {
+            $additionalScenes = tempSession
+            $sessionPath = card.path
+            goto('/play')
+          }
+        }
       }
     }
   }
@@ -262,27 +291,33 @@
       <Spinner size='8' />
     </div>
   {:else}
-    <div class="flex flex-wrap flex-none gap-2">
-      {#each showingCards as card, i}
-        <Card img={card.image} class='w-52 h-[310px] card {borderColor(card)} border-2 cursor-pointer' padding='none' style="--grad: {grad(card)};" on:click={onClick(card)}>
-          <div class='px-2 py-0 flex justify-between'>
-            <h2 class='italic text-xs text-stone-100'>{cardType(card)}</h2>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 py-1" on:click={onTrash(card)}>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-            </svg>
-          </div>
-          <div class="flex items-center justify-center p-1 text-stone-50 font-bold">
-            <h2 id={`card${i}`} class='text-ellipsis max-w-full overflow-hidden whitespace-nowrap'>{card.name}</h2>
-          </div>
-          {#if card.name.length > 19}
-            <Popover class='w-auto h-9 text-sm z-30' triggeredBy={`#card${i}`}>
-              <span>{card.name}</span>
-            </Popover>
-          {/if}
-        </Card>
-      {/each}
+    <div class='relative'>
+      <Toast color='orange' transition={slide} bind:open={toastOpen} class='fixed mx-auto my-8 top-auto inset-x-0 z-30'>
+        <Icon name="info-circle-solid" slot="icon" class="w-4 h-4" />
+        Load preset first.
+      </Toast>
+      <div class="flex flex-wrap flex-none gap-2">
+        {#each showingCards as card, i}
+          <Card img={card.image} class='w-52 h-[310px] card {borderColor(card)} border-2 cursor-pointer' padding='none' style="--grad: {grad(card)};" on:click={onClick(card)}>
+            <div class='px-2 py-0 flex justify-between'>
+              <h2 class='italic text-xs text-stone-100'>{cardType(card)}</h2>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 py-1" on:click={onTrash(card)}>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+              </svg>
+            </div>
+            <div class="flex items-center justify-center p-1 text-stone-50 font-bold">
+              <h2 id={`card${i}`} class='text-ellipsis max-w-full overflow-hidden whitespace-nowrap'>{card.name}</h2>
+            </div>
+            {#if card.name.length > 19}
+              <Popover class='w-auto h-auto text-sm z-30' triggeredBy={`#card${i}`}>
+                <span>{card.name}</span>
+              </Popover>
+            {/if}
+          </Card>
+        {/each}
+      </div>
     </div>
   {/if}
 </main>

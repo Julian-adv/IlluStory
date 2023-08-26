@@ -7,10 +7,11 @@
   import { save } from "@tauri-apps/api/dialog"
   import { basename, downloadDir } from "@tauri-apps/api/path"
   import { settings } from "$lib/store"
-  import { realImageSize, visualEnd, visualStart } from "$lib"
+  import { realImageSize } from "$lib"
   import { generateImage } from "$lib/imageApi"
   import { translateText } from "$lib/deepLApi"
   import { assistantRole, systemRole } from "$lib/api"
+  import { extractImagePrompt } from "$lib/image"
 
   export let scene: SceneType
   let translated: boolean
@@ -19,27 +20,12 @@
   let waitingImage = false
   let imageSize: ImageSize = scene.imageSize ?? { width: 512, height: 512 }
   let popoverId = 'pop123'
-  const regexp = new RegExp(`${visualStart}([^<]+)${visualEnd}`, 'g')
 
   $: imageWidth = realImageSize(imageSize.width)
   $: imageHeight = realImageSize(imageSize.height)
   $: imageClass = imageWidth > window.innerWidth / 2 ?
                     'clear-both flex flex-col items-center z-10' :
                     'flex flex-col float-left mr-5 z-10'
-
-  function clearImagePrompt(str: string) {
-    return str.replace(regexp, '').trim()
-  }
-    
-  async function extractImagePrompt(scene: SceneType) {
-    const matches = scene.content.match(regexp) || []
-    const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
-    scene.textContent = clearImagePrompt(scene.content)
-    scene.visualContent = extractedContents.join(',')
-    if ($settings.translateOutput && !scene.translatedContent) {
-      scene.translatedContent = await translateText($settings, $settings.userLang, scene.textContent)
-    }
-  }
 
   export async function generateImageIfNeeded(_sceneParam: SceneType) {
     if (scene.image) {
@@ -63,8 +49,7 @@
   }
 
   onMount(async () => {
-    await extractImagePrompt(scene)
-    scene = scene
+    scene = await extractImagePrompt($settings, scene)
     generateImageIfNeeded(scene)
     translated = !!scene.translatedContent
   })
@@ -121,15 +106,16 @@
   }
 
   async function onTranslate() {
-    scene.translatedContent = await translateText($settings, $settings.userLang, scene.textContent?? '')
+    if (!scene.translatedContent) {
+      scene.translatedContent = await translateText($settings, $settings.userLang, scene.textContent?? '')
+    }
   }
 
   async function onEditDone(content: string) {
     scene.content = content
     scene.translatedContent = ''
     scene.image = ''
-    await extractImagePrompt(scene)
-    scene = scene
+    scene = await extractImagePrompt($settings, scene)
     generateImageIfNeeded(scene)
   }
 </script>

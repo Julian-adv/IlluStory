@@ -5,7 +5,7 @@
   import { loadSettings } from "$lib/settings"
   import DragDropList from "$lib/DragDropList.svelte"
   import { changeApi, roles, countTokensApi, startStory, charSetting, userSetting, systemRole } from "$lib/api"
-  import { preset, presetPath, curChar, curCharPath, char, charPath, user, userPath } from "$lib/store"
+  import { preset, presetPath, curChar, curCharPath, char, charPath, user, userPath, initialScenes } from "$lib/store"
   import { Api, type Char } from "$lib/interfaces"
   import StringField from "../common/StringField.svelte"
   import SelectField from "../common/SelectField.svelte"
@@ -74,7 +74,11 @@
   }
 
   function update(i: number, value: string) {
-    $preset.prompts[i].content = value
+    if ($preset.prompts[i].content !== value) {
+      $preset.prompts[i].content = value
+      // invalidate oldScenes[i]
+      $initialScenes[i].content = ''
+    }
     autoSaveFunc()
   }
 
@@ -152,13 +156,13 @@
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" />
     </svg>
-    Load
+    <span class='pl-2'>Load</span>
   </Button>
   <Button color='alternative' size='sm' on:click={save}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
       <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
     </svg>
-    Save as ...
+    <span class='pl-2'>Save as ...</span>
   </Button>
   <Checkbox class='inline self-center' bind:checked={autoSave}>Auto save</Checkbox>
   
@@ -188,6 +192,7 @@
     <NumberField label='Top p' help="If not set to 1, select tokens with probabilities adding up to less than this number. Higher value = higher range of possible random results." bind:value={$preset.oobabooga.topP} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Top k' help="Similar to top_p, but select instead only the top_k most likely tokens. Higher value = higher range of possible random results." bind:value={$preset.oobabooga.topK} min={0} max={100} step={1} save={autoSaveFunc} />
     <NumberField label='Typical p' help="If not set to 1, select only tokens that are at least this much more likely to appear than random tokens, given the prior text." bind:value={$preset.oobabooga.typicalP} min={0.0} max={1.0} save={autoSaveFunc} />
+    <NumberField label='TFS' help="Tail Free Sampling, https://www.trentonbricken.com/Tail-Free-Sampling/" bind:value={$preset.oobabooga.tfs} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Top a' help="" bind:value={$preset.oobabooga.topA} min={0.0} max={1.0} save={autoSaveFunc} />
     <NumberField label='Repetition penalty' help="Exponential penalty factor for repeating prior tokens. 1 means no penalty, higher value = less repetition, lower value = more repetition." bind:value={$preset.oobabooga.repetitionPenalty} min={1.0} max={2.0} save={autoSaveFunc} />
     <NumberField label='Encoder repetition penalty' help="Also known as the “Hallucinations filter”. Used to penalize tokens that are not in the prior text. Higher value = more likely to stay in context, lower value = more likely to diverge." bind:value={$preset.oobabooga.encoderRepetitionPenalty} min={0.8} max={1.5} save={autoSaveFunc} />

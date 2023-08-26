@@ -44,6 +44,7 @@ export interface OobaboogaParam {
   topP: number;
   topK: number;
   typicalP: number;
+  tfs: number;
   topA: number;
   repetitionPenalty: number;
   encoderRepetitionPenalty: number;
