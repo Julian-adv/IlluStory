@@ -18,8 +18,8 @@ export interface SceneType {
 }
 
 export interface Message {
-  role: string;
-  content: string;
+  role: string
+  content: string
 }
 
 export enum Api {
@@ -28,71 +28,71 @@ export enum Api {
 }
 
 export interface OpenAiParam {
-  apiUrl: string;
-  model: string;
-  temperature: number;
-  frequencyPenalty: number;
-  presencePenalty: number;
-  maxTokens: number;
-  contextSize: number;
+  apiUrl: string
+  model: string
+  temperature: number
+  frequencyPenalty: number
+  presencePenalty: number
+  maxTokens: number
+  contextSize: number
 }
 
 export interface OobaboogaParam {
-  apiUrl: string;
-  maxTokens: number;
-  temperature: number;
-  topP: number;
-  topK: number;
-  typicalP: number;
-  tfs: number;
-  topA: number;
-  repetitionPenalty: number;
-  encoderRepetitionPenalty: number;
-  noRepeatNgramSize: number;
-  minLength: number;
-  seed: number;
-  doSample: boolean;
-  penaltyAlpha:  number;
-  numBeams: number;
-  lengthPenalty: number;
-  earlyStopping: boolean;
-  truncationLength: number;
-  banEosToken: boolean;
-  addBosToken: boolean;
-  skipSpecialTokens: boolean;
-  contextSize: number;
-  systemPrefix: string;
-  userPrefix: string;
-  assistantPrefix: string;
+  apiUrl: string
+  maxTokens: number
+  temperature: number
+  topP: number
+  topK: number
+  typicalP: number
+  tfs: number
+  topA: number
+  repetitionPenalty: number
+  encoderRepetitionPenalty: number
+  noRepeatNgramSize: number
+  minLength: number
+  seed: number
+  doSample: boolean
+  penaltyAlpha: number
+  numBeams: number
+  lengthPenalty: number
+  earlyStopping: boolean
+  truncationLength: number
+  banEosToken: boolean
+  addBosToken: boolean
+  skipSpecialTokens: boolean
+  contextSize: number
+  systemPrefix: string
+  userPrefix: string
+  assistantPrefix: string
 }
 
 export interface Preset {
-  title: string;
-  image: string;
-  api: Api;
-  visualizePrompt: string;
-  summarizePrompt: string;
-  openAi: OpenAiParam;
-  oobabooga: OobaboogaParam;
+  title: string
+  image: string
+  api: Api
+  visualizePrompt: string
+  summarizePrompt: string
+  openAi: OpenAiParam
+  oobabooga: OobaboogaParam
 
   prompts: SceneType[]
 }
 
 export interface Usage {
-  prompt_tokens: number;
-  completion_tokens: number;
-  total_tokens: number;
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
 }
 
 export interface StoryCard {
-  name: string;
-  path: string;
-  modifiedAt: Date;
-  image: string;
+  name: string
+  path: string
+  modifiedAt: Date
+  image: string
 }
 
 export type StringDictionary = {
-  [key: string]: string;
+  [key: string]: string
 }
 
 export interface TextSettings {
@@ -125,6 +125,7 @@ export interface Settings {
   denoisingStrength: number
   hiresScale: number
   hiresUpscaler: string
+  blurBackground: boolean
   deeplApiKey: string
   aiLang: string
   userLang: string

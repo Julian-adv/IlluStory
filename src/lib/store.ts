@@ -24,7 +24,7 @@ const defaultPreset: Preset = {
     maxTokens: 300,
     contextSize: 4096,
   },
-  
+
   // oobabooga
   oobabooga: {
     apiUrl: 'http://localhost:5000/api/v1/generate',
@@ -63,7 +63,7 @@ export const preset = writable(defaultPreset)
 export const presetPath = writable('')
 export const sessionPath = writable('')
 
-export const zeroUsage = {prompt_tokens: 0, completion_tokens: 0, total_tokens: 0}
+export const zeroUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
 export const usage = writable(zeroUsage)
 
 export const firstSceneIndex = writable(0)
@@ -113,6 +113,7 @@ export const defaultSettings: Settings = {
   hiresScale: 2.0,
   hiresUpscaler: 'Latent',
   enableADetailer: true,
+  blurBackground: true,
   deeplApiKey: '',
   aiLang: 'EN-US',
   userLang: '',
