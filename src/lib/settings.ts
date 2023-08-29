@@ -1,7 +1,7 @@
 import { preset, settings, defaultSettings } from './store'
 import { Api, type Settings, type Preset } from './interfaces'
 import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
-import { Configuration, OpenAIApi } from 'openai'
+import OpenAI from 'openai'
 import { get } from 'svelte/store'
 
 const settingsPath = 'settings.json'
@@ -98,12 +98,12 @@ export async function loadSettings() {
   settings.set(JSON.parse(settingsJson))
   fixSettings(get(settings))
   if (currentPreset.api === Api.OpenAi && currentPreset.openAi.apiUrl && currentPreset.openAi.apiUrl.startsWith('https://api.openai.com')) {
-      const configuration = new Configuration({
-      apiKey: get(settings).openAiApiKey
+    const openai = new OpenAI({
+      apiKey: get(settings).openAiApiKey,
+      dangerouslyAllowBrowser: true
     })
-    const openai = new OpenAIApi(configuration)
-    const response = await openai.listModels()
-    const models = response.data.data.map(model => {
+    const response = await openai.models.list()
+    const models = response.data.map(model => {
       return { value: model.id, name: model.id }
     })
 
@@ -111,10 +111,10 @@ export async function loadSettings() {
   } else {
     // Open AI compatible API
     return [
-      { value: "gpt-3.5-turbo", name: "gpt-3.5-turbo"},
-      { value: "gpt-3.5-turbo-16k", name: "gpt-3.5-turbo-16k"},
-      { value: "gpt-4", name: "gpt-4"},
-      { value: "gpt-4-32k", name: "gpt-4-32k"}
+      { value: "gpt-3.5-turbo", name: "gpt-3.5-turbo" },
+      { value: "gpt-3.5-turbo-16k", name: "gpt-3.5-turbo-16k" },
+      { value: "gpt-4", name: "gpt-4" },
+      { value: "gpt-4-32k", name: "gpt-4-32k" }
     ]
   }
 }
