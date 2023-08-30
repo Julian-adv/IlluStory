@@ -14,6 +14,8 @@ export interface SceneType {
   translatedContent?: string
   image?: string
   imageSize?: ImageSize
+  rangeStart?: number
+  rangeEnd?: number
   done?: boolean
 }
 

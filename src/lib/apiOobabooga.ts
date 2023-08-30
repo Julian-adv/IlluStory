@@ -1,35 +1,40 @@
-import { get } from "svelte/store"
-import type { SceneType, Preset, Usage } from "./interfaces"
-import { replaceDict, zeroUsage } from "./store"
-import { assistantRole, countTokensApi, startStory, systemRole, userRole } from "./api"
+import { get } from 'svelte/store'
+import type { SceneType, Preset, Usage } from './interfaces'
+import { replaceDict, zeroUsage } from './store'
+import { assistantRole, countTokensApi, startStory, systemRole, userRole } from './api'
 
 function addRolePrefix(preset: Preset, scene: SceneType) {
-  if (scene.role === systemRole) {
-    return preset.oobabooga.systemPrefix
-  } else if (scene.role === assistantRole) {
-    return preset.oobabooga.assistantPrefix
-  } else if (scene.role === userRole) {
-    return preset.oobabooga.userPrefix
+  switch (scene.role) {
+    case systemRole:
+      return preset.oobabooga.systemPrefix
+    case assistantRole:
+      return preset.oobabooga.assistantPrefix
+    case userRole:
+      return preset.oobabooga.userPrefix
+    default:
+      return ''
   }
-  return ''
 }
 
 function generatePrompt(preset: Preset, initScenes: SceneType[]) {
   let prompt = ''
   initScenes.forEach(scene => {
     if (scene.role !== startStory) {
-      if (scene.content.startsWith("<Character>") || scene.content.startsWith("<User")) {
-        prompt += scene.content + '\n'
-      } else {
-        prompt += addRolePrefix(preset, scene) + scene.content + '\n'
-      }
+      prompt += addRolePrefix(preset, scene) + scene.content + '\n'
     }
   })
   return prompt
 }
 
-export async function sendChatOobabooga(preset: Preset, initScenes: SceneType[], addedScenes: SceneType[], summary: boolean, firstSceneIndex: number, sendStartIndex: number): Promise<[SceneType|null, Usage]> {
-  const uri = "http://localhost:5000/api/v1/generate"
+export async function sendChatOobabooga(
+  preset: Preset,
+  initScenes: SceneType[],
+  addedScenes: SceneType[],
+  summary: boolean,
+  firstSceneIndex: number,
+  sendStartIndex: number
+): Promise<[SceneType | null, Usage]> {
+  const uri = 'http://localhost:5000/api/v1/generate'
   const url = new URL(uri)
   let prompt = ''
   if (summary) {
@@ -46,51 +51,51 @@ export async function sendChatOobabooga(preset: Preset, initScenes: SceneType[],
     })
   }
   prompt += preset.oobabooga.assistantPrefix
-  // console.log('prompt:', prompt)
+  console.log('prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
   const userName = get(replaceDict)['user']
 
   const respFromOoga = await fetch(url, {
     body: JSON.stringify({
-      "max_new_tokens": preset.oobabooga.maxTokens,
-      "temperature": preset.oobabooga.temperature,
-      "top_k": preset.oobabooga.topK,
-      "top_p": preset.oobabooga.topP,
-      "typical_p": preset.oobabooga.typicalP,
-      "tfs": preset.oobabooga.tfs,
-      "top_a": preset.oobabooga.topA,
-      "repetition_penalty": preset.oobabooga.repetitionPenalty,
-      "encoder_repetition_penalty": preset.oobabooga.encoderRepetitionPenalty,
-      "no_repeat_ngram_size": preset.oobabooga.noRepeatNgramSize,
-      "min_length": preset.oobabooga.minLength,
-      "do_sample": preset.oobabooga.doSample,
-      "penalty_alpha": preset.oobabooga.penaltyAlpha,
-      "num_beams": preset.oobabooga.numBeams,
-      "length_penalty": preset.oobabooga.lengthPenalty,
-      "early_stopping": preset.oobabooga.earlyStopping,
-      "truncation_length": preset.oobabooga.truncationLength,
-      "add_bos_token": preset.oobabooga.addBosToken,
-      "ban_eos_token": preset.oobabooga.banEosToken,
-      "skip_special_tokens": preset.oobabooga.skipSpecialTokens,
-      "seed": preset.oobabooga.seed,
-      "stopping_strings": [
-        "### INPUT",
-        "### Input",
-        "### User",
-        "### USER",
-        "### INSTRUCTION",
-        "### Instruction",
-        "\n```",
-        "\nUser:",
-        "\nuser:",
+      max_new_tokens: preset.oobabooga.maxTokens,
+      temperature: preset.oobabooga.temperature,
+      top_k: preset.oobabooga.topK,
+      top_p: preset.oobabooga.topP,
+      typical_p: preset.oobabooga.typicalP,
+      tfs: preset.oobabooga.tfs,
+      top_a: preset.oobabooga.topA,
+      repetition_penalty: preset.oobabooga.repetitionPenalty,
+      encoder_repetition_penalty: preset.oobabooga.encoderRepetitionPenalty,
+      no_repeat_ngram_size: preset.oobabooga.noRepeatNgramSize,
+      min_length: preset.oobabooga.minLength,
+      do_sample: preset.oobabooga.doSample,
+      penalty_alpha: preset.oobabooga.penaltyAlpha,
+      num_beams: preset.oobabooga.numBeams,
+      length_penalty: preset.oobabooga.lengthPenalty,
+      early_stopping: preset.oobabooga.earlyStopping,
+      truncation_length: preset.oobabooga.truncationLength,
+      add_bos_token: preset.oobabooga.addBosToken,
+      ban_eos_token: preset.oobabooga.banEosToken,
+      skip_special_tokens: preset.oobabooga.skipSpecialTokens,
+      seed: preset.oobabooga.seed,
+      stopping_strings: [
+        '### INPUT',
+        '### Input',
+        '### User',
+        '### USER',
+        '### INSTRUCTION',
+        '### Instruction',
+        '\n```',
+        '\nUser:',
+        '\nuser:',
         `\n${userName}:`,
         `\n${userName} `
       ],
-      "prompt": prompt
+      prompt: prompt
     }),
     headers: {},
-    method: "POST",
+    method: 'POST',
     signal: null
   })
   const dataFromOoga = await respFromOoga.json()
@@ -109,54 +114,58 @@ export async function sendChatOobabooga(preset: Preset, initScenes: SceneType[],
   }
 }
 
-export async function sendChatOobaboogaStream(preset: Preset, scenes: SceneType[], received: (text: string) => void,
-                                        closedCallback: () => void): Promise<[SceneType[], Usage]> {
+export async function sendChatOobaboogaStream(
+  preset: Preset,
+  scenes: SceneType[],
+  received: (text: string) => void,
+  closedCallback: () => void
+): Promise<[SceneType[], Usage]> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream')
   const userName = get(replaceDict)['user']
-  
+
   conn.onopen = () => {
     let prompt = ''
-    scenes.forEach((scene) => {
+    scenes.forEach(scene => {
       prompt += scene.content + '\n'
     })
     const request = {
-      "max_new_tokens": preset.oobabooga.maxTokens,
-      "temperature": preset.oobabooga.temperature,
-      "top_k": preset.oobabooga.topK,
-      "top_p": preset.oobabooga.topP,
-      "typical_p": preset.oobabooga.typicalP,
-      "top_a": preset.oobabooga.topA,
-      "repetition_penalty": preset.oobabooga.repetitionPenalty,
-      "encoder_repetition_penalty": preset.oobabooga.encoderRepetitionPenalty,
-      "no_repeat_ngram_size": preset.oobabooga.noRepeatNgramSize,
-      "min_length": preset.oobabooga.minLength,
-      "do_sample": preset.oobabooga.doSample,
-      "penalty_alpha": preset.oobabooga.penaltyAlpha,
-      "num_beams": preset.oobabooga.numBeams,
-      "length_penalty": preset.oobabooga.lengthPenalty,
-      "early_stopping": preset.oobabooga.earlyStopping,
-      "truncation_length": preset.oobabooga.truncationLength,
-      "add_bos_token": preset.oobabooga.addBosToken,
-      "ban_eos_token": preset.oobabooga.banEosToken,
-      "skip_special_tokesn": preset.oobabooga.skipSpecialTokens,
-      "seed": preset.oobabooga.seed,
-      "stopping_strings": [
-        "### INPUT",
-        "### Input",
-        "### User",
-        "### USER",
-        "### INSTRUCTION",
-        "### Instruction",
-        "\nUser:",
-        "\nuser:",
+      max_new_tokens: preset.oobabooga.maxTokens,
+      temperature: preset.oobabooga.temperature,
+      top_k: preset.oobabooga.topK,
+      top_p: preset.oobabooga.topP,
+      typical_p: preset.oobabooga.typicalP,
+      top_a: preset.oobabooga.topA,
+      repetition_penalty: preset.oobabooga.repetitionPenalty,
+      encoder_repetition_penalty: preset.oobabooga.encoderRepetitionPenalty,
+      no_repeat_ngram_size: preset.oobabooga.noRepeatNgramSize,
+      min_length: preset.oobabooga.minLength,
+      do_sample: preset.oobabooga.doSample,
+      penalty_alpha: preset.oobabooga.penaltyAlpha,
+      num_beams: preset.oobabooga.numBeams,
+      length_penalty: preset.oobabooga.lengthPenalty,
+      early_stopping: preset.oobabooga.earlyStopping,
+      truncation_length: preset.oobabooga.truncationLength,
+      add_bos_token: preset.oobabooga.addBosToken,
+      ban_eos_token: preset.oobabooga.banEosToken,
+      skip_special_tokesn: preset.oobabooga.skipSpecialTokens,
+      seed: preset.oobabooga.seed,
+      stopping_strings: [
+        '### INPUT',
+        '### Input',
+        '### User',
+        '### USER',
+        '### INSTRUCTION',
+        '### Instruction',
+        '\nUser:',
+        '\nuser:',
         `\n${userName}:`
       ],
-      "prompt": prompt
+      prompt: prompt
     }
     conn.send(JSON.stringify(request))
   }
-  
-  conn.onmessage = (event) => {
+
+  conn.onmessage = event => {
     // console.log('on message', event)
     const resp = JSON.parse(event.data)
     switch (resp.event) {
@@ -171,11 +180,11 @@ export async function sendChatOobaboogaStream(preset: Preset, scenes: SceneType[
         break
     }
   }
-  
-  conn.onerror = (error) => {
+
+  conn.onerror = error => {
     console.log('on error', error)
   }
-  
+
   conn.onclose = () => {
     console.log('on close')
   }

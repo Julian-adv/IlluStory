@@ -11,7 +11,8 @@
     startStory,
     charSetting,
     userSetting,
-    systemRole
+    systemRole,
+    chatHistory
   } from '$lib/api'
   import {
     preset,
@@ -493,6 +494,18 @@
         <CharCard char={$char} onCharClick={onCharClick(i)} {onEditChar} />
       {:else if prompt.role === userSetting}
         <CharCard char={$user} onCharClick={onUserClick(i)} onEditChar={onEditUser} />
+      {:else if prompt.role === chatHistory}
+        <div class="flex flex-col">
+          <div class="flex">
+            <StringField label="Start index" value={prompt.rangeStart} />
+            <StringField label="End index" value={prompt.rangeEnd} />
+          </div>
+          <div class="flex">
+            <em class="text-xs text-stone-400 pl-2">
+              If you put a negative number, it will count from the back. If you put 'end', it will
+              print to the end.</em>
+          </div>
+        </div>
       {:else}
         <div class="flex flex-col w-full text-left">
           <FlexibleTextarea

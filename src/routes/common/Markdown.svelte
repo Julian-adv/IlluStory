@@ -134,7 +134,9 @@
 </script>
 
 {#if readOnly}
-  <div class="font-serif prose leading-relaxed markdown text-gray-900 px-4" style={cssVarStyles}>
+  <div
+    class="font-serif prose leading-relaxed markdown text-gray-900 px-4 py-4"
+    style={cssVarStyles}>
     {#if translated}
       {@html marked.parse(translatedMarkdown)}
     {:else}

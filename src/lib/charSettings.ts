@@ -1,10 +1,10 @@
-import { readTextFile } from "@tauri-apps/api/fs"
+import { readTextFile } from '@tauri-apps/api/fs'
 import { open } from '@tauri-apps/api/dialog'
-import { savePath } from "./fs"
-import type { Char, Preset } from "./interfaces"
-import { dirname, sep } from "@tauri-apps/api/path"
-import { charSetting, userSetting } from "./api"
-import { char, charPath, user, userPath } from "./store"
+import { savePath } from './fs'
+import type { Char, Preset } from './interfaces'
+import { dirname, sep } from '@tauri-apps/api/path'
+import { charSetting, userSetting } from './api'
+import { char, charPath, user, userPath } from './store'
 
 export async function loadChar(path: string) {
   const json = await readTextFile(path)
@@ -12,9 +12,9 @@ export async function loadChar(path: string) {
   return char
 }
 
-export async function loadCharDialog(): Promise<[Char|null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['char']}]})
-  if (typeof(selected) === 'string' ) {
+export async function loadCharDialog(): Promise<[Char | null, string]> {
+  const selected = await open({ filters: [{ name: '*', extensions: ['char'] }] })
+  if (typeof selected === 'string') {
     return [await loadChar(selected), selected]
   }
   return [null, '']

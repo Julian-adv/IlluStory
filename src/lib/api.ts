@@ -10,21 +10,29 @@ export const userRole = 'user'
 export const charSetting = 'set_char'
 export const userSetting = 'set_user'
 export const startStory = 'start_story'
+export const chatHistory = 'chat_history'
+export const authorNote = 'author_note'
+export const globalNote = 'global_note'
+export const loreBook = 'lore_book'
 
 export const roles = [
-  { value: systemRole, name: "System" },
-  { value: assistantRole, name: "Assistant" },
-  { value: userRole, name: "User" },
-  { value: "-", name: "-" },
+  { value: systemRole, name: 'System' },
+  { value: assistantRole, name: 'Assistant' },
+  { value: userRole, name: 'User' },
+  { value: '-', name: '-' },
   { value: charSetting, name: 'Char setting' },
   { value: userSetting, name: 'User setting' },
-  { value: startStory, name: "Start story" },
+  { value: startStory, name: 'Start story' },
+  { value: chatHistory, name: 'Chat history' },
+  { value: authorNote, name: 'Author note' },
+  { value: globalNote, name: 'Global note' },
+  { value: loreBook, name: 'Lore book' }
 ]
 
 export const chatRoles = [
-  { value: systemRole, name: "System" },
-  { value: assistantRole, name: "Assistant" },
-  { value: userRole, name: "User" },
+  { value: systemRole, name: 'System' },
+  { value: assistantRole, name: 'Assistant' },
+  { value: userRole, name: 'User' }
 ]
 
 export let sendChat = sendChatOobabooga

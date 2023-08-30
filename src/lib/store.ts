@@ -1,5 +1,5 @@
-import { writable } from "svelte/store"
-import type { SceneType, Preset, StringDictionary, Settings, Char } from "./interfaces"
+import { writable } from 'svelte/store'
+import type { SceneType, Preset, StringDictionary, Settings, Char } from './interfaces'
 import { Api, SortOrder, SortType } from './interfaces'
 
 const defaultScenes: SceneType[] = []
@@ -7,13 +7,15 @@ const defaultScenes: SceneType[] = []
 export const initialScenes = writable(defaultScenes)
 export const additionalScenes = writable(defaultScenes)
 
-const defaultPreset: Preset = {
+export const defaultPreset: Preset = {
   title: '',
   image: '',
   api: Api.OpenAi,
-  visualizePrompt: "Add a visual summary at the end of the output. It's crucial to include details about <char>'s look, clothing, stance, and nearby setting. The description should be short phrases inside <Visual> and </Visual>. For example: <Visual>blonde hair, shirt, pants, sitting on a chair</Visual>",
+  visualizePrompt:
+    "Add a visual summary at the end of the output. It's crucial to include details about <char>'s look, clothing, stance, and nearby setting. The description should be short phrases inside <Visual> and </Visual>. For example: <Visual>blonde hair, shirt, pants, sitting on a chair</Visual>",
   // This prompt is copied from https://arca.live/b/characterai/81890153
-  summarizePrompt: "This is part of the history of the last conversation between <char>(<char_gender>) and <user>(<user_gender>). Summarize, condense, approximately timestamp the content of the messages exchanged between <char> and <user>, focusing on concrete events and direct information from their conversation. Remove or simplify any content that appears to be redundant or repetitive. Use abbreviations, common language shortcuts. Lastly, add \"<Preiviously on <char> and <user>'s story>\" at the beginning of the output, and \"</Previously>\" at the end of the output. If any of these phrases are in the middle of the input you receive, delete them. They should only appear once, at the end of the output.",
+  summarizePrompt:
+    'This is part of the history of the last conversation between <char>(<char_gender>) and <user>(<user_gender>). Summarize, condense, approximately timestamp the content of the messages exchanged between <char> and <user>, focusing on concrete events and direct information from their conversation. Remove or simplify any content that appears to be redundant or repetitive. Use abbreviations, common language shortcuts. Lastly, add "<Preiviously on <char> and <user>\'s story>" at the beginning of the output, and "</Previously>" at the end of the output. If any of these phrases are in the middle of the input you receive, delete them. They should only appear once, at the end of the output.',
 
   openAi: {
     apiUrl: 'https://api.openai.com/v1',
@@ -22,7 +24,7 @@ const defaultPreset: Preset = {
     presencePenalty: 0.4,
     temperature: 0.75,
     maxTokens: 300,
-    contextSize: 4096,
+    contextSize: 4096
   },
 
   // oobabooga
@@ -50,9 +52,9 @@ const defaultPreset: Preset = {
     skipSpecialTokens: true,
     seed: -1,
     contextSize: 4096,
-    systemPrefix: "### Instruction:\n",
-    userPrefix: "### Input:\n",
-    assistantPrefix: "### Response:\n"
+    systemPrefix: '### Instruction:\n',
+    userPrefix: '### Input:\n',
+    assistantPrefix: '### Response:\n\n'
   },
 
   prompts: []
@@ -74,35 +76,35 @@ const dict: StringDictionary = {}
 export const replaceDict = writable(dict)
 
 export const defaultSettings: Settings = {
-  openAiApiKey: "",
+  openAiApiKey: '',
   sortOrder: SortOrder.Ascending,
   sortType: SortType.Name,
   convertMarkdown: true,
   dialogSettings: {
     bold: true,
     italic: false,
-    color: "#0f0f0f"
+    color: '#0f0f0f'
   },
   descriptionSettings: {
     bold: false,
     italic: true,
-    color: "#0f0f0f"
+    color: '#0f0f0f'
   },
   userNameSettings: {
     bold: true,
     italic: false,
-    color: "#0f0f0f"
+    color: '#0f0f0f'
   },
   charNameSettings: {
     bold: true,
     italic: false,
-    color: "#0f0f0f"
+    color: '#0f0f0f'
   },
   fontFamily: 'Geogia',
   fontSize: 12,
   generateImage: true,
   sdURL: 'http://localhost:7860',
-  imageSizes: "512x768, 768x512, 1024x512",
+  imageSizes: '512x768, 768x512, 1024x512',
   steps: 30,
   cfgScale: 7.0,
   prompt: '(masterpiece, best quality, realistic, finely detailed)',

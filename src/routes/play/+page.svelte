@@ -58,24 +58,21 @@
     return scenes
   }
 
-  function replaceCharSetting(replKey: string, char: Char, openTag: string, closeTag: string) {
+  function replaceCharSetting(replKey: string, char: Char) {
     $replaceDict[replKey] = char.name
     $replaceDict[replKey + '_gender'] = char.gender
-    return `${openTag}\nName: ${char.name}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n${closeTag}`
+    return `Name: ${char.name}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
   }
 
   function findNames(prompts: SceneType[]) {
     return prompts.map(prompt => {
-      let role = prompt.role
       let content = prompt.content
       if (prompt.role === charSetting) {
-        content = replaceCharSetting('char', $char, '<Character>', '</Character>')
-        role = systemRole
+        content = replaceCharSetting('char', $char)
       } else if (prompt.role === userSetting) {
-        content = replaceCharSetting('user', $user, '<User <user>>', '</User <user>>')
-        role = systemRole
+        content = replaceCharSetting('user', $user)
       }
-      return { ...prompt, role, content }
+      return { ...prompt, content }
     })
   }
 
