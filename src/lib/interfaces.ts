@@ -15,7 +15,7 @@ export interface SceneType {
   image?: string
   imageSize?: ImageSize
   rangeStart?: number
-  rangeEnd?: number
+  rangeEnd?: string
   done?: boolean
 }
 

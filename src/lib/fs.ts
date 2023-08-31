@@ -57,7 +57,7 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
   const scene3: SceneType = {
     id: sceneId++,
     content: afterSlot,
-    role: convertRole(prompt.role)
+    role: role + '_post'
   }
   preset.prompts.push(scene3)
 }

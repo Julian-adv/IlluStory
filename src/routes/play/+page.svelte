@@ -1,7 +1,7 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { charSetting, sendChat, startStory, systemRole, userRole, userSetting } from '$lib/api'
+  import { charSetting, sendChat, startStory, userRole, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import {
