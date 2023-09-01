@@ -6,12 +6,11 @@
   import { onMount, tick } from 'svelte'
   import {
     preset,
-    initialScenes,
-    additionalScenes,
+    prologues,
+    dialogues,
     usage,
     sessionPath,
     zeroUsage,
-    firstSceneIndex,
     summarySceneIndex,
     replaceDict,
     char,
@@ -27,31 +26,28 @@
 
   let userInput = ''
 
-  function findFirstSceneIndex(scenes: SceneType[]) {
+  function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
     const index = scenes.findIndex(scene => scene.role === startStory)
-    return index < 0 ? scenes.length : index + 1
+    if (index < 0) {
+      return [scenes, []]
+    } else {
+      return [scenes.slice(0, index), scenes.slice(index + 1)]
+    }
   }
 
   // Basically, we're returning newScenes. But trying to preserve images in oldScenes.
-  async function mergeScenes(
-    oldScenes: SceneType[],
-    oldFirstSceneIndex: number,
-    newScenes: SceneType[],
-    newFirstSceneIndex: number
-  ) {
-    if (newScenes.length != oldScenes.length || oldFirstSceneIndex != newFirstSceneIndex) {
+  async function mergeScenes(oldScenes: SceneType[], newScenes: SceneType[]) {
+    if (newScenes.length != oldScenes.length) {
       // big change, refresh all images
       return newScenes
     }
     let scenes = []
     for (let i = 0; i < newScenes.length; i++) {
       let scene = newScenes[i]
-      if (i >= newFirstSceneIndex) {
-        if (oldScenes[i].content) {
-          scene = oldScenes[i]
-        } else {
-          scene = await extractImagePrompt($settings, newScenes[i])
-        }
+      if (oldScenes[i].content) {
+        scene = oldScenes[i]
+      } else {
+        scene = await extractImagePrompt($settings, newScenes[i])
       }
       scenes.push(scene)
     }
@@ -108,7 +104,7 @@
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($presetPath), 'session', $additionalScenes)
+    const tempPath = await savePath(insertTimestamp($presetPath), 'session', $dialogues)
     if (tempPath) {
       $sessionPath = tempPath
     }
@@ -117,26 +113,22 @@
   async function load() {
     const [session, path] = await loadSessionDialog()
     if (session) {
-      $additionalScenes = session
+      $dialogues = session
       $sessionPath = path
     }
   }
 
   async function updateInitialScenes() {
-    $firstSceneIndex = findFirstSceneIndex($preset.prompts)
-    $initialScenes = await mergeScenes(
-      $initialScenes,
-      $firstSceneIndex,
-      $preset.prompts,
-      $firstSceneIndex
-    )
-    $initialScenes = findNames($initialScenes)
-    $initialScenes = replaceNames($initialScenes)
+    let newDialogues
+    ;[$prologues, newDialogues] = splitPreset($preset.prompts)
+    $dialogues = await mergeScenes($dialogues, newDialogues)
+    $prologues = findNames($prologues)
+    $prologues = replaceNames($prologues)
+    $dialogues = replaceNames($dialogues)
   }
 
   async function newSession() {
     await updateInitialScenes()
-    $additionalScenes = []
     $usage = zeroUsage
     $sessionPath = ''
     userInput = ''
@@ -144,44 +136,37 @@
   }
 
   async function goBack() {
-    if ($additionalScenes.length < 2) {
+    if ($dialogues.length < 2) {
       return
     }
     // pop output of AI
-    $additionalScenes.pop()
-    if (lastScene($additionalScenes).role === userRole) {
-      const scene = $additionalScenes.pop()
+    $dialogues.pop()
+    if (lastScene($dialogues).role === userRole) {
+      const scene = $dialogues.pop()
       if (scene) {
         const userNameLabel = $replaceDict['user'] + ': '
         userInput = scene.content.startsWith(userNameLabel)
           ? scene.content.slice(userNameLabel.length)
           : scene.content
       }
-      $additionalScenes = $additionalScenes
+      $dialogues = $dialogues
     }
   }
 
   async function summarize() {
     let newScene
-    ;[newScene, $usage] = await sendChat(
-      $preset,
-      $initialScenes,
-      $additionalScenes,
-      true,
-      $firstSceneIndex,
-      $summarySceneIndex
-    )
+    ;[newScene, $usage] = await sendChat($preset, $prologues, $dialogues, true, $summarySceneIndex)
     if (newScene) {
-      newScene.id = newSceneId($initialScenes, $additionalScenes)
-      $summarySceneIndex = $additionalScenes.length
-      $additionalScenes = [...$additionalScenes, newScene]
+      newScene.id = newSceneId($dialogues)
+      $summarySceneIndex = $dialogues.length
+      $dialogues = [...$dialogues, newScene]
       await tick()
       scrollToEnd()
     }
   }
 
   onMount(async () => {
-    if ($initialScenes.length == 0) {
+    if ($prologues.length == 0) {
       await newSession()
     }
   })

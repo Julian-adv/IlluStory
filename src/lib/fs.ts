@@ -9,6 +9,7 @@ import {
   changeApi,
   charSetting,
   chatHistory,
+  endTag,
   globalNote,
   loreBook,
   systemRole,
@@ -35,7 +36,7 @@ interface RisuPrompt {
   role: string
   innerFormat: string
   rangeStart: number
-  rangeEnd: number
+  rangeEnd: string
 }
 
 let sceneId = 0
@@ -57,7 +58,7 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
   const scene3: SceneType = {
     id: sceneId++,
     content: afterSlot,
-    role: role + '_post'
+    role: endTag
   }
   preset.prompts.push(scene3)
 }

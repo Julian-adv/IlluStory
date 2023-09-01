@@ -2,6 +2,7 @@ import { get } from 'svelte/store'
 import type { SceneType, Preset, Usage } from './interfaces'
 import { replaceDict, zeroUsage } from './store'
 import { assistantRole, chatHistory, countTokensApi, startStory, systemRole, userRole } from './api'
+import { getStartEndIndex } from '$lib'
 
 function addRolePrefix(preset: Preset, scene: SceneType) {
   switch (scene.role) {
@@ -16,36 +17,43 @@ function addRolePrefix(preset: Preset, scene: SceneType) {
   }
 }
 
-function generatePrompt(preset: Preset, initScenes: SceneType[], addedScenes: SceneType[], firstSceneIndex: number, sendStartIndex: number) {
+function generatePrompt(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  sendStartIndex: number
+) {
   let prompt = ''
-  initScenes.forEach(scene => {
+  let sentChatHistory = false
+  for (const scene of prologues) {
     switch (scene.role) {
       case startStory:
         break
-      case chatHistory:
-        {
-          for (const mesg of initScenes.slice(firstSceneIndex)) {
-            prompt += addRolePrefix(preset, mesg) + mesg.content + '\n'
-          }
-          const endIndex = scene.rangeEnd === 'end' ? addedScenes.length : Number(scene.rangeEnd)
-          for (const mesg of addedScenes.slice(sendStartIndex, endIndex)) {
-            prompt += addRolePrefix(preset, mesg) + mesg.content + '\n'
-          }
-          break
+      case chatHistory: {
+        const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
+        for (const mesg of dialogues.slice(start, end)) {
+          prompt += mesg.content + '\n'
         }
+        sentChatHistory = true
+        break
+      }
       default:
         prompt += addRolePrefix(preset, scene) + scene.content + '\n'
     }
-  })
+  }
+  if (!sentChatHistory) {
+    for (const scene of dialogues) {
+      prompt += addRolePrefix(preset, scene) + scene.content + '\n'
+    }
+  }
   return prompt
 }
 
 export async function sendChatOobabooga(
   preset: Preset,
-  initScenes: SceneType[],
-  addedScenes: SceneType[],
+  prologues: SceneType[],
+  dialogues: SceneType[],
   summary: boolean,
-  firstSceneIndex: number,
   sendStartIndex: number
 ): Promise<[SceneType | null, Usage]> {
   const uri = 'http://localhost:5000/api/v1/generate'
@@ -54,9 +62,9 @@ export async function sendChatOobabooga(
   if (summary) {
     prompt += preset.oobabooga.systemPrefix
     prompt += preset.summarizePrompt + '\n'
-    prompt += generatePrompt(preset, initScenes, addedScenes, firstSceneIndex, sendStartIndex)
+    prompt += generatePrompt(preset, [], dialogues, sendStartIndex)
   } else {
-    prompt += generatePrompt(preset, initScenes, addedScenes, firstSceneIndex, sendStartIndex)
+    prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
   }
   prompt += preset.oobabooga.assistantPrefix
   console.log('prompt:', prompt)

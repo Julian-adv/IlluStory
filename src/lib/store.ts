@@ -4,8 +4,8 @@ import { Api, SortOrder, SortType } from './interfaces'
 
 const defaultScenes: SceneType[] = []
 
-export const initialScenes = writable(defaultScenes)
-export const additionalScenes = writable(defaultScenes)
+export const prologues = writable(defaultScenes)
+export const dialogues = writable(defaultScenes)
 
 export const defaultPreset: Preset = {
   title: '',
@@ -68,7 +68,6 @@ export const sessionPath = writable('')
 export const zeroUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
 export const usage = writable(zeroUsage)
 
-export const firstSceneIndex = writable(0)
 export const summarySceneIndex = writable(0)
 export const summarizePrompt = writable('')
 

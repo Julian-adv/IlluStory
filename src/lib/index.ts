@@ -7,12 +7,9 @@ export const linkClassVisible = 'text-sky-600'
 export const defaultImage =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY/j//z8ABf4C/qc1gYQAAAAASUVORK5CYII='
 
-export function newSceneId(initialScenes: SceneType[], additionalScenes: SceneType[]): number {
-  if (additionalScenes.length > 0) {
-    return additionalScenes[additionalScenes.length - 1].id + 1
-  }
-  if (initialScenes.length > 0) {
-    return initialScenes[initialScenes.length - 1].id + 1
+export function newSceneId(dialogues: SceneType[]): number {
+  if (dialogues.length > 0) {
+    return dialogues[dialogues.length - 1].id + 1
   }
   return 1
 }
@@ -71,4 +68,10 @@ export function getRandomSize(sizes: string): ImageSize {
   const [width, height] = randomSize.split('x').map(Number)
 
   return { width, height }
+}
+
+export function getStartEndIndex(scene: SceneType, dialogues: SceneType[], sendStartIndex: number) {
+  const start = scene.rangeStart === 0 ? sendStartIndex : (scene.rangeStart ?? 0)
+  const end = scene.rangeEnd === 'end' ? dialogues.length : Number(scene.rangeEnd)
+  return { start, end }
 }

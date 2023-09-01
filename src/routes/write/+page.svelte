@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Checkbox } from 'flowbite-svelte'
+  import { Button, Checkbox, Toast } from 'flowbite-svelte'
   import { onMount, tick } from 'svelte'
   import { loadPresetDialog, savePreset, saveObjQuietly } from '$lib/fs'
   import { loadSettings } from '$lib/settings'
@@ -23,7 +23,7 @@
     charPath,
     user,
     userPath,
-    initialScenes
+    prologues
   } from '$lib/store'
   import { Api, type Char } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
@@ -38,6 +38,8 @@
   import { goto } from '$app/navigation'
   import CharCard from '../common/CharCard.svelte'
   import CheckField from '../common/CheckField.svelte'
+  import { slide } from 'svelte/transition'
+  import { Icon } from 'flowbite-svelte-icons'
 
   let models = [{ value: '', name: '' }]
   const apis = [
@@ -67,13 +69,31 @@
     open('https://platform.openai.com/docs/models/overview')
   }
 
+  let toastMessage = ''
+
+  function closeToast() {
+    toastMessage = ''
+  }
+
+  function showToast(message: string) {
+    toastMessage = message
+    setTimeout(closeToast, 9000)
+  }
+
   async function load() {
-    const [tempPreset, tempFilePath] = await loadPresetDialog()
-    if (tempPreset) {
-      $preset = tempPreset
-      $presetPath = tempFilePath
-      cardFromPreset($preset, $presetPath)
-      totalTokens = 0
+    try {
+      const [tempPreset, tempFilePath] = await loadPresetDialog()
+      if (tempPreset) {
+        $preset = tempPreset
+        $presetPath = tempFilePath
+        // If imported, don't load card
+        if (tempFilePath) {
+          cardFromPreset($preset, $presetPath)
+        }
+        totalTokens = 0
+      }
+    } catch (error) {
+      showToast('Error: ' + error)
     }
   }
 
@@ -100,9 +120,9 @@
   function update(i: number, value: string) {
     if ($preset.prompts[i].content !== value) {
       $preset.prompts[i].content = value
-      if ($initialScenes[i]) {
+      if ($prologues[i]) {
         // invalidate oldScenes[i]
-        $initialScenes[i].content = ''
+        $prologues[i].content = ''
       }
     }
     autoSaveFunc()
@@ -177,6 +197,14 @@
 </script>
 
 <h1 class="text-lg font-semibold mb-1">Preset Editing</h1>
+<Toast
+  color="orange"
+  transition={slide}
+  open={!!toastMessage}
+  class="fixed mx-auto my-8 top-auto inset-x-0 z-30">
+  <Icon name="info-circle-solid" slot="icon" class="w-4 h-4" />
+  {toastMessage}
+</Toast>
 <div class="mt-2 mb-5 flex gap-2">
   <Button color="alternative" size="sm" on:click={load}>
     <svg

@@ -25,7 +25,7 @@
     settings,
     curCharPath,
     curChar,
-    additionalScenes,
+    dialogues,
     sessionPath
   } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
@@ -143,7 +143,7 @@
         } else {
           const tempSession = await loadSession(card.path)
           if (tempSession) {
-            $additionalScenes = tempSession
+            $dialogues = tempSession
             $sessionPath = card.path
             goto('/play')
           }

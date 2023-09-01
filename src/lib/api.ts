@@ -8,9 +8,8 @@ export const systemRole = 'system'
 export const assistantRole = 'assistant'
 export const userRole = 'user'
 export const charSetting = 'set_char'
-export const charSettingPost = 'set_char_post'
 export const userSetting = 'set_user'
-export const userSettingPost = 'set_user_post'
+export const endTag = 'end_tag'
 export const startStory = 'start_story'
 export const chatHistory = 'chat_history'
 export const authorNote = 'author_note'
@@ -23,9 +22,8 @@ export const roles = [
   { value: userRole, name: 'User' },
   { value: '-', name: '-' },
   { value: charSetting, name: 'Char setting' },
-  { value: charSettingPost, name: 'Char postfix' },
   { value: userSetting, name: 'User setting' },
-  { value: userSettingPost, name: 'User postfix' },
+  { value: endTag, name: 'End tag' },
   { value: startStory, name: 'Start story' },
   { value: chatHistory, name: 'Chat history' },
   { value: authorNote, name: 'Author note' },
