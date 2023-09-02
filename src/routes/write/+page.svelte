@@ -3,7 +3,7 @@
   import { onMount, tick } from 'svelte'
   import { loadPresetDialog, savePreset, saveObjQuietly } from '$lib/fs'
   import { loadSettings } from '$lib/settings'
-  import DragDropList from '$lib/DragDropList.svelte'
+  import DragnDropList from '$lib/DragnDropList.svelte'
   import {
     changeApi,
     roles,
@@ -499,13 +499,13 @@
 </div>
 
 <h1 class="text-lg font-semibold mb-1 mt-3">Prompts</h1>
-<DragDropList
-  bind:data={$preset.prompts}
+<DragnDropList
+  bind:items={$preset.prompts}
   onChange={autoSaveFunc}
   removesItems
-  let:datum={prompt}
+  let:item={prompt}
   let:i>
-  <div class="grid grid-cols-[9rem,1fr] gap-2 mt-2">
+  <div class="grid grid-cols-[9rem,1fr] gap-2">
     <div class=" w-36 flex">
       <DropSelect
         items={roles}
@@ -548,7 +548,7 @@
       {/if}
     </div>
   </div>
-</DragDropList>
+</DragnDropList>
 <div class="text-base text-stone-500 p-3">Total tokens: {totalTokens}</div>
 <Button size="xs" color="alternative" on:click={addPrompt}>
   <svg
