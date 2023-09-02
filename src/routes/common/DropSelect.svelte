@@ -44,7 +44,7 @@
     name="chevron-down-solid"
     class="w-3 h-3 ml-2 text-stone-400 dark:text-white focus:outline-none" /></Button>
 {#if search}
-  <Dropdown class="overflow-y-auto max-h-96" bind:open={dropdownOpen}>
+  <Dropdown class="overflow-y-auto max-h-[40rem]" bind:open={dropdownOpen}>
     <div slot="header" class="p-2">
       <Search size="md" bind:value={searchStr} />
     </div>
@@ -57,7 +57,7 @@
     {/each}
   </Dropdown>
 {:else}
-  <Dropdown class="overflow-y-auto max-h-96" bind:open={dropdownOpen}>
+  <Dropdown class="overflow-y-auto max-h-[40rem]" bind:open={dropdownOpen}>
     {#each filteredItems as item}
       {#if item.value.startsWith('-')}
         <DropdownDivider />

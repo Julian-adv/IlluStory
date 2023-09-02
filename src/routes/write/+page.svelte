@@ -532,7 +532,7 @@
           <div class="flex">
             <em class="text-xs text-stone-400 pl-2">
               If you put a negative number, it will count from the back. If you put 'end', it will
-              print to the end.</em>
+              output to the end.</em>
           </div>
         </div>
       {:else}
