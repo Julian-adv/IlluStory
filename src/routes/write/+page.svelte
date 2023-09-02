@@ -320,7 +320,8 @@
   {#if $preset.api === Api.Oobabooga}
     <StringField
       label="URL"
-      placeholder="For example, http://localhost:5000/api/v1/generate"
+      help="For example, http://localhost:5000/api/v1/generate"
+      placeholder=""
       bind:value={$preset.oobabooga.apiUrl}
       save={autoSaveFunc} />
     <NumberField

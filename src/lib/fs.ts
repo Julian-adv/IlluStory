@@ -63,13 +63,13 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
   preset.prompts.push(scene3)
 }
 
-function convertChat(preset: Preset, prompt: RisuPrompt) {
+function convertChat(preset: Preset, start: number, end: string) {
   const scene: SceneType = {
     id: sceneId++,
     content: '',
     role: chatHistory,
-    rangeStart: prompt.rangeStart,
-    rangeEnd: prompt.rangeEnd
+    rangeStart: start,
+    rangeEnd: end
   }
   preset.prompts.push(scene)
 }
@@ -83,6 +83,49 @@ function convertNormal(preset: Preset, prompt: RisuPrompt, role?: string) {
   preset.prompts.push(scene)
 }
 
+function splitWithTokens(input: string): string[] {
+  const regexp = /(@@@system\n|@@@user\n|@@@assistant\n)/
+
+  const segments = []
+  let match
+
+  while (input && (match = regexp.exec(input)) !== null) {
+    segments.push(input.slice(0, match.index))
+    segments.push(match[0])
+    input = input.slice(match.index + match[0].length)
+  }
+
+  segments.push(input)
+
+  return segments.filter(segment => segment.trim() !== '')
+}
+
+function convertMainPrompt(preset: Preset, prompt: string) {
+  const segments = splitWithTokens(prompt)
+  for (let i = 0; i < segments.length; ) {
+    let role
+    switch (segments[i]) {
+      case '@@@system\n':
+        role = systemRole
+        i++
+        break
+      case '@@@assistant\n':
+        role = assistantRole
+        i++
+        break
+      case '@@@user\n':
+        role = userRole
+        i++
+        break
+      default:
+        role = systemRole
+        break
+    }
+    preset.prompts.push({ id: sceneId++, content: segments[i], role: role })
+    i++
+  }
+}
+
 export async function loadPreset(path: string): Promise<[Preset, boolean]> {
   const json = await readTextFile(path)
   const tempPreset = JSON.parse(json)
@@ -90,9 +133,10 @@ export async function loadPreset(path: string): Promise<[Preset, boolean]> {
   let imported = false
   if (tempPreset.name) {
     // Assume RisuAI's preset
+    preset.prompts = []
     imported = true
     preset.title = tempPreset.name
-    preset.api = tempPreset.apiType === 'gpt35' ? Api.OpenAi : Api.Oobabooga
+    preset.api = tempPreset.aiModel === 'textgen_webui' ? Api.Oobabooga : Api.OpenAi
     if (preset.api === Api.OpenAi) {
       preset.openAi.temperature = tempPreset.temperature
       preset.openAi.contextSize = tempPreset.maxContext
@@ -123,29 +167,74 @@ export async function loadPreset(path: string): Promise<[Preset, boolean]> {
       preset.oobabooga.skipSpecialTokens = tempPreset.ooba.skip_special_tokens
       preset.oobabooga.topA = tempPreset.ooba.top_a
       preset.oobabooga.tfs = tempPreset.ooba.tfs
-      preset.oobabooga.userPrefix = tempPreset.ooba.formatting.userPrefix
-      preset.oobabooga.assistantPrefix = tempPreset.ooba.formatting.assistantPrefix
+      preset.oobabooga.userPrefix = tempPreset.ooba.formating.userPrefix
+      preset.oobabooga.assistantPrefix = tempPreset.ooba.formating.assistantPrefix
+      preset.oobabooga.systemPrefix = tempPreset.ooba.formating.systemPrefix
     }
     sceneId = 0
-    for (const prompt of tempPreset.promptTemplate) {
-      if (prompt.type === 'description') {
-        convertCharSetting(preset, prompt, charSetting)
-      } else if (prompt.type === 'persona') {
-        convertCharSetting(preset, prompt, userSetting)
-      } else if (prompt.type === 'chat') {
-        convertChat(preset, prompt)
-      } else if (prompt.type === 'authornote') {
-        convertNormal(preset, prompt, authorNote)
-      } else if (prompt.type === 'lorebook') {
-        convertNormal(preset, prompt, loreBook)
-      } else if (prompt.type === 'plain' && prompt.type2 === 'globalNote') {
-        convertNormal(preset, prompt, globalNote)
-      } else {
-        convertNormal(preset, prompt)
+    if (tempPreset.promptTemplate) {
+      for (const prompt of tempPreset.promptTemplate) {
+        if (prompt.type === 'description') {
+          convertCharSetting(preset, prompt, charSetting)
+        } else if (prompt.type === 'persona') {
+          convertCharSetting(preset, prompt, userSetting)
+        } else if (prompt.type === 'chat') {
+          convertChat(preset, prompt.rangeStart, prompt.rangeEnd)
+        } else if (prompt.type === 'authornote') {
+          convertNormal(preset, prompt, authorNote)
+        } else if (prompt.type === 'lorebook') {
+          convertNormal(preset, prompt, loreBook)
+        } else if (prompt.type === 'plain' && prompt.type2 === 'globalNote') {
+          convertNormal(preset, prompt, globalNote)
+        } else {
+          convertNormal(preset, prompt)
+        }
       }
-      console.log('sceneId', sceneId)
+    } else {
+      if (tempPreset.formatingOrder) {
+        for (const promptType of tempPreset.formatingOrder) {
+          switch (promptType) {
+            case 'main':
+              if (tempPreset.mainPrompt) {
+                convertMainPrompt(preset, tempPreset.mainPrompt)
+              }
+              break
+            case 'personaPrompt':
+              preset.prompts.push({ id: sceneId++, content: '', role: userSetting })
+              break
+            case 'description':
+              preset.prompts.push({ id: sceneId++, content: '', role: charSetting })
+              break
+            case 'jailbreak':
+              if (tempPreset.jailbreak) {
+                convertMainPrompt(preset, tempPreset.jailbreak)
+              }
+              break
+            case 'authorNote':
+              if (tempPreset.authorNote) {
+                convertMainPrompt(preset, tempPreset.authorNote)
+              }
+              break
+            case 'lorebook':
+              if (tempPreset.lorebook) {
+                convertMainPrompt(preset, tempPreset.lorebook)
+              }
+              break
+            case 'globalNote':
+              if (tempPreset.globalNote) {
+                convertMainPrompt(preset, tempPreset.globalNote)
+              }
+              break
+            case 'chats':
+              convertChat(preset, 0, '-1')
+              break
+            case 'lastChat':
+              convertChat(preset, -1, 'end')
+              break
+          }
+        }
+      }
     }
-    console.log('preset:', preset)
   } else {
     preset = tempPreset
   }
