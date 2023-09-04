@@ -137,40 +137,42 @@ export async function loadPreset(path: string): Promise<[Preset, boolean]> {
     imported = true
     preset.title = tempPreset.name
     preset.api = tempPreset.aiModel === 'textgen_webui' ? Api.Oobabooga : Api.OpenAi
-    if (preset.api === Api.OpenAi) {
-      preset.openAi.temperature = tempPreset.temperature
-      preset.openAi.contextSize = tempPreset.maxContext
-      preset.openAi.maxTokens = tempPreset.maxResponse
-      preset.openAi.frequencyPenalty = tempPreset.frequencyPenalty
-      preset.openAi.presencePenalty = tempPreset.presencePenalty
+    // Independant of api
+    preset.openAi.temperature = tempPreset.temperature
+    preset.openAi.contextSize = tempPreset.maxContext
+    preset.openAi.maxTokens = tempPreset.maxResponse
+    preset.openAi.frequencyPenalty = tempPreset.frequencyPenalty
+    preset.openAi.presencePenalty = tempPreset.PresensePenalty
+    if (tempPreset.aiModel.startsWith('gpt')) {
       preset.openAi.model = tempPreset.aiModel
-    } else if (preset.api === Api.Oobabooga) {
-      preset.oobabooga.apiUrl = tempPreset.textgenWebUIBlockingURL
-      preset.oobabooga.maxTokens = tempPreset.ooba.max_new_tokens
-      preset.oobabooga.doSample = tempPreset.ooba.do_sample
-      preset.oobabooga.temperature = tempPreset.ooba.temperature
-      preset.oobabooga.topP = tempPreset.ooba.top_p
-      preset.oobabooga.typicalP = tempPreset.ooba.typical_p
-      preset.oobabooga.repetitionPenalty = tempPreset.ooba.repetition_penalty
-      preset.oobabooga.encoderRepetitionPenalty = tempPreset.ooba.encoder_repetition_penalty
-      preset.oobabooga.topK = tempPreset.ooba.top_k
-      preset.oobabooga.minLength = tempPreset.ooba.min_length
-      preset.oobabooga.noRepeatNgramSize = tempPreset.ooba.no_repeat_ngram_size
-      preset.oobabooga.numBeams = tempPreset.ooba.num_beams
-      preset.oobabooga.penaltyAlpha = tempPreset.ooba.penalty_alpha
-      preset.oobabooga.lengthPenalty = tempPreset.ooba.length_penalty
-      preset.oobabooga.earlyStopping = tempPreset.ooba.early_stopping
-      preset.oobabooga.seed = tempPreset.ooba.seed
-      preset.oobabooga.addBosToken = tempPreset.ooba.add_bos_token
-      preset.oobabooga.truncationLength = tempPreset.ooba.truncation_length
-      preset.oobabooga.banEosToken = tempPreset.ooba.ban_eos_token
-      preset.oobabooga.skipSpecialTokens = tempPreset.ooba.skip_special_tokens
-      preset.oobabooga.topA = tempPreset.ooba.top_a
-      preset.oobabooga.tfs = tempPreset.ooba.tfs
-      preset.oobabooga.userPrefix = tempPreset.ooba.formating.userPrefix
-      preset.oobabooga.assistantPrefix = tempPreset.ooba.formating.assistantPrefix
-      preset.oobabooga.systemPrefix = tempPreset.ooba.formating.systemPrefix
     }
+    if (tempPreset.textgenWebUIStreamURL) {
+      preset.oobabooga.apiUrl = tempPreset.textgenWebUIBlockingURL
+    }
+    preset.oobabooga.maxTokens = tempPreset.ooba.max_new_tokens
+    preset.oobabooga.doSample = tempPreset.ooba.do_sample
+    preset.oobabooga.temperature = tempPreset.ooba.temperature
+    preset.oobabooga.topP = tempPreset.ooba.top_p
+    preset.oobabooga.typicalP = tempPreset.ooba.typical_p
+    preset.oobabooga.repetitionPenalty = tempPreset.ooba.repetition_penalty
+    preset.oobabooga.encoderRepetitionPenalty = tempPreset.ooba.encoder_repetition_penalty
+    preset.oobabooga.topK = tempPreset.ooba.top_k
+    preset.oobabooga.minLength = tempPreset.ooba.min_length
+    preset.oobabooga.noRepeatNgramSize = tempPreset.ooba.no_repeat_ngram_size
+    preset.oobabooga.numBeams = tempPreset.ooba.num_beams
+    preset.oobabooga.penaltyAlpha = tempPreset.ooba.penalty_alpha
+    preset.oobabooga.lengthPenalty = tempPreset.ooba.length_penalty
+    preset.oobabooga.earlyStopping = tempPreset.ooba.early_stopping
+    preset.oobabooga.seed = tempPreset.ooba.seed
+    preset.oobabooga.addBosToken = tempPreset.ooba.add_bos_token
+    preset.oobabooga.truncationLength = tempPreset.ooba.truncation_length
+    preset.oobabooga.banEosToken = tempPreset.ooba.ban_eos_token
+    preset.oobabooga.skipSpecialTokens = tempPreset.ooba.skip_special_tokens
+    preset.oobabooga.topA = tempPreset.ooba.top_a
+    preset.oobabooga.tfs = tempPreset.ooba.tfs
+    preset.oobabooga.userPrefix = tempPreset.ooba.formating.userPrefix
+    preset.oobabooga.assistantPrefix = tempPreset.ooba.formating.assistantPrefix
+    preset.oobabooga.systemPrefix = tempPreset.ooba.formating.systemPrefix
     sceneId = 0
     if (tempPreset.promptTemplate) {
       for (const prompt of tempPreset.promptTemplate) {
