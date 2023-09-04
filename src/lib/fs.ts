@@ -17,6 +17,7 @@ import {
   userSetting
 } from './api'
 import { defaultPreset } from './store'
+import { readMetadata } from 'png-metadata-writer'
 
 function convertRole(risuRole: string) {
   switch (risuRole) {
@@ -351,4 +352,21 @@ export function extOf(path: string) {
     return ''
   }
   return path.slice(index + 1)
+}
+
+function loadFileAsBlob(path: string): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.responseType = 'blob'
+    xhr.onload = () => resolve(xhr.response)
+    xhr.onerror = reject
+    xhr.open('GET', convertFileSrc(path))
+    xhr.send()
+  })
+}
+
+export async function loadMetaData(path: string) {
+  const blob = await loadFileAsBlob(path)
+  const buffer = await blob.arrayBuffer()
+  return readMetadata(new Uint8Array(buffer))
 }

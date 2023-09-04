@@ -45,6 +45,7 @@
     "llama-tokenizer-js": "^1.1.2",
     "marked": "^7.0.5",
     "openai": "^4.3.0",
+    "png-metadata-writer": "^1.0.1",
     "tailwind-merge": "^1.14.0",
     "tauri-plugin-fs-extra-api": "github:tauri-apps/tauri-plugin-fs-extra"
   }

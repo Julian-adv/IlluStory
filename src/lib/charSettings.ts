@@ -1,6 +1,6 @@
 import { readTextFile } from '@tauri-apps/api/fs'
 import { open } from '@tauri-apps/api/dialog'
-import { savePath } from './fs'
+import { loadMetaData, savePath } from './fs'
 import type { Char, Preset } from './interfaces'
 import { dirname, sep } from '@tauri-apps/api/path'
 import { charSetting, userSetting } from './api'
@@ -18,6 +18,13 @@ export async function loadCharDialog(): Promise<[Char | null, string]> {
     return [await loadChar(selected), selected]
   }
   return [null, '']
+}
+
+export async function loadMetaDataDialog() {
+  const selected = await open({ filters: [{ name: '*', extensions: ['png'] }] })
+  if (typeof selected === 'string') {
+    return await loadMetaData(selected)
+  }
 }
 
 export async function saveChar(char: Char) {

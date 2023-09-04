@@ -487,11 +487,6 @@
       save={autoSaveFunc} />
   {/if}
   <TextField
-    label="Visualize prompt"
-    help="The prompt to use for visualize the conversation."
-    bind:value={$preset.visualizePrompt}
-    save={autoSaveFunc} />
-  <TextField
     label="Summarize prompt"
     help="The prompt to use for summarizing the conversation."
     bind:value={$preset.summarizePrompt}
