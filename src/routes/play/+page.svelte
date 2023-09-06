@@ -18,7 +18,7 @@
     settings,
     presetPath
   } from '$lib/store'
-  import { basenameOf, savePath } from '$lib/fs'
+  import { basenameOf, savePath, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
   import { loadSessionDialog } from '$lib/session'
@@ -104,7 +104,7 @@
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($presetPath), 'session', $dialogues)
+    const tempPath = await savePath(insertTimestamp($presetPath), sessionExt, $dialogues)
     if (tempPath) {
       $sessionPath = tempPath
     }

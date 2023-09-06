@@ -26,10 +26,21 @@
     curCharPath,
     curChar,
     dialogues,
-    sessionPath
+    sessionPath,
+    curScenePath,
+    curScene
   } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
-  import { extOf, allExts, basenameOf, loadPreset, presetExt, charExt, sessionExt } from '$lib/fs'
+  import {
+    extOf,
+    allExts,
+    basenameOf,
+    loadPreset,
+    presetExt,
+    charExt,
+    sessionExt,
+    sceneExt
+  } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { cardFromPreset, loadChar } from '$lib/charSettings'
@@ -38,6 +49,7 @@
   import { loadSession } from '$lib/session'
   import { slide } from 'svelte/transition'
   import { defaultImage } from '$lib'
+  import { loadScene } from '$lib/scene'
 
   let showingCards: StoryCard[] = []
   let extFlag = FileType.All
@@ -137,6 +149,13 @@
           $curChar = tempChar
           goto('/write_char')
         }
+      } else if (ext === sceneExt) {
+        const tempScene = await loadScene(card.path)
+        if (tempScene) {
+          $curScenePath = card.path
+          $curScene = tempScene
+          goto('/write_scene')
+        }
       } else if (ext === sessionExt) {
         if (!$presetPath) {
           showToast()
@@ -223,6 +242,8 @@
       return 'Session'
     } else if (ext === charExt) {
       return 'Character'
+    } else if (ext === sceneExt) {
+      return 'Scene'
     }
     return 'Unknown'
   }
@@ -232,14 +253,11 @@
     if (ext === presetExt) {
       return 'linear-gradient(to bottom, #1e293b 60%, #020617 100%)' // slate
     } else if (ext === sessionExt) {
-      return 'linear-gradient(to bottom, #075985 60%, #082f49 100%)' // sky
+      return 'linear-gradient(to bottom, #075985 60%, #082f49 100%)' // sky 800 ~ 950
     } else if (ext === charExt) {
-      return 'linear-gradient(to bottom, #a1a1aa 60%, #52525b 100%)' // zinc 600
-      // return 'linear-gradient(to bottom, #ec4899 60%, #831843 100%)'    // pink 900
-      // return 'linear-gradient(to bottom, #fbcfe8 60%, #f472b6 100%)'    // pink 400
-      // return 'linear-gradient(to bottom, #e11d48 60%, #9f1239 100%)'    // rose
-      // return 'linear-gradient(to bottom, #facc15 60%, #a16207 100%)'    // yellow
-      // return 'linear-gradient(to bottom, #115e59 60%, #042f2e 100%)'    // teal
+      return 'linear-gradient(to bottom, #955858 60%, #3d1923 100%)' // rose
+    } else if (ext === sceneExt) {
+      return 'linear-gradient(to bottom, #9ca3af 60%, #374151 100%)' // gray 400 ~ 700
     }
     return 'linear-gradient(to bottom, gray 60%, black 100%)'
   }
@@ -249,11 +267,21 @@
     if (ext === presetExt) {
       return 'border-slate-400'
     } else if (ext === sessionExt) {
-      return 'border-sky-400'
+      return 'border-sky-700'
     } else if (ext === charExt) {
-      return 'border-stone-400'
+      return 'border-rose-300'
+    } else if (ext === sceneExt) {
+      return 'border-gray-500'
     }
     return 'linear-gradient(to bottom, gray 60%, black 100%)'
+  }
+
+  function cardSize(card: StoryCard) {
+    const ext = extOf(card.path)
+    if (ext === sceneExt || ext === sessionExt) {
+      return 'w-[424px] h-[310px] card-wide'
+    }
+    return 'w-52 h-[310px] card'
   }
 
   function _isOverflowed(id: string) {
@@ -330,6 +358,7 @@
     <Radio bind:group={extFlag} value={FileType.All}>All</Radio>
     <Radio bind:group={extFlag} value={FileType.Preset}>Preset</Radio>
     <Radio bind:group={extFlag} value={FileType.Char}>Character</Radio>
+    <Radio bind:group={extFlag} value={FileType.Scene}>Scene</Radio>
     <Radio bind:group={extFlag} value={FileType.Session}>Session</Radio>
   </div>
   {#if loading}
@@ -350,7 +379,9 @@
         {#each showingCards as card, i}
           <Card
             img={card.image}
-            class="w-52 h-[310px] card {borderColor(card)} border-2 cursor-pointer"
+            class="{cardSize(card)} {borderColor(
+              card
+            )} flex justify-center border-2 cursor-pointer max-w-xl"
             padding="none"
             style="--grad: {grad(card)};"
             on:click={onClick(card)}>
@@ -392,17 +423,45 @@
 </main>
 
 <style>
+  :global(.card-wide) {
+    position: relative;
+    background-image: var(--grad);
+    align-items: center;
+    overflow: hidden;
+  }
+
   :global(.card) {
     position: relative;
     background-image: var(--grad);
+  }
+
+  :global(.card-wide img) {
+    max-width: fit-content;
+    max-height: 306px;
+    mask-image:
+      linear-gradient(to top, black 0%, black 100%),
+      /* for card type */ linear-gradient(170deg, black 0%, transparent 55%),
+      /* for card name */ linear-gradient(to bottom, transparent 0%, black 100%);
+    mask-position:
+      center,
+      top left,
+      bottom;
+    mask-size:
+      100% 100%,
+      70% 1.8rem,
+      100% 32px;
+    mask-repeat: no-repeat, no-repeat, no-repeat;
+    mask-composite: subtract, add, add;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
   }
 
   :global(.card img) {
     max-width: fit-content;
     mask-image:
       linear-gradient(to top, black 0%, black 100%),
-      linear-gradient(170deg, black 0%, transparent 55%),
-      /* for card type */ linear-gradient(to bottom, transparent 0%, black 100%); /* for card name */
+      /* for card type */ linear-gradient(170deg, black 0%, transparent 55%),
+      /* for card name */ linear-gradient(to bottom, transparent 0%, black 100%);
     mask-position:
       center,
       top left,
@@ -414,6 +473,17 @@
     mask-repeat: no-repeat, no-repeat, no-repeat;
     mask-composite: subtract, add, add;
     border-radius: 0.5rem;
+  }
+
+  :global(.card-wide > div) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   :global(.card > div) {

@@ -162,7 +162,12 @@
 </div>
 <div class="grid grid-cols-[9rem,5rem,1fr] gap-0">
   <StringField label="File path" size="sm" bind:value={$curCharPath} disabled />
-  <ImageField label="Image" bind:value={$curChar.image} save={autoSaveFunc} />
+  <ImageField
+    label="Image"
+    bind:value={$curChar.image}
+    width={512}
+    height={768}
+    save={autoSaveFunc} />
   <Button
     color="alternative"
     class="col-start-2 col-span-2 w-10 h-10 p-0 bg-stone-100 z-20 text-stone-200 border-stone-100 focus:ring-0"

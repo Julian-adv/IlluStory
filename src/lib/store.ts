@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store'
-import type { SceneType, Preset, StringDictionary, Settings, Char } from './interfaces'
+import type { SceneType, Preset, StringDictionary, Settings, Char, FirstScene } from './interfaces'
 import { Api, SortOrder, SortType } from './interfaces'
 
 const defaultScenes: SceneType[] = []
@@ -140,3 +140,12 @@ export const char = writable(emptyChar)
 export const charPath = writable('')
 export const user = writable(emptyChar)
 export const userPath = writable('')
+
+export const emptyScene: FirstScene = {
+  title: '',
+  image: '',
+  scenes: []
+}
+
+export const curScene = writable(emptyScene)
+export const curScenePath = writable('')

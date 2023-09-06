@@ -1,6 +1,6 @@
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import { sep } from '@tauri-apps/api/path'
-import { type Preset, type Char, Api, type SceneType } from './interfaces'
+import { type Preset, type Char, Api, type SceneType, type FirstScene } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import {
@@ -325,14 +325,15 @@ export async function savePreset(preset: Preset) {
   return savePath(fileName, presetExt, preset)
 }
 
-export async function saveObjQuietly(filePath: string, obj: Preset | Char) {
+export async function saveObjQuietly(filePath: string, obj: Preset | Char | FirstScene) {
   writeTextFile(filePath, JSON.stringify(obj, null, 2))
 }
 
 export const presetExt = 'preset'
 export const sessionExt = 'session'
 export const charExt = 'char'
-export const allExts = [presetExt, sessionExt, charExt]
+export const sceneExt = 'scene'
+export const allExts = [presetExt, sessionExt, charExt, sceneExt]
 
 export function basenameOf(path: string) {
   let endIndex = path.lastIndexOf('.')

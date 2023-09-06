@@ -164,5 +164,12 @@ export enum FileType {
   Preset = 1,
   Session,
   Char,
+  Scene,
   All
+}
+
+export interface FirstScene {
+  title: string
+  image: string
+  scenes: SceneType[]
 }

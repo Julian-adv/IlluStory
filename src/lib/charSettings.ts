@@ -1,6 +1,6 @@
 import { readTextFile } from '@tauri-apps/api/fs'
 import { open } from '@tauri-apps/api/dialog'
-import { loadMetaData, savePath } from './fs'
+import { charExt, loadMetaData, savePath } from './fs'
 import type { Char, Preset } from './interfaces'
 import { dirname, sep } from '@tauri-apps/api/path'
 import { charSetting, userSetting } from './api'
@@ -13,7 +13,7 @@ export async function loadChar(path: string) {
 }
 
 export async function loadCharDialog(): Promise<[Char | null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['char'] }] })
+  const selected = await open({ filters: [{ name: '*', extensions: [charExt] }] })
   if (typeof selected === 'string') {
     return [await loadChar(selected), selected]
   }
@@ -30,11 +30,10 @@ export async function loadMetaDataDialog() {
 export async function saveChar(char: Char) {
   let fileName = char.name.replace(/[<>:"/\\|?*]/g, '_').trim()
   if (fileName === '') {
-    fileName = 'char' + Date.now() + '.char'
-  } else {
-    fileName = fileName + '.char'
+    fileName = 'char' + Date.now()
   }
-  return savePath(fileName, 'char', char)
+  fileName += '.' + charExt
+  return savePath(fileName, charExt, char)
 }
 
 export async function cardFromPreset(preset: Preset, presetPath: string) {

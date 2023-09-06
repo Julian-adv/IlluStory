@@ -244,6 +244,8 @@
     label="Image"
     help="An image to show in the preset card. If empty, the image from the first scene is used."
     bind:value={$preset.image}
+    width={512}
+    height={768}
     save={autoSaveFunc} />
   <StringField
     label="Title"
