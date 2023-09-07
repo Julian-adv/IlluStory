@@ -269,7 +269,7 @@
   <StringField label="File path" size="sm" disabled bind:value={$presetPath} />
   <ImageField
     label="Image"
-    help="An image to show in the preset card. If empty, the image from the first scene is used."
+    help="An image to show in the preset card."
     bind:value={$preset.image}
     width={512}
     height={768}
