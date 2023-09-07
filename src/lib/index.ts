@@ -71,7 +71,18 @@ export function getRandomSize(sizes: string): ImageSize {
 }
 
 export function getStartEndIndex(scene: SceneType, dialogues: SceneType[], sendStartIndex: number) {
-  const start = scene.rangeStart === 0 ? sendStartIndex : (scene.rangeStart ?? 0)
+  const start = scene.rangeStart === 0 ? sendStartIndex : scene.rangeStart ?? 0
   const end = scene.rangeEnd === 'end' ? dialogues.length : Number(scene.rangeEnd)
   return { start, end }
+}
+
+export function decodeBase64(base64: string) {
+  const text = atob(base64)
+  const length = text.length
+  const bytes = new Uint8Array(length)
+  for (let i = 0; i < length; i++) {
+    bytes[i] = text.charCodeAt(i)
+  }
+  const decoder = new TextDecoder() // default is utf-8
+  return decoder.decode(bytes)
 }

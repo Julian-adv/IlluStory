@@ -31,16 +31,7 @@
     curScene
   } from '$lib/store'
   import { metadata } from 'tauri-plugin-fs-extra-api'
-  import {
-    extOf,
-    allExts,
-    basenameOf,
-    loadPreset,
-    presetExt,
-    charExt,
-    sessionExt,
-    sceneExt
-  } from '$lib/fs'
+  import { extOf, allExts, basenameOf, presetExt, charExt, sessionExt, sceneExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { cardFromPreset, loadChar } from '$lib/charSettings'
@@ -50,6 +41,7 @@
   import { slide } from 'svelte/transition'
   import { defaultImage } from '$lib'
   import { loadScene } from '$lib/scene'
+  import { loadPreset } from '$lib/preset'
 
   let showingCards: StoryCard[] = []
   let extFlag = FileType.All
@@ -135,7 +127,7 @@
     return async (_ev: Event) => {
       const ext = extOf(card.path)
       if (ext === presetExt) {
-        const [tempPreset, _] = await loadPreset(card.path)
+        const tempPreset = await loadPreset(card.path)
         if (tempPreset) {
           $presetPath = card.path
           $preset = tempPreset

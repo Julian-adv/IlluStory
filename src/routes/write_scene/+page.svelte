@@ -5,13 +5,14 @@
   import DropSelect from '../common/DropSelect.svelte'
   import { curScene, curScenePath, settings } from '$lib/store'
   import DragnDropList from '$lib/DragnDropList.svelte'
-  import { chatRoles, countTokensApi, roles, systemRole } from '$lib/api'
+  import { assistantRole, chatRoles, countTokensApi, systemRole } from '$lib/api'
   import FlexibleTextarea from '../common/FlexibleTextarea.svelte'
-  import { getUniqueId } from '$lib'
+  import { decodeBase64, getUniqueId } from '$lib'
   import { tick } from 'svelte'
-  import { saveObjQuietly, saveScene } from '$lib/fs'
+  import { saveObjQuietly } from '$lib/fs'
   import { generateImage } from '$lib/imageApi'
-  import { loadSceneDialog } from '$lib/scene'
+  import { loadSceneDialog, saveScene } from '$lib/scene'
+  import { loadMetaDataDialog } from '$lib/charSettings'
 
   let autoSave = true
   let totalTokens = 0
@@ -27,8 +28,21 @@
     }
   }
 
-  function importScene() {
-    console.log('import')
+  async function importScene() {
+    const metadata = await loadMetaDataDialog()
+    if (metadata) {
+      const charStr = decodeBase64(metadata.tEXt.chara)
+      const char = JSON.parse(charStr)
+      if (char.spec === 'chara_card_v2') {
+        $curScene.scenes.push({
+          id: $curScene.scenes.length,
+          role: assistantRole,
+          content: char.data.first_mes
+        })
+        $curScene = $curScene
+        totalTokens = 0
+      }
+    }
   }
 
   async function save() {

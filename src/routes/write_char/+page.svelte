@@ -10,6 +10,7 @@
   import { curChar, curCharPath, settings } from '$lib/store'
   import { generateImage } from '$lib/imageApi'
   import { onMount } from 'svelte'
+  import { decodeBase64 } from '$lib'
 
   let autoSave = true
   let totalTokens = 0
@@ -26,17 +27,6 @@
       $curCharPath = tempFilePath
       totalTokens = 0
     }
-  }
-
-  function decodeBase64(base64: string) {
-    const text = atob(base64)
-    const length = text.length
-    const bytes = new Uint8Array(length)
-    for (let i = 0; i < length; i++) {
-      bytes[i] = text.charCodeAt(i)
-    }
-    const decoder = new TextDecoder() // default is utf-8
-    return decoder.decode(bytes)
   }
 
   async function importChar() {

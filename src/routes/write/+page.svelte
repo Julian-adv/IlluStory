@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button, Checkbox, Toast } from 'flowbite-svelte'
   import { onMount, tick } from 'svelte'
-  import { loadPresetDialog, savePreset, saveObjQuietly } from '$lib/fs'
+  import { savePreset, saveObjQuietly } from '$lib/fs'
   import { loadSettings } from '$lib/settings'
   import DragnDropList from '$lib/DragnDropList.svelte'
   import {
@@ -40,6 +40,7 @@
   import CheckField from '../common/CheckField.svelte'
   import { slide } from 'svelte/transition'
   import { Icon } from 'flowbite-svelte-icons'
+  import { importPresetDialog, loadPresetDialog } from '$lib/preset'
 
   let models = [{ value: '', name: '' }]
   const apis = [
@@ -86,10 +87,21 @@
       if (tempPreset) {
         $preset = tempPreset
         $presetPath = tempFilePath
-        // If imported, don't load card
         if (tempFilePath) {
           cardFromPreset($preset, $presetPath)
         }
+        totalTokens = 0
+      }
+    } catch (error) {
+      showToast('Error: ' + error)
+    }
+  }
+
+  async function importPreset() {
+    try {
+      const tempPreset = await importPresetDialog()
+      if (tempPreset) {
+        $preset = tempPreset
         totalTokens = 0
       }
     } catch (error) {
@@ -220,6 +232,21 @@
         d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" />
     </svg>
     <span class="pl-2">Load</span>
+  </Button>
+  <Button color="alternative" size="sm" on:click={importPreset}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-5 h-5 text-gray-400">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" />
+    </svg>
+    <span class="pl-2">Import</span>
   </Button>
   <Button color="alternative" size="sm" on:click={save}>
     <svg
