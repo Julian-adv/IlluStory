@@ -1,7 +1,7 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { charSetting, sendChat, startStory, userRole, userSetting } from '$lib/api'
+  import { charSetting, firstScene, sendChat, startStory, userRole, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import {
@@ -15,43 +15,45 @@
     replaceDict,
     char,
     user,
-    settings,
-    presetPath
+    presetPath,
+    curScene
   } from '$lib/store'
   import { basenameOf, savePath, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
   import { loadSessionDialog } from '$lib/session'
-  import { extractImagePrompt } from '$lib/image'
 
   let userInput = ''
 
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
-    const index = scenes.findIndex(scene => scene.role === startStory)
+    const index = scenes.findIndex(scene => scene.role === firstScene)
     if (index < 0) {
       return [scenes, []]
     } else {
-      return [scenes.slice(0, index), scenes.slice(index + 1)]
+      const copy = [...scenes]
+      copy.splice(index, 1)
+      return [copy, $curScene.scenes]
     }
   }
 
   // Basically, we're returning newScenes. But trying to preserve images in oldScenes.
   async function mergeScenes(oldScenes: SceneType[], newScenes: SceneType[]) {
-    if (newScenes.length != oldScenes.length) {
-      // big change, refresh all images
-      return newScenes
-    }
-    let scenes = []
-    for (let i = 0; i < newScenes.length; i++) {
-      let scene = newScenes[i]
-      if (oldScenes[i].content) {
-        scene = oldScenes[i]
-      } else {
-        scene = await extractImagePrompt($settings, newScenes[i])
-      }
-      scenes.push(scene)
-    }
-    return scenes
+    return newScenes
+    // if (newScenes.length != oldScenes.length) {
+    //   // big change, refresh all images
+    //   return newScenes
+    // }
+    // let scenes = []
+    // for (let i = 0; i < newScenes.length; i++) {
+    //   let scene = newScenes[i]
+    //   if (oldScenes[i].content) {
+    //     scene = oldScenes[i]
+    //   } else {
+    //     scene = await extractImagePrompt($settings, newScenes[i])
+    //   }
+    //   scenes.push(scene)
+    // }
+    // return scenes
   }
 
   function replaceCharSetting(replKey: string, char: Char) {
@@ -77,9 +79,11 @@
       let content = prompt.content
       for (const [key, value] of Object.entries($replaceDict)) {
         const regex = new RegExp(`{{${key}}}`, 'g')
-        content = content.replace(regex, value)
-        const regex2 = new RegExp(`<${key}>`, 'g')
-        content = content.replace(regex2, value)
+        if (content) {
+          content = content.replace(regex, value)
+          const regex2 = new RegExp(`<${key}>`, 'g')
+          content = content.replace(regex2, value)
+        }
       }
       return { ...prompt, content }
     })

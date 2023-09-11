@@ -15,6 +15,7 @@ export const chatHistory = 'chat_history'
 export const authorNote = 'author_note'
 export const globalNote = 'global_note'
 export const loreBook = 'lore_book'
+export const firstScene = 'first_scene'
 
 export const roles = [
   { value: systemRole, name: 'System' },
@@ -24,11 +25,11 @@ export const roles = [
   { value: charSetting, name: 'Char setting' },
   { value: userSetting, name: 'User setting' },
   { value: endTag, name: 'End tag' },
-  { value: startStory, name: 'Start story' },
   { value: chatHistory, name: 'Chat history' },
   { value: authorNote, name: 'Author note' },
   { value: globalNote, name: 'Global note' },
-  { value: loreBook, name: 'Lore book' }
+  { value: loreBook, name: 'Lore book' },
+  { value: firstScene, name: 'First scene' }
 ]
 
 export const chatRoles = [

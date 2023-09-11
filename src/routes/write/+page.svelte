@@ -12,7 +12,8 @@
     charSetting,
     userSetting,
     systemRole,
-    chatHistory
+    chatHistory,
+    firstScene
   } from '$lib/api'
   import {
     preset,
@@ -23,9 +24,11 @@
     charPath,
     user,
     userPath,
-    prologues
+    prologues,
+    curScene,
+    curScenePath
   } from '$lib/store'
-  import { Api, type Char } from '$lib/interfaces'
+  import { Api, type Char, type FirstScene } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
   import SelectField from '../common/SelectField.svelte'
   import NumberField from '../common/NumberField.svelte'
@@ -41,6 +44,8 @@
   import { slide } from 'svelte/transition'
   import { Icon } from 'flowbite-svelte-icons'
   import { importPresetDialog, loadPresetDialog } from '$lib/preset'
+  import SceneCard from '../common/SceneCard.svelte'
+  import { loadSceneDialog } from '$lib/scene'
 
   let models = [{ value: '', name: '' }]
   const apis = [
@@ -171,6 +176,16 @@
     return [tempChar, tempFilePath]
   }
 
+  async function loadSceneTo(sceneIndex: number): Promise<[FirstScene | null, string]> {
+    const [tempChar, tempFilePath] = await loadSceneDialog()
+    if (tempChar) {
+      const relativePath = removeCommonPrefix($presetPath, tempFilePath)
+      $preset.prompts[sceneIndex].content = relativePath
+      autoSaveFunc()
+    }
+    return [tempChar, tempFilePath]
+  }
+
   function onCharClick(charIndex: number) {
     return async (ev: Event) => {
       ev.stopPropagation()
@@ -193,6 +208,17 @@
     }
   }
 
+  function onSceneClick(sceneIndex: number) {
+    return async (ev: Event) => {
+      ev.stopPropagation()
+      const [tempScene, tempFilePath] = await loadSceneTo(sceneIndex)
+      if (tempScene) {
+        $curScene = tempScene
+        $curScenePath = tempFilePath
+      }
+    }
+  }
+
   function onEditChar(ev: Event) {
     ev.stopPropagation()
     $curChar = $char
@@ -205,6 +231,11 @@
     $curChar = $user
     $curCharPath = $userPath
     goto('/write_char')
+  }
+
+  function onEditScene(ev: Event) {
+    ev.stopPropagation()
+    goto('/write_scene')
   }
 </script>
 
@@ -559,6 +590,8 @@
               output to the end.</em>
           </div>
         </div>
+      {:else if prompt.role === firstScene}
+        <SceneCard scene={$curScene} onSceneClick={onSceneClick(i)} {onEditScene} />
       {:else}
         <div class="flex flex-col w-full text-left">
           <FlexibleTextarea

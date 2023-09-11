@@ -76,7 +76,7 @@ function convertChat(preset: Preset, start: number, end: string) {
 function convertNormal(preset: Preset, prompt: RisuPrompt, role?: string) {
   const scene: SceneType = {
     id: sceneId++,
-    content: prompt.text,
+    content: prompt.text ?? '',
     role: role ? role : convertRole(prompt.role)
   }
   preset.prompts.push(scene)
@@ -139,11 +139,11 @@ export async function importPreset(path: string): Promise<Preset> {
   preset.prompts = []
   preset.title = tempPreset.name
   preset.api = tempPreset.aiModel === 'textgen_webui' ? Api.Oobabooga : Api.OpenAi
-  preset.openAi.temperature = tempPreset.temperature
+  preset.openAi.temperature = tempPreset.temperature / 100.0
   preset.openAi.contextSize = tempPreset.maxContext
   preset.openAi.maxTokens = tempPreset.maxResponse
-  preset.openAi.frequencyPenalty = tempPreset.frequencyPenalty
-  preset.openAi.presencePenalty = tempPreset.PresensePenalty
+  preset.openAi.frequencyPenalty = tempPreset.frequencyPenalty / 100.0
+  preset.openAi.presencePenalty = tempPreset.PresensePenalty / 100.0
   if (tempPreset.aiModel.startsWith('gpt')) {
     preset.openAi.model = tempPreset.aiModel
   }
