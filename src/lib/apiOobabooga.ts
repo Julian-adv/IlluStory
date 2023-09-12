@@ -105,6 +105,7 @@ export async function sendChatOobabooga(
         '\n```',
         '\nUser:',
         '\nuser:',
+        '\n<|user|>',
         `\n${userName}:`,
         `\n${userName} `
       ],

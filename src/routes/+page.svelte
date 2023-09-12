@@ -301,7 +301,7 @@
   }
 </script>
 
-<main>
+<main class="px-4">
   <div class="my-1 flex gap-2">
     <Button color="alternative" size="sm">
       {$settings.sortType}

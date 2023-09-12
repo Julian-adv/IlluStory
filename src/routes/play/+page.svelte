@@ -1,7 +1,7 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { charSetting, firstScene, sendChat, startStory, userRole, userSetting } from '$lib/api'
+  import { charSetting, firstScene, sendChat, userRole, userSetting } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import {
@@ -185,7 +185,7 @@
   }
 </script>
 
-<main class="-mx-4">
+<main>
   <h1 class="text-lg font-semibold mb-1 mt-3 px-4">Session ({$preset.title} preset)</h1>
   <div class="px-4">
     <Button color="alternative" size="sm" on:click={newSession}>

@@ -17,7 +17,7 @@
         "readFile": true,
         "writeFile": true,
         "readDir": true,
-        "scope": ["$APPCONFIG/*", "$APPDATA/"]
+        "scope": ["$APPCONFIG/*", "$APPDATA/", "$RESOURCE/*"]
       },
       "path": {
         "all": true
@@ -33,7 +33,7 @@
       },
       "http": {
         "request": true,
-        "scope": ["https://api-free.deepl.com/v2/translate", "http://*"]
+        "scope": ["https://api-free.deepl.com/v2/translate", "https://*.github.com/", "http://*"]
       }
     },
     "bundle": {
@@ -60,7 +60,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": ["resources/*"],
       "shortDescription": "",
       "targets": "all",
       "windows": {
