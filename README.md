@@ -5,10 +5,12 @@ IlluStory is a frontend for chatting with LLMs. Still in development.
 ## Installation
 
 #### 1. (Optional) Install [Automatic1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
+
 #### 1-1. Run Automatic1111's Web UI with --api option.
 
-*webui-user.bat*
-``` bat
+_webui-user.bat_
+
+```bat
 set COMMANDLINE_ARGS=--xformers --api --autolaunch
 ```
 
@@ -16,14 +18,17 @@ set COMMANDLINE_ARGS=--xformers --api --autolaunch
 
 #### 2-1. Run oobabooga's Text generation web UI with --api option
 
-*webui.py*
-``` python
-CMD_FLAGS = '--api --chat --load-in-8bit --threads 24 --n-gpu-layers 100'
+_CMD_FLAGS.txt_
+
+```bat
+--api
 ```
 
 #### 3. Download IlluStory from https://github.com/Julian-adv/IlluStory/releases, run IlluStory.
+
 #### 4. (Developers only) Clone this repository, run:
-``` sh
+
+```sh
 npm install
 npm run tauri dev
 ```
@@ -56,7 +61,7 @@ npm run tauri dev
 
 12. Enter prompt which instruct AI to summarize contents (Shown example are from https://arca.live/b/characterai/81013044)
 1. Choose a role for this prompt. You can choose **System**, **Assistant**, **User**.
-1. Enter prompt. You need to include a instruction like this to generate images: *Add a visual summary at the end of the output. It's crucial to include details about \<char>'s look, clothing, stance, and nearby setting. The description should be short phrases inside \<Visual> and \</Visual>. For example: \<Visual>brown hair, shirt, pants, sitting on a chair\</Visual>*
+1. Enter prompt. You need to include a instruction like this to generate images: _Add a visual summary at the end of the output. It's crucial to include details about \<char>'s look, clothing, stance, and nearby setting. The description should be short phrases inside \<Visual> and \</Visual>. For example: \<Visual>brown hair, shirt, pants, sitting on a chair\</Visual>_
 1. This prompt chose Assistant as the role.
 1. Choose pseudo role **Char setting** to describe about the character.
    Char's name will replace {{char}} or \<char> in all prompts. Char's gender will replace {{char_gender}} or \<char_gender> in all prompt.
@@ -85,4 +90,3 @@ npm run tauri dev
 1. If total tokens approach the model's context size, press this. It will summarize the conversation thus reduce token counts.
 1. Select role
 1. Write your dialogue here.
-
