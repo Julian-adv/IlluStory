@@ -86,7 +86,15 @@ export interface Usage {
   total_tokens: number
 }
 
+export enum CardType {
+  Preset = 0,
+  Char,
+  Scene,
+  Session
+}
+
 export interface StoryCard {
+  type: CardType
   name: string
   path: string
   modifiedAt: Date

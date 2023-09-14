@@ -17,7 +17,7 @@ tauri-build = { version = "1.4.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.4.0", features = [ "http-request", "protocol-asset", "fs-read-dir", "dialog-open", "dialog-save", "fs-write-file", "path-all", "fs-read-file", "devtools"] }
+tauri = { version = "1.4.0", features = [ "fs-exists", "fs-create-dir", "fs-copy-file", "http-request", "protocol-asset", "fs-read-dir", "dialog-open", "dialog-save", "fs-write-file", "path-all", "fs-read-file", "devtools"] }
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tauri-plugin-fs-extra = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 font-kit = "0.11"

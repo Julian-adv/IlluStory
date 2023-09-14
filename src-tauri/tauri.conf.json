@@ -17,7 +17,10 @@
         "readFile": true,
         "writeFile": true,
         "readDir": true,
-        "scope": ["$APPCONFIG/*", "$APPDATA/", "$RESOURCE/*"]
+        "copyFile": true,
+        "exists": true,
+        "createDir": true,
+        "scope": ["$APPCONFIG/*", "$APPDATA/", "$RESOURCE/*", "**/*"]
       },
       "path": {
         "all": true

@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
-  import { readDir, BaseDirectory, readTextFile } from '@tauri-apps/api/fs'
+  import { readDir, BaseDirectory, copyFile, exists } from '@tauri-apps/api/fs'
   import {
     Button,
     Card,
@@ -30,16 +30,14 @@
     curScenePath,
     curScene
   } from '$lib/store'
-  import { metadata } from 'tauri-plugin-fs-extra-api'
-  import { extOf, allExts, basenameOf, presetExt, charExt, sessionExt, sceneExt } from '$lib/fs'
+  import { extOf, allExts, presetExt, charExt, sessionExt, sceneExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { cardFromPreset, loadChar } from '$lib/charSettings'
-  import { appDataDir } from '@tauri-apps/api/path'
+  import { appDataDir, resolveResource } from '@tauri-apps/api/path'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
-  import { loadSession } from '$lib/session'
+  import { cardFromPath, loadSession } from '$lib/session'
   import { slide } from 'svelte/transition'
-  import { defaultImage } from '$lib'
   import { loadScene } from '$lib/scene'
   import { loadPreset } from '$lib/preset'
 
@@ -56,41 +54,23 @@
       if (entry.name) {
         const ext = extOf(entry.name)
         if (allExts.includes(ext)) {
-          let presetText = await readTextFile(entry.path)
-          let obj = JSON.parse(presetText)
-          let image = defaultImage
-          if (obj) {
-            if (obj.image) {
-              image = obj.image
-            } else if (obj.prompts && obj.prompts.length > 0) {
-              for (const prompt of obj.prompts) {
-                if (prompt.image) {
-                  image = prompt.image
-                  break
-                }
-              }
-            } else if (obj.length > 0) {
-              for (const scene of obj) {
-                if (scene.image) {
-                  image = scene.image
-                  break
-                }
-              }
-            }
-          }
-          const stat = await metadata(entry.path)
-          cards.push({
-            name: basenameOf(entry.name),
-            path: entry.path,
-            modifiedAt: stat.modifiedAt,
-            image: image
-          })
+          const card = await cardFromPath(entry.path)
+          cards.push(card)
         }
       }
     }
     resort()
     showingCards = filterExt(extFlag)
     working = false
+  }
+
+  async function installDefaults() {
+    const defaultPreset = 'default.preset'
+    const defaultPresetPath = await resolveResource('resources/default.preset')
+    if (await exists(defaultPreset, { dir: BaseDirectory.AppData })) {
+      return
+    }
+    copyFile(defaultPresetPath, defaultPreset, { dir: BaseDirectory.AppData })
   }
 
   onMount(async () => {
@@ -100,6 +80,7 @@
     await loadSettings()
 
     loading = true
+    installDefaults()
     reloadCards()
     loading = false
     if (!unlisten) {

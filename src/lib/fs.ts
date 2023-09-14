@@ -95,7 +95,7 @@ export function basenameOf(path: string) {
   if (startIndex < 0) {
     startIndex = 0
   }
-  return path.slice(startIndex, endIndex)
+  return path.slice(startIndex + 1, endIndex)
 }
 
 export function extOf(path: string) {

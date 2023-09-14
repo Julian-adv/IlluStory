@@ -20,10 +20,13 @@
   } from '$lib/store'
   import { basenameOf, savePath, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type Char, type SceneType } from '$lib/interfaces'
-  import { loadSessionDialog } from '$lib/session'
+  import { Api, CardType, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
+  import { loadCardDialog, loadSessionDialog } from '$lib/session'
+  import CardList from '../common/CardList.svelte'
 
   let userInput = ''
+  let started = false
+  let cards: StoryCard[] = []
 
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
     const index = scenes.findIndex(scene => scene.role === firstScene)
@@ -183,6 +186,59 @@
     warningTokens =
       $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize
   }
+
+  let presetLoaded = false
+  let charLoaded = false
+  let userLoaded = false
+  let sceneLoaded = false
+
+  function generateHint() {
+    let parts = []
+
+    if (!presetLoaded) {
+      parts.push('preset')
+    }
+
+    if (!charLoaded) {
+      parts.push('character')
+    }
+
+    if (!sceneLoaded) {
+      parts.push('scene')
+    }
+
+    if (parts.length == 0) {
+      return ''
+    }
+    if (parts.length > 1) {
+      let lastPart = parts.pop()
+      parts[parts.length - 1] += ' and ' + lastPart
+    }
+
+    return 'Add ' + parts.join(', ') + '.'
+  }
+
+  let hints = generateHint()
+
+  async function addCard() {
+    const card = await loadCardDialog()
+    if (card) {
+      switch (card.type) {
+        case CardType.Preset:
+          presetLoaded = true
+          break
+        case CardType.Char:
+          charLoaded = true
+          break
+        case CardType.Scene:
+          sceneLoaded = true
+          break
+      }
+      cards.push(card)
+      cards = cards
+      hints = generateHint()
+    }
+  }
 </script>
 
 <main>
@@ -234,52 +290,68 @@
       <span class="pl-2">Save as ...</span>
     </Button>
   </div>
-  <div>
+  <div class="p-4">
     <span class="text-xs text-stone-400">{$sessionPath}</span>
+
+    <CardList {cards} />
+    <div><em class="text-stone-500 font-serif">{hints}</em></div>
+    <Button size="xs" color="alternative" class="mt-4 focus:ring-0" on:click={addCard}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+    </Button>
   </div>
-  <SceneList />
-  <div class="grid grid-cols-[8rem,1fr,3rem] gap-2 mt-2 px-4">
-    <div class="col-span-3 text-sm text-stone-400">
-      Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total
-      tokens: {$usage.total_tokens}
-    </div>
-    {#if warningTokens}
-      <div class="col-span-3 text-sm text-red-400">
-        Since the number of tokens can overflow the context size, you may want to summarize them.
+  {#if started}
+    <SceneList />
+    <div class="grid grid-cols-[8rem,1fr,3rem] gap-2 mt-2 px-4">
+      <div class="col-span-3 text-sm text-stone-400">
+        Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total
+        tokens: {$usage.total_tokens}
       </div>
-    {/if}
-    <div class="col-span-3 text-sm text-stone-400">
-      <Button color="alternative" size="sm" on:click={goBack}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-5 h-5">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-        </svg>
-        <span class="pl-2">Back</span>
-      </Button>
-      <Button color="alternative" size="sm" on:click={summarize}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-5 h-5">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
-        </svg>
-        <span class="pl-2">Summarize</span>
-      </Button>
+      {#if warningTokens}
+        <div class="col-span-3 text-sm text-red-400">
+          Since the number of tokens can overflow the context size, you may want to summarize them.
+        </div>
+      {/if}
+      <div class="col-span-3 text-sm text-stone-400">
+        <Button color="alternative" size="sm" on:click={goBack}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+          </svg>
+          <span class="pl-2">Back</span>
+        </Button>
+        <Button color="alternative" size="sm" on:click={summarize}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+          </svg>
+          <span class="pl-2">Summarize</span>
+        </Button>
+      </div>
+      <Input bind:value={userInput} />
     </div>
-    <Input bind:value={userInput} />
-  </div>
+  {/if}
 </main>
