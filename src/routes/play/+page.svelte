@@ -18,15 +18,17 @@
     presetPath,
     curScene
   } from '$lib/store'
-  import { basenameOf, savePath, sessionExt } from '$lib/fs'
+  import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, CardType, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
-  import { loadCardDialog, loadSessionDialog } from '$lib/session'
+  import { Api, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
+  import { loadSessionDialog } from '$lib/session'
   import CardList from '../common/CardList.svelte'
+  import CommonCard from '../common/CommonCard.svelte'
+  import { emptyCard } from '$lib/charSettings'
+  import { loadCardDialog } from '$lib/card'
 
   let userInput = ''
   let started = false
-  let cards: StoryCard[] = []
 
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
     const index = scenes.findIndex(scene => scene.role === firstScene)
@@ -187,62 +189,46 @@
       $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize
   }
 
-  let presetLoaded = false
-  let charLoaded = false
-  let userLoaded = false
-  let sceneLoaded = false
+  let presetCard = emptyCard
+  let userCard = emptyCard
+  let sceneCard = emptyCard
+  let charCards: StoryCard[] = [emptyCard]
 
-  function generateHint() {
-    let parts = []
-
-    if (!presetLoaded) {
-      parts.push('preset')
+  async function addPresetCard() {
+    const card = await loadCardDialog([presetExt])
+    if (card) {
+      presetCard = card
     }
-
-    if (!charLoaded) {
-      parts.push('character')
-    }
-
-    if (!sceneLoaded) {
-      parts.push('scene')
-    }
-
-    if (parts.length == 0) {
-      return ''
-    }
-    if (parts.length > 1) {
-      let lastPart = parts.pop()
-      parts[parts.length - 1] += ' and ' + lastPart
-    }
-
-    return 'Add ' + parts.join(', ') + '.'
   }
 
-  let hints = generateHint()
-
-  async function addCard() {
-    const card = await loadCardDialog()
+  async function addUserCard() {
+    const card = await loadCardDialog([charExt])
     if (card) {
-      switch (card.type) {
-        case CardType.Preset:
-          presetLoaded = true
-          break
-        case CardType.Char:
-          charLoaded = true
-          break
-        case CardType.Scene:
-          sceneLoaded = true
-          break
+      userCard = card
+    }
+  }
+
+  async function addSceneCard() {
+    const card = await loadCardDialog([sceneExt])
+    if (card) {
+      sceneCard = card
+    }
+  }
+
+  async function addCharCard() {
+    const card = await loadCardDialog([charExt])
+    if (card) {
+      if (charCards[0] === emptyCard) {
+        charCards = []
       }
-      cards.push(card)
-      cards = cards
-      hints = generateHint()
+      charCards.push(card)
+      charCards = charCards
     }
   }
 </script>
 
 <main>
-  <h1 class="text-lg font-semibold mb-1 mt-3 px-4">Session ({$preset.title} preset)</h1>
+  <h1 class="text-lg font-semibold mb-1 mt-3 px-4">Session</h1>
   <div class="px-4">
     <Button color="alternative" size="sm" on:click={newSession}>
       <svg
@@ -290,22 +276,72 @@
       <span class="pl-2">Save as ...</span>
     </Button>
   </div>
-  <div class="p-4">
-    <span class="text-xs text-stone-400">{$sessionPath}</span>
+  <span class="text-xs text-stone-400">{$sessionPath}</span>
+  <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4">
+    <div class="text-right">Preset:</div>
+    <div class="flex flex-wrap flex-none gap-2">
+      <CommonCard card={presetCard} />
 
-    <CardList {cards} />
-    <div><em class="text-stone-500 font-serif">{hints}</em></div>
-    <Button size="xs" color="alternative" class="mt-4 focus:ring-0" on:click={addCard}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-      </svg>
-    </Button>
+      <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addPresetCard}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </Button>
+    </div>
+    <div class="text-right">User:</div>
+    <div class="flex flex-wrap flex-none gap-2">
+      <CommonCard card={userCard} />
+
+      <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addUserCard}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </Button>
+    </div>
+    <div class="text-right">Characters:</div>
+    <div class="flex flex-wrap flex-none gap-2 col-span-3">
+      <CardList cards={charCards} />
+
+      <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addCharCard}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </Button>
+    </div>
+    <div class="text-right">Scene:</div>
+    <div class="flex flex-wrap flex-none gap-2 col-span-3">
+      <CommonCard card={sceneCard} />
+
+      <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </Button>
+    </div>
   </div>
   {#if started}
     <SceneList />
