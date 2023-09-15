@@ -16,16 +16,23 @@
     char,
     user,
     presetPath,
-    curScene
+    curScene,
+    curScenePath,
+    charPath,
+    userPath,
+    emptyCard
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
+  import { Api, type Char, type SceneType } from '$lib/interfaces'
   import { loadSessionDialog } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
-  import { emptyCard } from '$lib/charSettings'
+  import { loadChar } from '$lib/charSettings'
   import { loadCardDialog } from '$lib/card'
+  import { loadPreset } from '$lib/preset'
+  import { loadScene } from '$lib/scene'
+  import { presetCard, userCard, charCards, sceneCard } from '$lib/store'
 
   let userInput = ''
   let started = false
@@ -33,11 +40,15 @@
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
     const index = scenes.findIndex(scene => scene.role === firstScene)
     if (index < 0) {
-      return [scenes, []]
+      return [scenes, $curScene.scenes]
     } else {
       const copy = [...scenes]
       copy.splice(index, 1)
-      return [copy, $curScene.scenes]
+      if ($curScene.scenes.length > 0) {
+        return [copy, $curScene.scenes]
+      } else {
+        return [copy, scenes.slice(index, index + 1)]
+      }
     }
   }
 
@@ -189,41 +200,56 @@
       $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize
   }
 
-  let presetCard = emptyCard
-  let userCard = emptyCard
-  let sceneCard = emptyCard
-  let charCards: StoryCard[] = [emptyCard]
-
   async function addPresetCard() {
     const card = await loadCardDialog([presetExt])
     if (card) {
-      presetCard = card
+      $presetCard = card
     }
   }
 
   async function addUserCard() {
     const card = await loadCardDialog([charExt])
     if (card) {
-      userCard = card
+      $userCard = card
     }
   }
 
   async function addSceneCard() {
     const card = await loadCardDialog([sceneExt])
     if (card) {
-      sceneCard = card
+      $sceneCard = card
     }
   }
 
   async function addCharCard() {
     const card = await loadCardDialog([charExt])
     if (card) {
-      if (charCards[0] === emptyCard) {
-        charCards = []
+      if ($charCards[0] === emptyCard) {
+        $charCards = []
       }
-      charCards.push(card)
-      charCards = charCards
+      $charCards.push(card)
+      $charCards = $charCards
     }
+  }
+
+  $: ready =
+    $presetCard !== emptyCard &&
+    $userCard !== emptyCard &&
+    $sceneCard !== emptyCard &&
+    $charCards.length > 0 &&
+    $charCards[0] !== emptyCard
+
+  async function start() {
+    $preset = await loadPreset($presetCard.path)
+    $presetPath = $presetCard.path
+    $user = await loadChar($userCard.path)
+    $userPath = $userCard.path
+    $char = await loadChar($charCards[0].path)
+    $charPath = $charCards[0].path
+    $curScene = await loadScene($sceneCard.path)
+    $curScenePath = $sceneCard.path
+    newSession()
+    started = true
   }
 </script>
 
@@ -280,7 +306,7 @@
   <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4">
     <div class="text-right">Preset:</div>
     <div class="flex flex-wrap flex-none gap-2">
-      <CommonCard card={presetCard} />
+      <CommonCard card={$presetCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addPresetCard}>
         <svg
@@ -296,7 +322,7 @@
     </div>
     <div class="text-right">User:</div>
     <div class="flex flex-wrap flex-none gap-2">
-      <CommonCard card={userCard} />
+      <CommonCard card={$userCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addUserCard}>
         <svg
@@ -312,7 +338,7 @@
     </div>
     <div class="text-right">Characters:</div>
     <div class="flex flex-wrap flex-none gap-2 col-span-3">
-      <CardList cards={charCards} />
+      <CardList cards={$charCards} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addCharCard}>
         <svg
@@ -328,7 +354,7 @@
     </div>
     <div class="text-right">Scene:</div>
     <div class="flex flex-wrap flex-none gap-2 col-span-3">
-      <CommonCard card={sceneCard} />
+      <CommonCard card={$sceneCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>
         <svg
@@ -342,6 +368,9 @@
         </svg>
       </Button>
     </div>
+  </div>
+  <div class="flex justify-center">
+    <Button color="primary" size="lg" disabled={!ready} on:click={start}>Start</Button>
   </div>
   {#if started}
     <SceneList />

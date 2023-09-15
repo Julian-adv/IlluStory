@@ -1,6 +1,14 @@
 import { writable } from 'svelte/store'
-import type { SceneType, Preset, StringDictionary, Settings, Char, FirstScene } from './interfaces'
-import { Api, SortOrder, SortType } from './interfaces'
+import type {
+  SceneType,
+  Preset,
+  StringDictionary,
+  Settings,
+  Char,
+  FirstScene,
+  StoryCard
+} from './interfaces'
+import { Api, CardType, SortOrder, SortType } from './interfaces'
 
 const defaultScenes: SceneType[] = []
 
@@ -149,3 +157,16 @@ export const emptyScene: FirstScene = {
 
 export const curScene = writable(emptyScene)
 export const curScenePath = writable('')
+
+export const emptyCard: StoryCard = {
+  type: CardType.Preset,
+  name: 'Card',
+  path: '',
+  image: '',
+  modifiedAt: new Date()
+}
+
+export const presetCard = writable(emptyCard)
+export const userCard = writable(emptyCard)
+export const charCards = writable([emptyCard])
+export const sceneCard = writable(emptyCard)

@@ -1,19 +1,11 @@
 import { readTextFile } from '@tauri-apps/api/fs'
 import { open } from '@tauri-apps/api/dialog'
 import { charExt, loadMetaData, savePath } from './fs'
-import { CardType, type Char, type Preset, type StoryCard } from './interfaces'
+import type { Char, Preset } from './interfaces'
 import { dirname, sep } from '@tauri-apps/api/path'
 import { charSetting, firstScene, userSetting } from './api'
 import { char, charPath, curScene, curScenePath, user, userPath } from './store'
 import { loadScene } from './scene'
-
-export const emptyCard: StoryCard = {
-  type: CardType.Preset,
-  name: 'Card',
-  path: '',
-  image: '',
-  modifiedAt: new Date()
-}
 
 export async function loadChar(path: string) {
   const json = await readTextFile(path)

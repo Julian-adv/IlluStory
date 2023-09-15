@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getUniqueId } from '$lib'
-  import { emptyCard } from '$lib/charSettings'
   import { charExt, extOf, presetExt, sceneExt, sessionExt } from '$lib/fs'
   import type { StoryCard } from '$lib/interfaces'
+  import { emptyCard } from '$lib/store'
   import { Card, Popover } from 'flowbite-svelte'
 
   export let card = emptyCard
