@@ -6,6 +6,7 @@
   import { Card, Popover } from 'flowbite-svelte'
 
   export let card = emptyCard
+  export let onRemove = () => {}
   const id = getUniqueId()
 
   function cardSize(card: StoryCard) {
@@ -62,8 +63,10 @@
     return (_ev: Event) => {}
   }
 
-  function onTrash(_card: StoryCard) {
-    return (_ev: Event) => {}
+  function onTrash() {
+    return (_ev: Event) => {
+      onRemove()
+    }
   }
 </script>
 
@@ -84,7 +87,7 @@
       stroke-width="1.5"
       stroke="currentColor"
       class="w-6 h-6 py-1"
-      on:click={onTrash(card)}>
+      on:click={onTrash()}>
       <path
         stroke-linecap="round"
         stroke-linejoin="round"

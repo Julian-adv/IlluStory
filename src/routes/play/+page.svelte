@@ -251,6 +251,11 @@
     newSession()
     started = true
   }
+
+  function onRemove(index: number) {
+    $charCards.splice(index, 1)
+    $charCards = $charCards
+  }
 </script>
 
 <main>
@@ -338,7 +343,7 @@
     </div>
     <div class="text-right">Characters:</div>
     <div class="flex flex-wrap flex-none gap-2 col-span-3">
-      <CardList cards={$charCards} />
+      <CardList cards={$charCards} {onRemove} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addCharCard}>
         <svg
