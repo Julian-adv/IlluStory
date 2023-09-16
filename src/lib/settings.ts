@@ -9,8 +9,8 @@ const settingsPath = 'settings.json'
 let currentPreset: Preset
 let currentSettings: Settings
 
-preset.subscribe(s => currentPreset = s)
-settings.subscribe(s => currentSettings = s)
+preset.subscribe(s => (currentPreset = s))
+settings.subscribe(s => (currentSettings = s))
 
 function fixSettings(settings: Settings) {
   if (!settings.sortOrder) {
@@ -40,8 +40,8 @@ function fixSettings(settings: Settings) {
   if (!settings.fontSize) {
     settings.fontSize = defaultSettings.fontSize
   }
-  if (!settings.generateImage) {
-    settings.generateImage = defaultSettings.generateImage
+  if (!settings.imageSource) {
+    settings.imageSource = defaultSettings.imageSource
   }
   if (!settings.sdURL) {
     settings.sdURL = defaultSettings.sdURL
@@ -97,7 +97,11 @@ export async function loadSettings() {
   const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
   settings.set(JSON.parse(settingsJson))
   fixSettings(get(settings))
-  if (currentPreset.api === Api.OpenAi && currentPreset.openAi.apiUrl && currentPreset.openAi.apiUrl.startsWith('https://api.openai.com')) {
+  if (
+    currentPreset.api === Api.OpenAi &&
+    currentPreset.openAi.apiUrl &&
+    currentPreset.openAi.apiUrl.startsWith('https://api.openai.com')
+  ) {
     const openai = new OpenAI({
       apiKey: get(settings).openAiApiKey,
       dangerouslyAllowBrowser: true
@@ -111,14 +115,17 @@ export async function loadSettings() {
   } else {
     // Open AI compatible API
     return [
-      { value: "gpt-3.5-turbo", name: "gpt-3.5-turbo" },
-      { value: "gpt-3.5-turbo-16k", name: "gpt-3.5-turbo-16k" },
-      { value: "gpt-4", name: "gpt-4" },
-      { value: "gpt-4-32k", name: "gpt-4-32k" }
+      { value: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo' },
+      { value: 'gpt-3.5-turbo-16k', name: 'gpt-3.5-turbo-16k' },
+      { value: 'gpt-4', name: 'gpt-4' },
+      { value: 'gpt-4-32k', name: 'gpt-4-32k' }
     ]
   }
 }
 
 export async function saveSettings() {
-  writeTextFile({ path: settingsPath, contents: JSON.stringify(currentSettings) }, { dir: BaseDirectory.AppConfig })
+  writeTextFile(
+    { path: settingsPath, contents: JSON.stringify(currentSettings) },
+    { dir: BaseDirectory.AppConfig }
+  )
 }

@@ -33,7 +33,7 @@
     sessionExt
   } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type Char, type SceneType } from '$lib/interfaces'
+  import { Api, type Char, type SceneType, type Session } from '$lib/interfaces'
   import { loadSessionDialog } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
@@ -50,11 +50,12 @@
 
   let userInput = ''
   let started = false
-  let session = {
+  let session: Session = {
     presetCard: '',
     userCard: '',
     charCards: [''],
-    sceneCard: ''
+    sceneCard: '',
+    scenes: []
   }
 
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
@@ -159,6 +160,7 @@
     session.userCard = relativePath(dataDir, $userCard.path)
     session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
     session.sceneCard = relativePath(dataDir, $sceneCard.path)
+    session.scenes = $dialogues
     saveObjQuietly(tempPath, session)
   }
 
@@ -342,9 +344,9 @@
     </Button>
   </div>
   <span class="text-xs text-stone-400">{$sessionPath}</span>
-  <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4">
-    <div class="text-right">Preset:</div>
-    <div class="flex flex-wrap flex-none gap-2">
+  <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4 items-center">
+    <div class="text-right">Preset</div>
+    <div class="flex flex-wrap flex-none gap-2 items-end">
       <CommonCard card={$presetCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addPresetCard}>
@@ -359,8 +361,8 @@
         </svg>
       </Button>
     </div>
-    <div class="text-right">User:</div>
-    <div class="flex flex-wrap flex-none gap-2">
+    <div class="text-right">User</div>
+    <div class="flex flex-wrap flex-none gap-2 items-end">
       <CommonCard card={$userCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addUserCard}>
@@ -375,8 +377,8 @@
         </svg>
       </Button>
     </div>
-    <div class="text-right">Characters:</div>
-    <div class="flex flex-wrap flex-none gap-2 col-span-3">
+    <div class="text-right">Characters</div>
+    <div class="flex flex-wrap flex-none gap-2 col-span-3 items-end">
       <CardList cards={$charCards} {onRemove} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addCharCard}>
@@ -391,8 +393,8 @@
         </svg>
       </Button>
     </div>
-    <div class="text-right">Scene:</div>
-    <div class="flex flex-wrap flex-none gap-2 col-span-3">
+    <div class="text-right">Scene</div>
+    <div class="flex flex-wrap flex-none gap-2 col-span-3 items-end">
       <CommonCard card={$sceneCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>

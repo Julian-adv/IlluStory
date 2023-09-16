@@ -46,7 +46,7 @@
   }
 </script>
 
-<div class={className + ' wrapper'}>
+<div class={className + ' wrapper mb-4'}>
   {#await imageFromSD}
     <div
       class="placeholder flex justify-center items-center bg-stone-300"

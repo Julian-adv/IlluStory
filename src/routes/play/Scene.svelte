@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { ImageSize, SceneType } from '$lib/interfaces'
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
   import { settings } from '$lib/store'
-  import { getRandomSize, realImageSize } from '$lib'
+  import { getRandomSize, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { assistantRole, systemRole } from '$lib/api'
@@ -30,16 +30,26 @@
     } else {
       if (!waitingImage && (scene.role === systemRole || scene.role === assistantRole)) {
         showImage = !!scene.visualContent
-        if (showImage) {
+        let imageSource = ''
+        if ($settings.imageSource === 'full_desc') {
+          imageSource = scene.textContent ?? ''
+        } else if ($settings.imageSource === 'visual_tag') {
+          imageSource = scene.visualContent ?? ''
+        }
+        if (imageSource) {
+          showImage = true
           imageSize = getRandomSize($settings.imageSizes)
+          await tick()
+          scrollToEnd()
           imageFromSD = generateImage(
             $settings,
             imageSize.width,
             imageSize.height,
-            scene.visualContent ?? ''
+            imageSource
           ).then(result => {
             scene.image = result
             scene.imageSize = imageSize
+            scrollToEnd()
             return result
           })
         }
@@ -172,13 +182,15 @@
       tooltip={scene.visualContent}
       class={imageClass} />
   {/if}
-  <Markdown
-    bind:value={scene.textContent}
-    bind:translatedValue={scene.translatedContent}
-    bind:visualValue={scene.visualContent}
-    bind:translated
-    {onTranslate}
-    {onEditDone}
-    {generateNewImage} />
+  <div class="px-4">
+    <Markdown
+      bind:value={scene.textContent}
+      bind:translatedValue={scene.translatedContent}
+      bind:visualValue={scene.visualContent}
+      bind:translated
+      {onTranslate}
+      {onEditDone}
+      {generateNewImage} />
+  </div>
 </div>
 <div class="clear-both p-2"></div>

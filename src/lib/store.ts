@@ -109,7 +109,7 @@ export const defaultSettings: Settings = {
   },
   fontFamily: 'Geogia',
   fontSize: 12,
-  generateImage: true,
+  imageSource: 'full_desc',
   sdURL: 'http://localhost:7860',
   imageSizes: '512x768, 768x512, 1024x512',
   steps: 30,

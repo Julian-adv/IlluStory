@@ -46,6 +46,13 @@
     { value: 'UK', name: 'Ukrainian' },
     { value: 'ZH', name: 'Chinese (simplified)' }
   ]
+
+  const imageSources = [
+    { value: 'none', name: 'None' },
+    { value: 'full_desc', name: 'Full description' },
+    { value: 'visual_tag', name: 'Visual tag' }
+  ]
+
   onMount(async () => {
     await loadSettings()
   })
@@ -69,19 +76,29 @@
       bind:value={$settings.openAiApiKey}
       {save} />
     <h1 class="text-lg font-semibold mt-4 col-span-3">Stable Diffusion</h1>
-    <CheckField label="Generate image" bind:value={$settings.generateImage} {save}>
+    <SelectField
+      label="Image source"
+      items={imageSources}
+      bind:value={$settings.imageSource}
+      {save}>
       <em slot="helper">
-        Whether to generate images from visual descriptions. You need to instruct AI to generate
-        visual description by adding a prompt like this:<br />
-        <p class="plain">
-          "Add a visual summary at the end of the output. It's crucial to include details about
-          &lt;char>'s look, clothing, stance, and nearby setting. The description should be short
-          phrases inside &lt;Visual> and &lt;/Visual>. For example: &lt;Visual>brown hair, shirt,
-          pants, sitting on a living room &lt;/Visual>"
-        </p>
+        {#if $settings.imageSource === 'none'}
+          Don't generate an image.
+        {:else if $settings.imageSource === 'visual_tag'}
+          Generate an image from visual description. You need to instruct AI to generate visual
+          description by adding a prompt like this:<br />
+          <p class="plain">
+            "Add a visual summary at the end of the output. It's crucial to include details about
+            &lt;char>'s look, clothing, stance, and nearby setting. The description should be short
+            phrases inside &lt;Visual> and &lt;/Visual>. For example: &lt;Visual>brown hair, shirt,
+            pants, sitting on a living room &lt;/Visual>"
+          </p>
+        {:else if $settings.imageSource === 'full_desc'}
+          Use the AI's full scene description to generate the image.
+        {/if}
       </em>
-    </CheckField>
-    {#if $settings.generateImage}
+    </SelectField>
+    {#if $settings.imageSource !== 'none'}
       <StringField
         label="URL"
         placeholder=""

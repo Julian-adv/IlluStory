@@ -122,7 +122,7 @@ export interface Settings {
   charNameSettings: TextSettings
   fontFamily: string
   fontSize: number
-  generateImage: boolean
+  imageSource: string
   sdURL: string
   enableADetailer: boolean
   imageSizes: string
@@ -187,4 +187,5 @@ export interface Session {
   userCard: string
   charCards: string[]
   sceneCard: string
+  scenes: SceneType[]
 }
