@@ -181,3 +181,10 @@ export interface FirstScene {
   image: string
   scenes: SceneType[]
 }
+
+export interface Session {
+  presetCard: string
+  userCard: string
+  charCards: string[]
+  sceneCard: string
+}

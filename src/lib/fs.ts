@@ -1,6 +1,6 @@
 import { writeTextFile } from '@tauri-apps/api/fs'
 import { sep } from '@tauri-apps/api/path'
-import type { Preset, Char, FirstScene } from './interfaces'
+import type { Preset, Char, FirstScene, Session } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
@@ -76,7 +76,7 @@ export async function savePreset(preset: Preset) {
   return savePath(fileName, presetExt, preset)
 }
 
-export async function saveObjQuietly(filePath: string, obj: Preset | Char | FirstScene) {
+export async function saveObjQuietly(filePath: string, obj: Preset | Char | FirstScene | Session) {
   writeTextFile(filePath, JSON.stringify(obj, null, 2))
 }
 
@@ -93,7 +93,7 @@ export function basenameOf(path: string) {
   }
   let startIndex = path.lastIndexOf(sep)
   if (startIndex < 0) {
-    startIndex = 0
+    startIndex = -1
   }
   return path.slice(startIndex + 1, endIndex)
 }

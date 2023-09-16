@@ -20,9 +20,18 @@
     curScenePath,
     charPath,
     userPath,
-    emptyCard
+    emptyCard,
+    settings
   } from '$lib/store'
-  import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
+  import {
+    basenameOf,
+    charExt,
+    presetExt,
+    saveObjQuietly,
+    savePath,
+    sceneExt,
+    sessionExt
+  } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
   import { loadSessionDialog } from '$lib/session'
@@ -33,43 +42,45 @@
   import { loadPreset } from '$lib/preset'
   import { loadScene } from '$lib/scene'
   import { presetCard, userCard, charCards, sceneCard } from '$lib/store'
+  import { loadSettings } from '$lib/settings'
+  import { BaseDirectory, createDir } from '@tauri-apps/api/fs'
+  import { appDataDir, sep } from '@tauri-apps/api/path'
+  import { exists } from 'tauri-plugin-fs-extra-api'
+  import { extractImagePrompt } from '$lib/image'
 
   let userInput = ''
   let started = false
+  let session = {
+    presetCard: '',
+    userCard: '',
+    charCards: [''],
+    sceneCard: ''
+  }
 
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
     const index = scenes.findIndex(scene => scene.role === firstScene)
     if (index < 0) {
       return [scenes, $curScene.scenes]
     } else {
-      const copy = [...scenes]
+      const copy = structuredClone(scenes)
       copy.splice(index, 1)
       if ($curScene.scenes.length > 0) {
-        return [copy, $curScene.scenes]
+        return [copy, structuredClone($curScene.scenes)]
       } else {
-        return [copy, scenes.slice(index, index + 1)]
+        return [copy, structuredClone(scenes.slice(index, index + 1))]
       }
     }
   }
 
   // Basically, we're returning newScenes. But trying to preserve images in oldScenes.
   async function mergeScenes(oldScenes: SceneType[], newScenes: SceneType[]) {
-    return newScenes
-    // if (newScenes.length != oldScenes.length) {
-    //   // big change, refresh all images
-    //   return newScenes
-    // }
-    // let scenes = []
-    // for (let i = 0; i < newScenes.length; i++) {
-    //   let scene = newScenes[i]
-    //   if (oldScenes[i].content) {
-    //     scene = oldScenes[i]
-    //   } else {
-    //     scene = await extractImagePrompt($settings, newScenes[i])
-    //   }
-    //   scenes.push(scene)
-    // }
-    // return scenes
+    let scenes = []
+    for (let i = 0; i < newScenes.length; i++) {
+      let scene = newScenes[i]
+      scene = await extractImagePrompt($settings, newScenes[i])
+      scenes.push(scene)
+    }
+    return scenes
   }
 
   function replaceCharSetting(replKey: string, char: Char) {
@@ -130,6 +141,27 @@
     }
   }
 
+  function relativePath(dataDir: string, path: string) {
+    return path.replace(dataDir, '')
+  }
+
+  async function saveSession() {
+    const dataDir = await appDataDir()
+    const sessionsDir = dataDir + 'sessions'
+    if (!(await exists(sessionsDir))) {
+      createDir('sessions', {
+        dir: BaseDirectory.AppData,
+        recursive: true
+      })
+    }
+    const tempPath = sessionsDir + sep + 'session-' + formatDate(new Date()) + '.' + sessionExt
+    session.presetCard = relativePath(dataDir, $presetCard.path)
+    session.userCard = relativePath(dataDir, $userCard.path)
+    session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
+    session.sceneCard = relativePath(dataDir, $sceneCard.path)
+    saveObjQuietly(tempPath, session)
+  }
+
   async function load() {
     const [session, path] = await loadSessionDialog()
     if (session) {
@@ -186,6 +218,7 @@
   }
 
   onMount(async () => {
+    await loadSettings()
     if ($prologues.length == 0) {
       await newSession()
     }
@@ -250,6 +283,7 @@
     $curScenePath = $sceneCard.path
     newSession()
     started = true
+    await saveSession()
   }
 
   function onRemove(index: number) {
