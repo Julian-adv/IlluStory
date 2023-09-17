@@ -10,14 +10,15 @@
     usage,
     summarySceneIndex,
     replaceDict,
-    settings
+    settings,
+    session
   } from '$lib/store'
-  import { writeTextFile } from '@tauri-apps/api/fs'
   import { newSceneId, scrollToEnd, translateButtonClass } from '$lib'
   import { onMount, tick } from 'svelte'
   import { Button } from 'flowbite-svelte'
   import { translateText } from '$lib/deepLApi'
   import { getNextHistory, getPrevHistory, pushHistory } from '$lib/history'
+  import { saveSessionAuto } from '$lib/session'
 
   export let role = 'user'
   export let value = ''
@@ -46,9 +47,9 @@
 
   let currentIndex = 0
 
-  function saveScenes() {
+  function saveSession() {
     if ($sessionPath !== '') {
-      writeTextFile($sessionPath, JSON.stringify($dialogues))
+      saveSessionAuto($sessionPath, $session, $dialogues)
     }
   }
 
@@ -82,7 +83,7 @@
       await tick()
       scrollToEnd()
     }
-    saveScenes()
+    saveSession()
   }
 
   async function nextState(state: ValueState, transition: Transition): Promise<ValueState> {

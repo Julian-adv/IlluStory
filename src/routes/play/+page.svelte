@@ -24,18 +24,10 @@
     settings,
     session
   } from '$lib/store'
-  import {
-    basenameOf,
-    charExt,
-    presetExt,
-    saveObjQuietly,
-    savePath,
-    sceneExt,
-    sessionExt
-  } from '$lib/fs'
+  import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType } from '$lib/interfaces'
-  import { loadSession, loadSessionDialog } from '$lib/session'
+  import { loadSession, loadSessionDialog, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
@@ -156,8 +148,8 @@
     $session.userCard = relativePath(dataDir, $userCard.path)
     $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
     $session.sceneCard = relativePath(dataDir, $sceneCard.path)
-    $session.scenes = $dialogues
-    saveObjQuietly(tempPath, $session)
+    saveSessionAuto(tempPath, $session, $dialogues)
+    $sessionPath = tempPath
   }
 
   async function findMostRecentSession() {
@@ -182,6 +174,7 @@
     if (mostRecentPath) {
       let _dialogues
       $session = await loadSession(mostRecentPath)
+      $sessionPath = mostRecentPath
       shortSessionPath = basenameOf(mostRecentPath)
       $presetCard = await cardFromPath(dataDir + $session.presetCard)
       $userCard = await cardFromPath(dataDir + $session.userCard)
@@ -191,7 +184,7 @@
       ;[$prologues, _dialogues] = splitPreset($preset.prompts)
       $prologues = findNames($prologues)
       $prologues = replaceNames($prologues)
-      $dialogues = $session.scenes
+      $dialogues = replaceNames($session.scenes)
     }
   }
 
@@ -213,11 +206,14 @@
   }
 
   async function newSession() {
-    await updateInitialScenes()
-    $usage = zeroUsage
+    $presetCard = emptyCard
+    $userCard = emptyCard
+    $charCards = [emptyCard]
+    $sceneCard = emptyCard
+    $dialogues = []
     $sessionPath = ''
-    userInput = ''
-    $summarySceneIndex = 0
+    started = false
+    shortSessionPath = ''
   }
 
   async function goBack() {
@@ -252,7 +248,11 @@
 
   onMount(async () => {
     await loadSettings()
-    await loadRecentSession()
+    if ($dialogues.length === 0) {
+      await loadRecentSession()
+    } else {
+      started = true
+    }
   })
 
   let warningTokens: boolean
@@ -316,8 +316,12 @@
   }
 
   async function start() {
-    startWithoutSave()
-    newSession()
+    await startWithoutSave()
+    await updateInitialScenes()
+    $usage = zeroUsage
+    $sessionPath = ''
+    userInput = ''
+    $summarySceneIndex = 0
     await saveSession()
   }
 

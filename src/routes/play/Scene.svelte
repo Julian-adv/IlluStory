@@ -59,7 +59,7 @@
 
   onMount(async () => {
     scene = await extractImagePrompt($settings, scene)
-    generateImageIfNeeded(scene)
+    await generateImageIfNeeded(scene)
     translated = !!scene.translatedContent
   })
 
