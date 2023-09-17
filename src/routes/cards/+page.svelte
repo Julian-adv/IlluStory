@@ -25,10 +25,10 @@
     settings,
     curCharPath,
     curChar,
-    dialogues,
     sessionPath,
     curScenePath,
-    curScene
+    curScene,
+    session
   } from '$lib/store'
   import { extOf, allExts, presetExt, charExt, sessionExt, sceneExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
@@ -136,7 +136,7 @@
         } else {
           const tempSession = await loadSession(card.path)
           if (tempSession) {
-            $dialogues = tempSession
+            $session = tempSession
             $sessionPath = card.path
             goto('/play')
           }

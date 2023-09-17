@@ -6,9 +6,11 @@ import type {
   Settings,
   Char,
   FirstScene,
-  StoryCard
+  StoryCard,
+  Session
 } from './interfaces'
 import { Api, CardType, SortOrder, SortType } from './interfaces'
+import { defaultImage } from '$lib'
 
 const defaultScenes: SceneType[] = []
 
@@ -69,8 +71,17 @@ export const defaultPreset: Preset = {
 }
 
 export const preset = writable(defaultPreset)
-
 export const presetPath = writable('')
+
+export const defaultSession: Session = {
+  presetCard: '',
+  userCard: '',
+  charCards: [],
+  sceneCard: '',
+  scenes: []
+}
+
+export const session = writable(defaultSession)
 export const sessionPath = writable('')
 
 export const zeroUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
@@ -162,7 +173,7 @@ export const emptyCard: StoryCard = {
   type: CardType.Preset,
   name: 'Card',
   path: '',
-  image: '',
+  image: defaultImage,
   modifiedAt: new Date()
 }
 

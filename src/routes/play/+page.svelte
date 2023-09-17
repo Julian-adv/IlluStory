@@ -21,7 +21,8 @@
     charPath,
     userPath,
     emptyCard,
-    settings
+    settings,
+    session
   } from '$lib/store'
   import {
     basenameOf,
@@ -33,30 +34,23 @@
     sessionExt
   } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type Char, type SceneType, type Session } from '$lib/interfaces'
-  import { loadSessionDialog } from '$lib/session'
+  import { Api, type Char, type SceneType } from '$lib/interfaces'
+  import { loadSession, loadSessionDialog } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
-  import { loadCardDialog } from '$lib/card'
+  import { cardFromPath, loadCardDialog } from '$lib/card'
   import { loadPreset } from '$lib/preset'
   import { loadScene } from '$lib/scene'
   import { presetCard, userCard, charCards, sceneCard } from '$lib/store'
   import { loadSettings } from '$lib/settings'
-  import { BaseDirectory, createDir } from '@tauri-apps/api/fs'
+  import { BaseDirectory, createDir, readDir } from '@tauri-apps/api/fs'
   import { appDataDir, sep } from '@tauri-apps/api/path'
-  import { exists } from 'tauri-plugin-fs-extra-api'
+  import { exists, metadata } from 'tauri-plugin-fs-extra-api'
   import { extractImagePrompt } from '$lib/image'
 
   let userInput = ''
   let started = false
-  let session: Session = {
-    presetCard: '',
-    userCard: '',
-    charCards: [''],
-    sceneCard: '',
-    scenes: []
-  }
 
   function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
     const index = scenes.findIndex(scene => scene.role === firstScene)
@@ -146,28 +140,65 @@
     return path.replace(dataDir, '')
   }
 
+  const sessionsDir = 'sessions'
+
   async function saveSession() {
     const dataDir = await appDataDir()
-    const sessionsDir = dataDir + 'sessions'
-    if (!(await exists(sessionsDir))) {
-      createDir('sessions', {
+    const sessionsPath = dataDir + sessionsDir
+    if (!(await exists(sessionsPath))) {
+      createDir(sessionsDir, {
         dir: BaseDirectory.AppData,
         recursive: true
       })
     }
-    const tempPath = sessionsDir + sep + 'session-' + formatDate(new Date()) + '.' + sessionExt
-    session.presetCard = relativePath(dataDir, $presetCard.path)
-    session.userCard = relativePath(dataDir, $userCard.path)
-    session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
-    session.sceneCard = relativePath(dataDir, $sceneCard.path)
-    session.scenes = $dialogues
-    saveObjQuietly(tempPath, session)
+    const tempPath = sessionsPath + sep + 'session-' + formatDate(new Date()) + '.' + sessionExt
+    $session.presetCard = relativePath(dataDir, $presetCard.path)
+    $session.userCard = relativePath(dataDir, $userCard.path)
+    $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
+    $session.sceneCard = relativePath(dataDir, $sceneCard.path)
+    $session.scenes = $dialogues
+    saveObjQuietly(tempPath, $session)
+  }
+
+  async function findMostRecentSession() {
+    let mostRecent = { path: '', modified: new Date(0) }
+    const entries = await readDir(sessionsDir, { dir: BaseDirectory.AppData, recursive: true })
+    for (const entry of entries) {
+      if (entry.name && entry.name.endsWith(sessionExt)) {
+        const stat = await metadata(entry.path)
+        if (stat.modifiedAt > mostRecent.modified) {
+          mostRecent = { path: entry.path, modified: stat.modifiedAt }
+        }
+      }
+    }
+    return mostRecent.path
+  }
+
+  let shortSessionPath = ''
+
+  async function loadRecentSession() {
+    const dataDir = await appDataDir()
+    const mostRecentPath = await findMostRecentSession()
+    if (mostRecentPath) {
+      let _dialogues
+      $session = await loadSession(mostRecentPath)
+      shortSessionPath = basenameOf(mostRecentPath)
+      $presetCard = await cardFromPath(dataDir + $session.presetCard)
+      $userCard = await cardFromPath(dataDir + $session.userCard)
+      $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
+      $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
+      await startWithoutSave()
+      ;[$prologues, _dialogues] = splitPreset($preset.prompts)
+      $prologues = findNames($prologues)
+      $prologues = replaceNames($prologues)
+      $dialogues = $session.scenes
+    }
   }
 
   async function load() {
     const [session, path] = await loadSessionDialog()
     if (session) {
-      $dialogues = session
+      $dialogues = session.scenes
       $sessionPath = path
     }
   }
@@ -221,9 +252,7 @@
 
   onMount(async () => {
     await loadSettings()
-    if ($prologues.length == 0) {
-      await newSession()
-    }
+    await loadRecentSession()
   })
 
   let warningTokens: boolean
@@ -274,7 +303,7 @@
     $charCards.length > 0 &&
     $charCards[0] !== emptyCard
 
-  async function start() {
+  async function startWithoutSave() {
     $preset = await loadPreset($presetCard.path)
     $presetPath = $presetCard.path
     $user = await loadChar($userCard.path)
@@ -283,8 +312,12 @@
     $charPath = $charCards[0].path
     $curScene = await loadScene($sceneCard.path)
     $curScenePath = $sceneCard.path
-    newSession()
     started = true
+  }
+
+  async function start() {
+    startWithoutSave()
+    newSession()
     await saveSession()
   }
 
@@ -295,7 +328,9 @@
 </script>
 
 <main>
-  <h1 class="text-lg font-semibold mb-1 mt-3 px-4">Session</h1>
+  <h1 class="text-lg font-semibold mb-1 mt-3 px-4">
+    Session <span class="text-stone-400 text-sm">{shortSessionPath}</span>
+  </h1>
   <div class="px-4">
     <Button color="alternative" size="sm" on:click={newSession}>
       <svg
@@ -343,7 +378,6 @@
       <span class="pl-2">Save as ...</span>
     </Button>
   </div>
-  <span class="text-xs text-stone-400">{$sessionPath}</span>
   <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4 items-center">
     <div class="text-right">Preset</div>
     <div class="flex flex-wrap flex-none gap-2 items-end">
