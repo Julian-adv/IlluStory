@@ -1,5 +1,5 @@
-import { writeTextFile } from '@tauri-apps/api/fs'
-import { sep } from '@tauri-apps/api/path'
+import { BaseDirectory, copyFile, createDir, exists, writeTextFile } from '@tauri-apps/api/fs'
+import { appDataDir, resolveResource, sep } from '@tauri-apps/api/path'
 import type { Preset, Char, FirstScene, Session } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
@@ -86,6 +86,8 @@ export const charExt = 'char'
 export const sceneExt = 'scene'
 export const allExts = [presetExt, sessionExt, charExt, sceneExt]
 
+export const settingsFile = 'settings.json'
+
 export function basenameOf(path: string) {
   let endIndex = path.lastIndexOf('.')
   if (endIndex < 0) {
@@ -121,4 +123,22 @@ export async function loadMetaData(path: string) {
   const blob = await loadFileAsBlob(path)
   const buffer = await blob.arrayBuffer()
   return readMetadata(new Uint8Array(buffer))
+}
+
+export async function installDefaults() {
+  const filesToCopy = ['default.preset', 'Julian.char', 'Eliane.char', "Adventurer's Guild.scene"]
+
+  if (await exists(filesToCopy[0], { dir: BaseDirectory.AppData })) {
+    return
+  }
+
+  const dataDir = await appDataDir()
+  if (!(await exists(dataDir))) {
+    createDir('', { dir: BaseDirectory.AppData, recursive: true })
+  }
+
+  for (const file of filesToCopy) {
+    const filePath = await resolveResource('resources/' + file)
+    copyFile(filePath, file, { dir: BaseDirectory.AppData })
+  }
 }

@@ -147,7 +147,7 @@ export const settings = writable(defaultSettings)
 
 export const emptyChar: Char = {
   image: '',
-  name: 'Click to load',
+  name: '',
   gender: '',
   visual: '',
   description: ''

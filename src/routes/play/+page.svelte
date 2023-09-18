@@ -36,9 +36,9 @@
   import { loadScene } from '$lib/scene'
   import { presetCard, userCard, charCards, sceneCard, curChar, curCharPath } from '$lib/store'
   import { loadSettings } from '$lib/settings'
-  import { BaseDirectory, createDir, readDir } from '@tauri-apps/api/fs'
+  import { BaseDirectory, createDir, readDir, exists } from '@tauri-apps/api/fs'
   import { appDataDir, sep } from '@tauri-apps/api/path'
-  import { exists, metadata } from 'tauri-plugin-fs-extra-api'
+  import { metadata } from 'tauri-plugin-fs-extra-api'
   import { extractImagePrompt } from '$lib/image'
   import { goto } from '$app/navigation'
 
@@ -136,14 +136,14 @@
   const sessionsDir = 'sessions'
 
   async function saveSession() {
-    const dataDir = await appDataDir()
-    const sessionsPath = dataDir + sessionsDir
-    if (!(await exists(sessionsPath))) {
+    if (!(await exists(sessionsDir, { dir: BaseDirectory.AppData }))) {
       createDir(sessionsDir, {
         dir: BaseDirectory.AppData,
         recursive: true
       })
     }
+    const dataDir = await appDataDir()
+    const sessionsPath = dataDir + sessionsDir
     const tempPath = sessionsPath + sep + 'session-' + formatDate(new Date()) + '.' + sessionExt
     $session.presetCard = relativePath(dataDir, $presetCard.path)
     $session.userCard = relativePath(dataDir, $userCard.path)
@@ -331,13 +331,37 @@
     $charCards = $charCards
   }
 
-  async function onClickCharCard(card: StoryCard) {
-    const tempChar = await loadChar(card.path)
-    if (tempChar) {
-      $curCharPath = card.path
-      $curChar = tempChar
-      goto('/write_char')
+  async function onClickPresetCard(card: StoryCard) {
+    if (card.path) {
+      const tempPreset = await loadPreset(card.path)
+      if (tempPreset) {
+        $preset = tempPreset
+        $presetPath = card.path
+      }
     }
+    goto('/write')
+  }
+
+  async function onClickCharCard(card: StoryCard) {
+    if (card.path) {
+      const tempChar = await loadChar(card.path)
+      if (tempChar) {
+        $curCharPath = card.path
+        $curChar = tempChar
+      }
+    }
+    goto('/write_char')
+  }
+
+  async function onClickSceneCard(card: StoryCard) {
+    if (card.path) {
+      const tempScene = await loadScene(card.path)
+      if (tempScene) {
+        $curScenePath = card.path
+        $curScene = tempScene
+      }
+    }
+    goto('/write_scene')
   }
 </script>
 
@@ -395,7 +419,7 @@
   <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4 items-center">
     <div class="text-right">Preset</div>
     <div class="flex flex-wrap flex-none gap-2 items-end">
-      <CommonCard card={$presetCard} />
+      <CommonCard card={$presetCard} onClick={onClickPresetCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addPresetCard}>
         <svg
@@ -411,7 +435,7 @@
     </div>
     <div class="text-right">User</div>
     <div class="flex flex-wrap flex-none gap-2 items-end">
-      <CommonCard card={$userCard} />
+      <CommonCard card={$userCard} onClick={onClickCharCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addUserCard}>
         <svg
@@ -443,7 +467,7 @@
     </div>
     <div class="text-right">Scene</div>
     <div class="flex flex-wrap flex-none gap-2 col-span-3 items-end">
-      <CommonCard card={$sceneCard} />
+      <CommonCard card={$sceneCard} onClick={onClickSceneCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>
         <svg

@@ -9,11 +9,9 @@
   import { countTokensApi } from '$lib/api'
   import { curChar, curCharPath, settings } from '$lib/store'
   import { generateImage } from '$lib/imageApi'
-  import { onMount } from 'svelte'
   import { decodeBase64 } from '$lib'
 
   let autoSave = true
-  let totalTokens = 0
   const genders = [
     { name: 'Male', value: 'male' },
     { name: 'Female', value: 'female' },
@@ -25,7 +23,6 @@
     if (tempChar) {
       $curChar = tempChar
       $curCharPath = tempFilePath
-      totalTokens = 0
     }
   }
 
@@ -72,21 +69,18 @@
     const tempFilePath = await saveChar($curChar)
     if (tempFilePath) {
       $curCharPath = tempFilePath
-      totalTokens = 0
     }
   }
 
   async function autoSaveFunc() {
     if (autoSave && $curCharPath !== '') {
       saveObjQuietly($curCharPath, $curChar)
-      totalTokens = 0
     }
   }
 
   function countTokens(str: string) {
     if (str) {
       const tokens = countTokensApi(str)
-      totalTokens += tokens
       return tokens
     }
     return 0
@@ -96,9 +90,9 @@
     $curChar.image = await generateImage($settings, 512, 768, $curChar.visual)
   }
 
-  onMount(() => {
-    totalTokens = 0
-  })
+  $: tokenVisual = countTokens($curChar.visual)
+  $: tokenDescription = countTokens($curChar.description)
+  $: totalTokens = tokenVisual + tokenDescription
 </script>
 
 <div class="px-4">
@@ -186,11 +180,14 @@
       save={autoSaveFunc} />
     <TextField label="Visual" bind:value={$curChar.visual} save={autoSaveFunc} />
     <span class="text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2"
-      >Tokens: {countTokens($curChar.visual)}</span>
+      >Tokens: {tokenVisual}</span>
     <TextField label="Description" bind:value={$curChar.description} save={autoSaveFunc} />
     <span class="text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2"
-      >Tokens: {countTokens($curChar.description)}</span>
-    <Label for="totalTokens" class="text-base self-center text-right w-full">Total tokens</Label>
-    <div id="totalTokens" class="text-base p-3 col-start-2 col-span-2">{totalTokens}</div>
+      >Tokens: {tokenDescription}</span>
+    <Label for="totalTokens" class="text-base self-center text-right w-full text-stone-500"
+      >Total tokens</Label>
+    <div id="totalTokens" class="text-base p-3 col-start-2 col-span-2 text-stone-500">
+      {totalTokens}
+    </div>
   </div>
 </div>

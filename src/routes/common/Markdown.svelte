@@ -119,7 +119,7 @@
   function convertToMarkdown(str: string) {
     if ($settings.convertMarkdown && str) {
       let text = str
-      text = text.replace(/(?!=)"([^"]+)"/g, '<em class=\'dialog\'>"$1"</em>')
+      text = text.replace(/(?!=)["“]([^"]+)["”]/g, '<em class=\'dialog\'>"$1"</em>')
       text = text.replace(
         /(?<=^|\n|> |>, |[.!?] )([^<".\n]*?)(?=((\.+|!|\?)($| |\n|<em))|( <em))/g,
         "<span class='description'>$1</span>"

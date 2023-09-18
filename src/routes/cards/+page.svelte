@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
-  import { readDir, BaseDirectory, copyFile, exists } from '@tauri-apps/api/fs'
+  import { readDir, BaseDirectory } from '@tauri-apps/api/fs'
   import {
     Button,
     Card,
@@ -34,7 +34,7 @@
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { cardFromPreset, loadChar } from '$lib/charSettings'
-  import { appDataDir, resolveResource } from '@tauri-apps/api/path'
+  import { appDataDir } from '@tauri-apps/api/path'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
   import { loadSession } from '$lib/session'
   import { slide } from 'svelte/transition'
@@ -65,15 +65,6 @@
     working = false
   }
 
-  async function installDefaults() {
-    const defaultPreset = 'default.preset'
-    const defaultPresetPath = await resolveResource('resources/default.preset')
-    if (await exists(defaultPreset, { dir: BaseDirectory.AppData })) {
-      return
-    }
-    copyFile(defaultPresetPath, defaultPreset, { dir: BaseDirectory.AppData })
-  }
-
   onMount(async () => {
     if (cards.length > 0) {
       return
@@ -81,7 +72,6 @@
     await loadSettings()
 
     loading = true
-    installDefaults()
     reloadCards()
     loading = false
     if (!unlisten) {

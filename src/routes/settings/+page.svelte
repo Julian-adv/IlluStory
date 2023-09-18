@@ -9,6 +9,7 @@
   import NumberField from '../common/NumberField.svelte'
   import TextField from '../common/TextField.svelte'
   import SelectField from '../common/SelectField.svelte'
+  import { installDefaults } from '$lib/fs'
 
   const languages = [
     { value: 'BG', name: 'Bulgarian' },
@@ -54,6 +55,7 @@
   ]
 
   onMount(async () => {
+    await installDefaults()
     await loadSettings()
   })
 

@@ -1,8 +1,33 @@
 import { get } from 'svelte/store'
 import type { Preset, SceneType, Usage, Message } from './interfaces'
 import { settings, zeroUsage } from './store'
-import { chatHistory, startStory, systemRole } from './api'
+import {
+  assistantRole,
+  charSetting,
+  chatHistory,
+  endTag,
+  startStory,
+  systemRole,
+  userRole,
+  userSetting
+} from './api'
 import { getStartEndIndex } from '$lib'
+
+function convertRole(role: string) {
+  switch (role) {
+    case systemRole:
+    case charSetting:
+    case endTag:
+      return systemRole
+    case assistantRole:
+      return assistantRole
+    case userRole:
+    case userSetting:
+      return userRole
+    default:
+      return systemRole
+  }
+}
 
 function generateMessages(
   preset: Preset,
@@ -32,7 +57,7 @@ function generateMessages(
           break
         }
         default:
-          messages.push({ role: scene.role, content: scene.content })
+          messages.push({ role: convertRole(scene.role), content: scene.content })
       }
       if (!sentChatHistory) {
         for (const scene of dialogues.slice(sendStartIndex)) {

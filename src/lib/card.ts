@@ -4,6 +4,7 @@ import { CardType, type StoryCard } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { defaultImage } from '$lib'
 import { metadata } from 'tauri-plugin-fs-extra-api'
+import { appDataDir } from '@tauri-apps/api/path'
 
 function cardTypeFromExt(ext: string) {
   switch (ext) {
@@ -61,6 +62,7 @@ export async function cardFromPath(path: string): Promise<StoryCard> {
 
 export async function loadCardDialog(exts: string[]): Promise<StoryCard | null> {
   const selected = await open({
+    defaultPath: await appDataDir(),
     filters: [{ name: '*', extensions: exts }]
   })
   if (typeof selected === 'string') {

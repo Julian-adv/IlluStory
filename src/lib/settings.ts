@@ -1,10 +1,9 @@
 import { preset, settings, defaultSettings } from './store'
 import { Api, type Settings, type Preset } from './interfaces'
-import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
+import { BaseDirectory, createDir, exists, readTextFile, writeTextFile } from '@tauri-apps/api/fs'
 import OpenAI from 'openai'
 import { get } from 'svelte/store'
-
-const settingsPath = 'settings.json'
+import { settingsFile } from './fs'
 
 let currentPreset: Preset
 let currentSettings: Settings
@@ -94,7 +93,7 @@ function fixSettings(settings: Settings) {
 }
 
 export async function loadSettings() {
-  const settingsJson = await readTextFile(settingsPath, { dir: BaseDirectory.AppConfig })
+  const settingsJson = await readTextFile(settingsFile, { dir: BaseDirectory.AppConfig })
   settings.set(JSON.parse(settingsJson))
   fixSettings(get(settings))
   if (
@@ -124,8 +123,14 @@ export async function loadSettings() {
 }
 
 export async function saveSettings() {
+  if (!(await exists(settingsFile, { dir: BaseDirectory.AppConfig }))) {
+    createDir('', {
+      dir: BaseDirectory.AppConfig,
+      recursive: true
+    })
+  }
   writeTextFile(
-    { path: settingsPath, contents: JSON.stringify(currentSettings) },
+    { path: settingsFile, contents: JSON.stringify(currentSettings) },
     { dir: BaseDirectory.AppConfig }
   )
 }
