@@ -26,7 +26,7 @@
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type Char, type SceneType } from '$lib/interfaces'
+  import { Api, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
   import { loadSession, loadSessionDialog, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
@@ -34,12 +34,13 @@
   import { cardFromPath, loadCardDialog } from '$lib/card'
   import { loadPreset } from '$lib/preset'
   import { loadScene } from '$lib/scene'
-  import { presetCard, userCard, charCards, sceneCard } from '$lib/store'
+  import { presetCard, userCard, charCards, sceneCard, curChar, curCharPath } from '$lib/store'
   import { loadSettings } from '$lib/settings'
   import { BaseDirectory, createDir, readDir } from '@tauri-apps/api/fs'
   import { appDataDir, sep } from '@tauri-apps/api/path'
   import { exists, metadata } from 'tauri-plugin-fs-extra-api'
   import { extractImagePrompt } from '$lib/image'
+  import { goto } from '$app/navigation'
 
   let userInput = ''
   let started = false
@@ -329,6 +330,15 @@
     $charCards.splice(index, 1)
     $charCards = $charCards
   }
+
+  async function onClickCharCard(card: StoryCard) {
+    const tempChar = await loadChar(card.path)
+    if (tempChar) {
+      $curCharPath = card.path
+      $curChar = tempChar
+      goto('/write_char')
+    }
+  }
 </script>
 
 <main>
@@ -417,7 +427,7 @@
     </div>
     <div class="text-right">Characters</div>
     <div class="flex flex-wrap flex-none gap-2 col-span-3 items-end">
-      <CardList cards={$charCards} {onRemove} />
+      <CardList cards={$charCards} {onRemove} onClick={onClickCharCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addCharCard}>
         <svg

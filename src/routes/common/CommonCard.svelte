@@ -7,6 +7,7 @@
 
   export let card = emptyCard
   export let onRemove = () => {}
+  export let onClick = (_card: StoryCard) => {}
   const id = getUniqueId()
 
   function cardSize(card: StoryCard) {
@@ -59,8 +60,10 @@
     return 'Unknown'
   }
 
-  function onClick(_card: StoryCard) {
-    return (_ev: Event) => {}
+  function onClickHandler(card: StoryCard) {
+    return (_ev: Event) => {
+      onClick(card)
+    }
   }
 
   function onTrash() {
@@ -75,7 +78,7 @@
   class="{cardSize(card)} {borderColor(card)} flex justify-center border-2 cursor-pointer max-w-xl"
   padding="none"
   style="--grad: {grad(card)};"
-  on:click={onClick(card)}>
+  on:click={onClickHandler(card)}>
   <div class="px-2 py-0 flex justify-between">
     <h2 class="italic text-xs text-stone-100">{cardType(card)}</h2>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
