@@ -2,7 +2,6 @@
   import { Button, Checkbox, Toast } from 'flowbite-svelte'
   import { onMount, tick } from 'svelte'
   import { savePreset, saveObjQuietly } from '$lib/fs'
-  import { loadSettings } from '$lib/settings'
   import DragnDropList from '$lib/DragnDropList.svelte'
   import {
     changeApi,
@@ -46,8 +45,9 @@
   import { importPresetDialog, loadPresetDialog } from '$lib/preset'
   import SceneCard from '../common/SceneCard.svelte'
   import { loadSceneDialog } from '$lib/scene'
+  import type { PageData } from './$types'
 
-  let models = [{ value: '', name: '' }]
+  export let data: PageData
   const apis = [
     { value: Api.OpenAi, name: 'Open AI' },
     { value: Api.Oobabooga, name: 'Oobabooga' }
@@ -57,8 +57,7 @@
 
   onMount(async () => {
     totalTokens = 0
-    models = await loadSettings()
-    models = models.sort((modelA, modelB) =>
+    data.models = data.models.sort((modelA, modelB) =>
       modelA.name < modelB.name ? -1 : modelA.name > modelB.name ? 1 : 0
     )
   })
@@ -327,7 +326,7 @@
         save={autoSaveFunc} />
       <SelectField
         label="Models"
-        items={models}
+        items={data.models}
         search={true}
         bind:value={$preset.openAi.model}
         save={autoSaveFunc}>

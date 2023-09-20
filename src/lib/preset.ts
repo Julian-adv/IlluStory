@@ -54,12 +54,14 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
     role: role
   }
   preset.prompts.push(scene2)
-  const scene3: SceneType = {
-    id: sceneId++,
-    content: afterSlot,
-    role: endTag
+  if (afterSlot) {
+    const scene3: SceneType = {
+      id: sceneId++,
+      content: afterSlot,
+      role: endTag
+    }
+    preset.prompts.push(scene3)
   }
-  preset.prompts.push(scene3)
 }
 
 function convertChat(preset: Preset, start: number, end: string) {

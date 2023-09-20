@@ -59,15 +59,62 @@ function generateMessages(
         default:
           messages.push({ role: convertRole(scene.role), content: scene.content })
       }
-      if (!sentChatHistory) {
-        for (const scene of dialogues.slice(sendStartIndex)) {
-          messages.push({ role: scene.role, content: scene.content })
-        }
+    }
+    if (!sentChatHistory) {
+      for (const scene of dialogues.slice(sendStartIndex)) {
+        messages.push({ role: scene.role, content: scene.content })
       }
     }
   }
-
   return messages
+}
+
+function generatePrompt(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  summary: boolean,
+  sendStartIndex: number
+) {
+  let prompt = ''
+  if (summary) {
+    prompt += preset.summarizePrompt + '\n'
+    for (const scene of dialogues.slice(sendStartIndex)) {
+      prompt += scene.content + '\n'
+    }
+  } else {
+    let sentChatHistory = false
+    for (const scene of prologues) {
+      switch (scene.role) {
+        case startStory:
+          break
+        case chatHistory: {
+          const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
+          for (const mesg of dialogues.slice(start, end)) {
+            prompt += mesg.content + '\n'
+          }
+          sentChatHistory = true
+          break
+        }
+        default:
+          prompt += scene.content + '\n'
+      }
+    }
+    if (!sentChatHistory) {
+      for (const scene of dialogues.slice(sendStartIndex)) {
+        prompt += scene.content + '\n'
+      }
+    }
+  }
+  return prompt
+}
+
+function apiUrl(instructModel: boolean) {
+  if (instructModel) {
+    return '/completions'
+  } else {
+    return '/chat/completions'
+  }
 }
 
 export async function sendChatOpenAi(
@@ -77,23 +124,33 @@ export async function sendChatOpenAi(
   summary: boolean,
   sendStartIndex: number
 ): Promise<[SceneType | null, Usage]> {
-  const uri = preset.openAi.apiUrl + '/chat/completions'
-  // const uri = "https://api.openai.com/v1/chat/completions"
-  // const uri = "http://localhost:8000/v1/chat/completions"
+  const instructModel = preset.openAi.model.includes('instruct')
+  const uri = preset.openAi.apiUrl + apiUrl(instructModel)
   const url = new URL(uri)
-  const messages = generateMessages(preset, prologues, dialogues, summary, sendStartIndex)
   // console.log('messages', messages)
+  const commonReq = {
+    model: preset.openAi.model,
+    temperature: preset.openAi.temperature,
+    frequency_penalty: preset.openAi.frequencyPenalty,
+    presence_penalty: preset.openAi.presencePenalty,
+    max_tokens: preset.openAi.maxTokens,
+    stream: false
+  }
+  let request
+  if (instructModel) {
+    request = {
+      ...commonReq,
+      prompt: generatePrompt(preset, prologues, dialogues, summary, sendStartIndex)
+    }
+  } else {
+    request = {
+      ...commonReq,
+      messages: generateMessages(preset, prologues, dialogues, summary, sendStartIndex)
+    }
+  }
+  console.log('request', request)
   const respFromGPT = await fetch(url, {
-    body: JSON.stringify({
-      model: preset.openAi.model,
-      // model: "vicuna-13b-v1.5-16k",
-      temperature: preset.openAi.temperature.toFixed,
-      frequency_penalty: preset.openAi.frequencyPenalty.toFixed,
-      presence_penalty: preset.openAi.presencePenalty.toFixed,
-      max_tokens: preset.openAi.maxTokens.toFixed,
-      stream: false,
-      messages: messages
-    }),
+    body: JSON.stringify(request),
     headers: {
       Authorization: 'Bearer ' + get(settings).openAiApiKey,
       'Content-Type': 'application/json'
@@ -104,8 +161,17 @@ export async function sendChatOpenAi(
   const dataFromGPT = await respFromGPT.json()
   console.log('dataFromGPT', dataFromGPT)
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
-    const gptScene: SceneType = dataFromGPT.choices[0].message
-    gptScene.id = 0
+    let gptScene: SceneType
+    if (instructModel) {
+      gptScene = {
+        id: 0,
+        role: assistantRole,
+        content: dataFromGPT.choices[0].text
+      }
+    } else {
+      gptScene = dataFromGPT.choices[0].message
+      gptScene.id = 0
+    }
     return [gptScene, dataFromGPT.usage ?? zeroUsage]
   } else {
     return [null, zeroUsage]

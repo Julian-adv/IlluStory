@@ -218,21 +218,22 @@
   }
 
   async function goBack() {
-    if ($dialogues.length < 2) {
-      return
-    }
-    // pop output of AI
-    $dialogues.pop()
-    if (lastScene($dialogues).role === userRole) {
-      const scene = $dialogues.pop()
-      if (scene) {
-        const userNameLabel = $replaceDict['user'] + ': '
-        userInput = scene.content.startsWith(userNameLabel)
-          ? scene.content.slice(userNameLabel.length)
-          : scene.content
+    while ($dialogues.length > 1) {
+      const lastS = lastScene($dialogues)
+      if (lastS.role === userRole) {
+        const scene = $dialogues.pop()
+        if (scene) {
+          const userNameLabel = $replaceDict['user'] + ': '
+          userInput = scene.content.startsWith(userNameLabel)
+            ? scene.content.slice(userNameLabel.length)
+            : scene.content
+        }
+        break
+      } else {
+        $dialogues.pop()
       }
-      $dialogues = $dialogues
     }
+    $dialogues = $dialogues
   }
 
   async function summarize() {
