@@ -435,6 +435,14 @@
         max={2.0}
         save={autoSaveFunc} />
       <NumberField
+        label="Repetition penalty range"
+        help="Higher means it reads farther back into it's memory to try to not repeat itself."
+        bind:value={$preset.oobabooga.repetitionPenaltyRange}
+        min={0}
+        max={4096}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
         label="Encoder repetition penalty"
         help="Also known as the “Hallucinations filter”. Used to penalize tokens that are not in the prior text. Higher value = more likely to stay in context, lower value = more likely to diverge."
         bind:value={$preset.oobabooga.encoderRepetitionPenalty}
@@ -462,6 +470,28 @@
         label="Do sample"
         help="Whether or not to use sampling ; use greedy decoding otherwise."
         bind:value={$preset.oobabooga.doSample}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat mode"
+        help="Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text."
+        bind:value={$preset.oobabooga.mirostatMode}
+        min={0}
+        max={2}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat tau"
+        help="Set the Mirostat target entropy, parameter tau."
+        bind:value={$preset.oobabooga.mirostatTau}
+        min={0}
+        max={10}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat eta"
+        help="Set the Mirostat learning rate, parameter eta."
+        bind:value={$preset.oobabooga.mirostatEta}
+        min={0}
+        max={1}
         save={autoSaveFunc} />
       <NumberField
         label="Penalty alpha"

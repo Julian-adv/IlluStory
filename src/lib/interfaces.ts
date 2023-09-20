@@ -49,11 +49,15 @@ export interface OobaboogaParam {
   tfs: number
   topA: number
   repetitionPenalty: number
+  repetitionPenaltyRange: number
   encoderRepetitionPenalty: number
   noRepeatNgramSize: number
   minLength: number
   seed: number
   doSample: boolean
+  mirostatMode: number
+  mirostatTau: number
+  mirostatEta: number
   penaltyAlpha: number
   numBeams: number
   lengthPenalty: number

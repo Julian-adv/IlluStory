@@ -203,6 +203,7 @@
     $prologues = findNames($prologues)
     $prologues = replaceNames($prologues)
     $dialogues = replaceNames($dialogues)
+    console.log('dialogues', $dialogues)
   }
 
   async function newSession() {
