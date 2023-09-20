@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SelectItem } from '$lib/interfaces'
   import { Button, Dropdown, DropdownDivider, DropdownItem, Search } from 'flowbite-svelte'
-  import { Icon } from 'flowbite-svelte-icons'
+  import { ChevronDownSolid } from 'flowbite-svelte-icons'
 
   export let id = ''
   export let search = false
@@ -40,8 +40,7 @@
 
 <Button {id} color="alternative" {size} class={classStr}
   >{name}
-  <Icon
-    name="chevron-down-solid"
+  <ChevronDownSolid
     class="w-3 h-3 ml-2 text-stone-400 dark:text-white focus:outline-none" /></Button>
 {#if search}
   <Dropdown class="overflow-y-auto max-h-[40rem]" bind:open={dropdownOpen}>

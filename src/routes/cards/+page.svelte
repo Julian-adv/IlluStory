@@ -17,7 +17,7 @@
     Spinner,
     Toast
   } from 'flowbite-svelte'
-  import { Icon } from 'flowbite-svelte-icons'
+  import { ChevronDownSolid, InfoCircleSolid } from 'flowbite-svelte-icons'
   import { FileType, SortOrder, SortType, type StoryCard } from '$lib/interfaces'
   import {
     preset,
@@ -277,8 +277,7 @@
   <div class="my-1 flex gap-2">
     <Button color="alternative" size="sm">
       {$settings.sortType}
-      <Icon
-        name="chevron-down-solid"
+      <ChevronDownSolid
         class="w-3 h-3 ml-2 text-gray-900 dark:text-white focus:outline-none" /></Button>
     <Dropdown bind:open={sortOpen}>
       <DropdownItem
@@ -336,7 +335,7 @@
         transition={slide}
         bind:open={toastOpen}
         class="fixed mx-auto my-8 top-auto inset-x-0 z-30">
-        <Icon name="info-circle-solid" slot="icon" class="w-4 h-4" />
+        <InfoCircleSolid name="info-circle-solid" slot="icon" class="w-4 h-4" />
         Load preset first.
       </Toast>
       <div class="flex flex-wrap flex-none gap-2">

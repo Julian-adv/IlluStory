@@ -41,7 +41,7 @@
   import CharCard from '../common/CharCard.svelte'
   import CheckField from '../common/CheckField.svelte'
   import { slide } from 'svelte/transition'
-  import { Icon } from 'flowbite-svelte-icons'
+  import { InfoCircleSolid } from 'flowbite-svelte-icons'
   import { importPresetDialog, loadPresetDialog } from '$lib/preset'
   import SceneCard from '../common/SceneCard.svelte'
   import { loadSceneDialog } from '$lib/scene'
@@ -245,7 +245,7 @@
     transition={slide}
     open={!!toastMessage}
     class="fixed mx-auto my-8 top-auto inset-x-0 z-30">
-    <Icon name="info-circle-solid" slot="icon" class="w-4 h-4" />
+    <InfoCircleSolid name="info-circle-solid" slot="icon" class="w-4 h-4" />
     {toastMessage}
   </Toast>
   <div class="mt-2 mb-5 flex gap-2">
