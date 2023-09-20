@@ -96,6 +96,7 @@ export enum CardType {
 export interface StoryCard {
   type: CardType
   name: string
+  title: string
   path: string
   modifiedAt: Date
   image: string
@@ -163,6 +164,7 @@ export interface SelectItem {
 export interface Char {
   image: string
   name: string
+  title: string
   gender: string
   visual: string
   description: string

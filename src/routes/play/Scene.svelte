@@ -2,8 +2,8 @@
   import type { ImageSize, SceneType } from '$lib/interfaces'
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
-  import { settings } from '$lib/store'
-  import { getRandomSize, realImageSize, scrollToEnd } from '$lib'
+  import { dialogues, settings } from '$lib/store'
+  import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { assistantRole, systemRole } from '$lib/api'
@@ -39,8 +39,10 @@
         if (imageSource) {
           showImage = true
           imageSize = getRandomSize($settings.imageSizes)
-          await tick()
-          scrollToEnd()
+          if (lastScene($dialogues).id === scene.id) {
+            await tick()
+            scrollToEnd()
+          }
           imageFromSD = generateImage(
             $settings,
             imageSize.width,
@@ -49,7 +51,6 @@
           ).then(result => {
             scene.image = result
             scene.imageSize = imageSize
-            scrollToEnd()
             return result
           })
         }

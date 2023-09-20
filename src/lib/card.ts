@@ -25,7 +25,8 @@ export async function cardFromPath(path: string): Promise<StoryCard> {
   const text = await readTextFile(path)
   const obj = JSON.parse(text)
   let image = defaultImage
-  let name = basenameOf(path)
+  let name = ''
+  let title = ''
   if (obj) {
     if (obj.image) {
       image = obj.image
@@ -44,16 +45,18 @@ export async function cardFromPath(path: string): Promise<StoryCard> {
         }
       }
     }
-    if (obj.title) {
-      name = obj.title
-    } else if (obj.name) {
+    if (obj.name) {
       name = obj.name
+    }
+    if (obj.title) {
+      title = obj.title
     }
   }
   const stat = await metadata(path)
   return {
     type: cardTypeFromExt(extOf(path)),
     name: name,
+    title: title,
     path: path,
     modifiedAt: stat.modifiedAt,
     image: image

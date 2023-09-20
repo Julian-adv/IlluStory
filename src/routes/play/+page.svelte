@@ -60,7 +60,6 @@
     }
   }
 
-  // Basically, we're returning newScenes. But trying to preserve images in oldScenes.
   async function mergeScenes(oldScenes: SceneType[], newScenes: SceneType[]) {
     let scenes = []
     for (let i = 0; i < newScenes.length; i++) {
@@ -74,7 +73,7 @@
   function replaceCharSetting(replKey: string, char: Char) {
     $replaceDict[replKey] = char.name
     $replaceDict[replKey + '_gender'] = char.gender
-    return `Name: ${char.name}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
+    return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
   }
 
   function findNames(prompts: SceneType[]) {

@@ -172,6 +172,7 @@
       </svg>
     </Button>
     <StringField label="Name" bind:value={$curChar.name} save={autoSaveFunc} />
+    <StringField label="Title" bind:value={$curChar.title} save={autoSaveFunc} />
     <SelectField
       label="Gender"
       items={genders}

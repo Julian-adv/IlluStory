@@ -148,6 +148,7 @@ export const settings = writable(defaultSettings)
 export const emptyChar: Char = {
   image: '',
   name: '',
+  title: '',
   gender: '',
   visual: '',
   description: ''
@@ -172,6 +173,7 @@ export const curScenePath = writable('')
 export const emptyCard: StoryCard = {
   type: CardType.Preset,
   name: 'Card',
+  title: '',
   path: '',
   image: defaultImage,
   modifiedAt: new Date()
