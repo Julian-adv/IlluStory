@@ -27,7 +27,7 @@
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
-  import { loadSession, loadSessionDialog, saveSessionAuto } from '$lib/session'
+  import { loadSession, loadSessionDialog, replaceNames, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
@@ -85,25 +85,6 @@
         content = replaceCharSetting('user', $user)
       }
       return { ...prompt, content }
-    })
-  }
-
-  function replaceNames(prompts: SceneType[]) {
-    return prompts.map(prompt => {
-      let content = prompt.textContent ? prompt.textContent : prompt.content
-      for (const [key, value] of Object.entries($replaceDict)) {
-        const regex = new RegExp(`{{${key}}}`, 'g')
-        if (content) {
-          content = content.replace(regex, value)
-          const regex2 = new RegExp(`<${key}>`, 'g')
-          content = content.replace(regex2, value)
-        }
-      }
-      if (prompt.textContent) {
-        return { ...prompt, textContent: content }
-      } else {
-        return { ...prompt, content }
-      }
     })
   }
 
@@ -207,7 +188,6 @@
     $prologues = findNames($prologues)
     $prologues = replaceNames($prologues)
     $dialogues = replaceNames($dialogues)
-    console.log('dialogues', $dialogues)
   }
 
   async function newSession() {

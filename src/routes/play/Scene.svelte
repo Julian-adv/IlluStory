@@ -9,6 +9,7 @@
   import { assistantRole, systemRole } from '$lib/api'
   import { extractImagePrompt } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
+  import { replaceName } from '$lib/session'
 
   export let scene: SceneType
   let translated: boolean
@@ -61,6 +62,7 @@
   onMount(async () => {
     scene = await extractImagePrompt($settings, scene)
     await generateImageIfNeeded(scene)
+    scene = replaceName(scene)
     translated = !!scene.translatedContent
   })
 
