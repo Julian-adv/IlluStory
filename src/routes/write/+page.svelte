@@ -52,6 +52,11 @@
     { value: Api.OpenAi, name: 'Open AI' },
     { value: Api.Oobabooga, name: 'Oobabooga' }
   ]
+  const parameterPresets = [
+    { value: 'tfs-with-top-a', name: 'tfs-with-top-a' },
+    { value: 'divine intellect', name: 'Divine Intellect' },
+    { value: 'mirostat', name: 'Mirostat' }
+  ]
   let autoSave = true
   let totalTokens = 0
 
@@ -236,6 +241,95 @@
     ev.stopPropagation()
     goto('/write_scene')
   }
+
+  const miroStatPreset = {
+    temperature: 1.0,
+    topP: 1.0,
+    topK: 0,
+    typicalP: 1.0,
+    epsilonCutoff: 0.0,
+    etaCutoff: 0.0,
+    tfs: 1.0,
+    topA: 0.0,
+    repetitionPenalty: 1.0,
+    repetitionPenaltyRange: 0,
+    encoderRepetitionPenalty: 1.0,
+    noRepeatNgramSize: 0,
+    minLength: 0,
+    mirostatMode: 2,
+    mirostatTau: 8,
+    mirostatEta: 0.1,
+    penaltyAlpha: 0,
+    numBeams: 1,
+    lengthPenalty: 1.0
+  }
+
+  const tfsWithTopAPreset = {
+    temperature: 0.7,
+    topP: 1,
+    topK: 0,
+    typicalP: 1.0,
+    epsilonCutoff: 0.0,
+    etaCutoff: 0.0,
+    tfs: 0.95,
+    topA: 0.2,
+    repetitionPenalty: 1.15,
+    repetitionPenaltyRange: 0,
+    encoderRepetitionPenalty: 1.0,
+    noRepeatNgramSize: 0,
+    minLength: 0,
+    mirostatMode: 0,
+    mirostatTau: 5,
+    mirostatEta: 0.1,
+    penaltyAlpha: 0,
+    numBeams: 1,
+    lengthPenalty: 1.0
+  }
+
+  const divineIntellectPreset = {
+    temperature: 1.31,
+    topP: 0.14,
+    topK: 49,
+    typicalP: 1.0,
+    epsilonCutoff: 0.0,
+    etaCutoff: 0.0,
+    tfs: 1,
+    topA: 0,
+    repetitionPenalty: 1.17,
+    repetitionPenaltyRange: 0,
+    encoderRepetitionPenalty: 1.0,
+    noRepeatNgramSize: 0,
+    minLength: 0,
+    mirostatMode: 0,
+    mirostatTau: 5,
+    mirostatEta: 0.1,
+    penaltyAlpha: 0,
+    numBeams: 1,
+    lengthPenalty: 1.0
+  }
+
+  function onChangeParameterPreset(value: string) {
+    let paramPreset
+    switch (value) {
+      case 'mirostat':
+        paramPreset = miroStatPreset
+        break
+      case 'tfs-with-top-a':
+        paramPreset = tfsWithTopAPreset
+        break
+      case 'divine intellect':
+        paramPreset = divineIntellectPreset
+        break
+      default:
+        paramPreset = tfsWithTopAPreset
+        break
+    }
+    $preset.oobabooga = {
+      ...$preset.oobabooga,
+      ...paramPreset
+    }
+    autoSaveFunc()
+  }
 </script>
 
 <div class="px-4">
@@ -384,6 +478,13 @@
         placeholder=""
         bind:value={$preset.oobabooga.apiUrl}
         save={autoSaveFunc} />
+      <SelectField
+        label="Parameter preset"
+        items={parameterPresets}
+        help="Parameter preset to use."
+        search={false}
+        bind:value={$preset.oobabooga.preset}
+        save={onChangeParameterPreset} />
       <NumberField
         label="Temperature"
         help="Primary factor to control randomness of outputs. 0 = deterministic (only the most likely token is used). Higher value = more randomness."

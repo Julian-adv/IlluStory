@@ -90,7 +90,7 @@
 
   function replaceNames(prompts: SceneType[]) {
     return prompts.map(prompt => {
-      let content = prompt.content
+      let content = prompt.textContent ? prompt.textContent : prompt.content
       for (const [key, value] of Object.entries($replaceDict)) {
         const regex = new RegExp(`{{${key}}}`, 'g')
         if (content) {
@@ -99,7 +99,11 @@
           content = content.replace(regex2, value)
         }
       }
-      return { ...prompt, content }
+      if (prompt.textContent) {
+        return { ...prompt, textContent: content }
+      } else {
+        return { ...prompt, content }
+      }
     })
   }
 

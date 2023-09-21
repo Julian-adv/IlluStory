@@ -41,6 +41,7 @@ export interface OpenAiParam {
 
 export interface OobaboogaParam {
   apiUrl: string
+  preset: string
   maxTokens: number
   temperature: number
   topP: number
