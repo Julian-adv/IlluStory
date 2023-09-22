@@ -1,6 +1,6 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, Usage } from './interfaces'
-import { replaceDict, zeroUsage } from './store'
+import type { SceneType, Preset, Usage, ChatResult } from './interfaces'
+import { user, zeroUsage } from './store'
 import { assistantRole, chatHistory, countTokensApi, startStory, systemRole, userRole } from './api'
 import { getStartEndIndex } from '$lib'
 
@@ -55,7 +55,7 @@ export async function sendChatOobabooga(
   dialogues: SceneType[],
   summary: boolean,
   sendStartIndex: number
-): Promise<[SceneType | null, Usage]> {
+): Promise<ChatResult | null> {
   const uri = 'http://localhost:5000/api/v1/generate'
   const url = new URL(uri)
   let prompt = ''
@@ -70,7 +70,7 @@ export async function sendChatOobabooga(
   console.log('prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
-  const userName = get(replaceDict)['user']
+  const userName = get(user).name
 
   const respFromOoga = await fetch(url, {
     body: JSON.stringify({
@@ -122,16 +122,16 @@ export async function sendChatOobabooga(
   const dataFromOoga = await respFromOoga.json()
   console.log('dataFromOoga', dataFromOoga)
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
-    const newScene: SceneType = {
+    const addedScene: SceneType = {
       id: 0,
       role: assistantRole,
       content: dataFromOoga.results[0].text
     }
     usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text)
     usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
-    return [newScene, usage]
+    return { addedScene, usage }
   } else {
-    return [null, usage]
+    return null
   }
 }
 
@@ -140,9 +140,9 @@ export async function sendChatOobaboogaStream(
   scenes: SceneType[],
   received: (text: string) => void,
   closedCallback: () => void
-): Promise<[SceneType[], Usage]> {
+): Promise<ChatResult> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream')
-  const userName = get(replaceDict)['user']
+  const userName = get(user).name
 
   conn.onopen = () => {
     let prompt = ''
@@ -210,11 +210,10 @@ export async function sendChatOobaboogaStream(
     console.log('on close')
   }
 
-  const newScene: SceneType = {
+  const addedScene: SceneType = {
     id: 0,
     role: assistantRole,
     content: ''
   }
-  scenes = [...scenes, newScene]
-  return [scenes, zeroUsage]
+  return { addedScene, usage: zeroUsage }
 }

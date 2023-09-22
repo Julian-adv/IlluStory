@@ -9,16 +9,17 @@
     dialogues,
     usage,
     summarySceneIndex,
-    replaceDict,
     settings,
-    session
+    session,
+    chars,
+    user
   } from '$lib/store'
   import { newSceneId, scrollToEnd, translateButtonClass } from '$lib'
   import { onMount, tick } from 'svelte'
   import { Button } from 'flowbite-svelte'
   import { translateText } from '$lib/deepLApi'
   import { getNextHistory, getPrevHistory, pushHistory } from '$lib/history'
-  import { saveSessionAuto } from '$lib/session'
+  import { replaceDict, replaceNames, saveSessionAuto } from '$lib/session'
 
   export let role = 'user'
   export let value = ''
@@ -64,7 +65,7 @@
 
   async function sendInput(content: string) {
     if (content[0] === '"') {
-      content = `${$replaceDict['user']}: ` + content
+      content = `${$user.name}: ` + content
     }
     const userScene = {
       id: newSceneId($dialogues),
@@ -75,11 +76,18 @@
     $dialogues = [...$dialogues, userScene]
     await tick()
     scrollToEnd()
-    let newScene
-    ;[newScene, $usage] = await sendChat($preset, $prologues, $dialogues, false, $summarySceneIndex)
-    if (newScene) {
-      newScene.id = newSceneId($dialogues)
-      $dialogues = [...$dialogues, newScene]
+    ++$session.lastSpeaker
+    if ($session.lastSpeaker >= $chars.length) {
+      $session.lastSpeaker = 0
+    }
+    const dict = replaceDict($session, $chars, $user)
+    const prologs = replaceNames($prologues, dict)
+    const dialogs = replaceNames($dialogues, dict)
+    const result = await sendChat($preset, prologs, dialogs, false, $summarySceneIndex)
+    if (result) {
+      $usage = result.usage
+      result.addedScene.id = newSceneId($dialogues)
+      $dialogues = [...$dialogues, result.addedScene]
       await tick()
       scrollToEnd()
     }

@@ -19,13 +19,12 @@
     presetPath,
     curChar,
     curCharPath,
-    char,
-    charPath,
     user,
     userPath,
     prologues,
     curScene,
-    curScenePath
+    curScenePath,
+    chars
   } from '$lib/store'
   import { Api, type Char, type FirstScene } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
@@ -193,11 +192,7 @@
   function onCharClick(charIndex: number) {
     return async (ev: Event) => {
       ev.stopPropagation()
-      const [tempChar, tempFilePath] = await loadCharTo(charIndex)
-      if (tempChar) {
-        $char = tempChar
-        $charPath = tempFilePath
-      }
+      const [_tempChar, _tempFilePath] = await loadCharTo(charIndex)
     }
   }
 
@@ -225,9 +220,6 @@
 
   function onEditChar(ev: Event) {
     ev.stopPropagation()
-    $curChar = $char
-    $curCharPath = $charPath
-    goto('/write_char')
   }
 
   function onEditUser(ev: Event) {
@@ -706,7 +698,7 @@
           <em class="px-2 text-sm text-stone-500">The story begins from below.</em>
           <hr class="flex-grow border-t border-dashed border-stone-400" />
         {:else if prompt.role === charSetting}
-          <CharCard char={$char} onCharClick={onCharClick(i)} {onEditChar} />
+          <CharCard char={$chars[0]} onCharClick={onCharClick(i)} {onEditChar} />
         {:else if prompt.role === userSetting}
           <CharCard char={$user} onCharClick={onUserClick(i)} onEditChar={onEditUser} />
         {:else if prompt.role === chatHistory}

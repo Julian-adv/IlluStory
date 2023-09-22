@@ -3,8 +3,8 @@ import { open } from '@tauri-apps/api/dialog'
 import { charExt, loadMetaData, savePath } from './fs'
 import type { Char, Preset } from './interfaces'
 import { dirname, sep } from '@tauri-apps/api/path'
-import { charSetting, firstScene, userSetting } from './api'
-import { char, charPath, curScene, curScenePath, user, userPath } from './store'
+import { firstScene, userSetting } from './api'
+import { curScene, curScenePath, user, userPath } from './store'
 import { loadScene } from './scene'
 
 export async function loadChar(path: string) {
@@ -40,11 +40,7 @@ export async function saveChar(char: Char) {
 export async function cardFromPreset(preset: Preset, presetPath: string) {
   const dir = await dirname(presetPath)
   for (const prompt of preset.prompts) {
-    if (prompt.role === charSetting) {
-      const path = dir + sep + prompt.content
-      char.set(await loadChar(path))
-      charPath.set(path)
-    } else if (prompt.role === userSetting) {
+    if (prompt.role === userSetting) {
       const path = dir + sep + prompt.content
       user.set(await loadChar(path))
       userPath.set(path)

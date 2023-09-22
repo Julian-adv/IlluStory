@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { Preset, SceneType, Usage, Message } from './interfaces'
+import type { Preset, SceneType, Message, ChatResult } from './interfaces'
 import { settings, zeroUsage } from './store'
 import {
   assistantRole,
@@ -123,7 +123,7 @@ export async function sendChatOpenAi(
   dialogues: SceneType[],
   summary: boolean,
   sendStartIndex: number
-): Promise<[SceneType | null, Usage]> {
+): Promise<ChatResult | null> {
   const instructModel = preset.openAi.model.includes('instruct')
   const uri = preset.openAi.apiUrl + apiUrl(instructModel)
   const url = new URL(uri)
@@ -161,19 +161,19 @@ export async function sendChatOpenAi(
   const dataFromGPT = await respFromGPT.json()
   console.log('dataFromGPT', dataFromGPT)
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
-    let gptScene: SceneType
+    let addedScene: SceneType
     if (instructModel) {
-      gptScene = {
+      addedScene = {
         id: 0,
         role: assistantRole,
         content: dataFromGPT.choices[0].text
       }
     } else {
-      gptScene = dataFromGPT.choices[0].message
-      gptScene.id = 0
+      addedScene = dataFromGPT.choices[0].message
+      addedScene.id = 0
     }
-    return [gptScene, dataFromGPT.usage ?? zeroUsage]
+    return { addedScene, usage: dataFromGPT.usage ?? zeroUsage }
   } else {
-    return [null, zeroUsage]
+    return null
   }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { replaceDict, settings } from '$lib/store'
+  import { settings, user, chars } from '$lib/store'
   import { marked } from 'marked'
   import FlexibleTextarea from './FlexibleTextarea.svelte'
   import { Button } from 'flowbite-svelte'
@@ -125,10 +125,12 @@
         "<span class='description'>$1</span>"
       )
       text = text.replace(/(?<=>"[^"]*?)<span class='description'>(?=.*?"<)/g, '<span>')
-      const userNameRegex = new RegExp($replaceDict['user'], 'g')
+      const userNameRegex = new RegExp($user.name, 'g')
       text = text.replace(userNameRegex, "<span class='userName'>$&</span>")
-      const charNameRegex = new RegExp($replaceDict['char'], 'g')
-      text = text.replace(charNameRegex, "<span class='charName'>$&</span>")
+      for (const char of $chars) {
+        const charNameRegex = new RegExp(char.name, 'g')
+        text = text.replace(charNameRegex, "<span class='charName'>$&</span>")
+      }
       return text
     }
     return str ? str : ''

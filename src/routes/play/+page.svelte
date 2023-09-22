@@ -12,13 +12,12 @@
     sessionPath,
     zeroUsage,
     summarySceneIndex,
-    replaceDict,
-    char,
+    chars,
     user,
     presetPath,
     curScene,
     curScenePath,
-    charPath,
+    charPaths,
     userPath,
     emptyCard,
     settings,
@@ -27,7 +26,7 @@
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
   import { Api, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
-  import { loadSession, loadSessionDialog, replaceNames, saveSessionAuto } from '$lib/session'
+  import { loadSession, loadSessionDialog, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
@@ -45,17 +44,22 @@
   let userInput = ''
   let started = false
 
-  function splitPreset(scenes: SceneType[]): [SceneType[], SceneType[]] {
+  interface ScenePairs {
+    prologues: SceneType[]
+    dialogues: SceneType[]
+  }
+
+  function splitPreset(scenes: SceneType[]): ScenePairs {
     const index = scenes.findIndex(scene => scene.role === firstScene)
     if (index < 0) {
-      return [scenes, $curScene.scenes]
+      return { prologues: scenes, dialogues: $curScene.scenes }
     } else {
       const copy = structuredClone(scenes)
       copy.splice(index, 1)
       if ($curScene.scenes.length > 0) {
-        return [copy, structuredClone($curScene.scenes)]
+        return { prologues: copy, dialogues: structuredClone($curScene.scenes) }
       } else {
-        return [copy, structuredClone(scenes.slice(index, index + 1))]
+        return { prologues: copy, dialogues: structuredClone(scenes.slice(index, index + 1)) }
       }
     }
   }
@@ -71,8 +75,6 @@
   }
 
   function replaceCharSetting(replKey: string, char: Char) {
-    $replaceDict[replKey] = char.name
-    $replaceDict[replKey + '_gender'] = char.gender
     return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
   }
 
@@ -80,7 +82,7 @@
     return prompts.map(prompt => {
       let content = prompt.content
       if (prompt.role === charSetting) {
-        content = replaceCharSetting('char', $char)
+        content = replaceCharSetting('char', $chars[$session.lastSpeaker])
       } else if (prompt.role === userSetting) {
         content = replaceCharSetting('user', $user)
       }
@@ -166,10 +168,9 @@
       $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
       $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
       await startWithoutSave()
-      ;[$prologues, _dialogues] = splitPreset($preset.prompts)
+      const result = splitPreset($preset.prompts)
+      $prologues = result.prologues
       $prologues = findNames($prologues)
-      $prologues = replaceNames($prologues)
-      $dialogues = replaceNames($session.scenes)
     }
   }
 
@@ -182,12 +183,9 @@
   }
 
   async function updateInitialScenes() {
-    let newDialogues
-    ;[$prologues, newDialogues] = splitPreset($preset.prompts)
-    $dialogues = await mergeScenes($dialogues, newDialogues)
-    $prologues = findNames($prologues)
-    $prologues = replaceNames($prologues)
-    $dialogues = replaceNames($dialogues)
+    const result = splitPreset($preset.prompts)
+    $dialogues = await mergeScenes($dialogues, result.dialogues)
+    $prologues = findNames(result.prologues)
   }
 
   async function newSession() {
@@ -207,7 +205,7 @@
       if (lastS.role === userRole) {
         const scene = $dialogues.pop()
         if (scene) {
-          const userNameLabel = $replaceDict['user'] + ': '
+          const userNameLabel = $user.name + ': '
           userInput = scene.content.startsWith(userNameLabel)
             ? scene.content.slice(userNameLabel.length)
             : scene.content
@@ -221,12 +219,12 @@
   }
 
   async function summarize() {
-    let newScene
-    ;[newScene, $usage] = await sendChat($preset, $prologues, $dialogues, true, $summarySceneIndex)
-    if (newScene) {
-      newScene.id = newSceneId($dialogues)
+    const result = await sendChat($preset, $prologues, $dialogues, true, $summarySceneIndex)
+    if (result) {
+      $usage = result.usage
+      result.addedScene.id = newSceneId($dialogues)
       $summarySceneIndex = $dialogues.length
-      $dialogues = [...$dialogues, newScene]
+      $dialogues = [...$dialogues, result.addedScene]
       await tick()
       scrollToEnd()
     }
@@ -294,8 +292,8 @@
     $presetPath = $presetCard.path
     $user = await loadChar($userCard.path)
     $userPath = $userCard.path
-    $char = await loadChar($charCards[0].path)
-    $charPath = $charCards[0].path
+    $chars = await Promise.all($charCards.map(card => loadChar(card.path)))
+    $charPaths = $charCards.map(card => card.path)
     $curScene = await loadScene($sceneCard.path)
     $curScenePath = $sceneCard.path
     started = true

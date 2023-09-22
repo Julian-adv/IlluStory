@@ -2,7 +2,6 @@ import { writable } from 'svelte/store'
 import type {
   SceneType,
   Preset,
-  StringDictionary,
   Settings,
   Char,
   FirstScene,
@@ -82,6 +81,7 @@ export const defaultSession: Session = {
   presetCard: '',
   userCard: '',
   charCards: [],
+  lastSpeaker: 0,
   sceneCard: '',
   scenes: []
 }
@@ -94,9 +94,6 @@ export const usage = writable(zeroUsage)
 
 export const summarySceneIndex = writable(0)
 export const summarizePrompt = writable('')
-
-const dict: StringDictionary = {}
-export const replaceDict = writable(dict)
 
 export const defaultSettings: Settings = {
   openAiApiKey: '',
@@ -161,8 +158,8 @@ export const emptyChar: Char = {
 
 export const curChar = writable(emptyChar)
 export const curCharPath = writable('')
-export const char = writable(emptyChar)
-export const charPath = writable('')
+export const chars = writable([emptyChar])
+export const charPaths = writable([''])
 export const user = writable(emptyChar)
 export const userPath = writable('')
 
