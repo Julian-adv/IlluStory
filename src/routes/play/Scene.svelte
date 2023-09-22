@@ -2,14 +2,13 @@
   import type { ImageSize, SceneType } from '$lib/interfaces'
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
-  import { chars, dialogues, session, settings, user } from '$lib/store'
+  import { dialogues, replaceDict, settings } from '$lib/store'
   import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { assistantRole, systemRole } from '$lib/api'
   import { extractImagePrompt } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
-  import { replaceDict, replaceName } from '$lib/session'
 
   export let scene: SceneType
   let translated: boolean
@@ -60,8 +59,6 @@
   }
 
   onMount(async () => {
-    scene = replaceName(scene, replaceDict($session, $chars, $user))
-    scene = await extractImagePrompt($settings, scene)
     await generateImageIfNeeded(scene)
     translated = !!scene.translatedContent
   })
@@ -171,7 +168,7 @@
     scene.content = content
     scene.translatedContent = ''
     scene.image = ''
-    scene = await extractImagePrompt($settings, scene)
+    scene = await extractImagePrompt($settings, scene, $replaceDict)
     generateImageIfNeeded(scene)
   }
 </script>

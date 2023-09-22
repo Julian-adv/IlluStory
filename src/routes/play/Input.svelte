@@ -12,14 +12,16 @@
     settings,
     session,
     chars,
-    user
+    user,
+    replaceDict
   } from '$lib/store'
   import { newSceneId, scrollToEnd, translateButtonClass } from '$lib'
   import { onMount, tick } from 'svelte'
   import { Button } from 'flowbite-svelte'
   import { translateText } from '$lib/deepLApi'
   import { getNextHistory, getPrevHistory, pushHistory } from '$lib/history'
-  import { replaceDict, replaceNames, saveSessionAuto } from '$lib/session'
+  import { makeReplaceDict, replaceChar, replaceNames, saveSessionAuto } from '$lib/session'
+  import { extractImagePrompt } from '$lib/image'
 
   export let role = 'user'
   export let value = ''
@@ -71,6 +73,7 @@
       id: newSceneId($dialogues),
       role: role,
       content: content,
+      textContent: content,
       done: false
     }
     $dialogues = [...$dialogues, userScene]
@@ -80,14 +83,16 @@
     if ($session.lastSpeaker >= $chars.length) {
       $session.lastSpeaker = 0
     }
-    const dict = replaceDict($session, $chars, $user)
-    const prologs = replaceNames($prologues, dict)
-    const dialogs = replaceNames($dialogues, dict)
-    const result = await sendChat($preset, prologs, dialogs, false, $summarySceneIndex)
+    console.log('lastSpeaker: ' + $session.lastSpeaker)
+    let prologs = replaceChar($prologues, $chars[$session.lastSpeaker], $user)
+    $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
+    prologs = replaceNames(prologs, $replaceDict)
+    const result = await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
     if (result) {
       $usage = result.usage
       result.addedScene.id = newSceneId($dialogues)
-      $dialogues = [...$dialogues, result.addedScene]
+      const scene = await extractImagePrompt($settings, result.addedScene, $replaceDict)
+      $dialogues = [...$dialogues, scene]
       await tick()
       scrollToEnd()
     }

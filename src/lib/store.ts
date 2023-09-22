@@ -163,6 +163,8 @@ export const charPaths = writable([''])
 export const user = writable(emptyChar)
 export const userPath = writable('')
 
+export const replaceDict = writable({})
+
 export const emptyScene: FirstScene = {
   title: '',
   image: '',

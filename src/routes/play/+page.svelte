@@ -1,7 +1,7 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { charSetting, firstScene, sendChat, userRole, userSetting } from '$lib/api'
+  import { firstScene, sendChat, userRole } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import {
@@ -21,12 +21,19 @@
     userPath,
     emptyCard,
     settings,
-    session
+    session,
+    replaceDict
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type Char, type SceneType, type StoryCard } from '$lib/interfaces'
-  import { loadSession, loadSessionDialog, saveSessionAuto } from '$lib/session'
+  import { Api, type SceneType, type StoryCard, type StringDictionary } from '$lib/interfaces'
+  import {
+    loadSession,
+    loadSessionDialog,
+    makeReplaceDict,
+    replaceChar,
+    saveSessionAuto
+  } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '../common/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
@@ -64,30 +71,14 @@
     }
   }
 
-  async function mergeScenes(oldScenes: SceneType[], newScenes: SceneType[]) {
+  async function convertScenes(newScenes: SceneType[], dict: StringDictionary) {
     let scenes = []
     for (let i = 0; i < newScenes.length; i++) {
       let scene = newScenes[i]
-      scene = await extractImagePrompt($settings, newScenes[i])
+      scene = await extractImagePrompt($settings, newScenes[i], dict)
       scenes.push(scene)
     }
     return scenes
-  }
-
-  function replaceCharSetting(replKey: string, char: Char) {
-    return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
-  }
-
-  function findNames(prompts: SceneType[]) {
-    return prompts.map(prompt => {
-      let content = prompt.content
-      if (prompt.role === charSetting) {
-        content = replaceCharSetting('char', $chars[$session.lastSpeaker])
-      } else if (prompt.role === userSetting) {
-        content = replaceCharSetting('user', $user)
-      }
-      return { ...prompt, content }
-    })
   }
 
   function formatDate(date: Date): string {
@@ -169,8 +160,9 @@
       $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
       await startWithoutSave()
       const result = splitPreset($preset.prompts)
-      $prologues = result.prologues
-      $prologues = findNames($prologues)
+      $prologues = replaceChar(result.prologues, $chars[$session.lastSpeaker], $user)
+      $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
+      $dialogues = await convertScenes($session.scenes, $replaceDict)
     }
   }
 
@@ -184,8 +176,9 @@
 
   async function updateInitialScenes() {
     const result = splitPreset($preset.prompts)
-    $dialogues = await mergeScenes($dialogues, result.dialogues)
-    $prologues = findNames(result.prologues)
+    $prologues = replaceChar(result.prologues, $chars[$session.lastSpeaker], $user)
+    $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
+    $dialogues = await convertScenes(result.dialogues, $replaceDict)
   }
 
   async function newSession() {

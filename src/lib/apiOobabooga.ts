@@ -32,18 +32,18 @@ function generatePrompt(
       case chatHistory: {
         const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
         for (const mesg of dialogues.slice(start, end)) {
-          prompt += addRolePrefix(preset, mesg) + mesg.content + '\n'
+          prompt += addRolePrefix(preset, mesg) + mesg.textContent + '\n'
         }
         sentChatHistory = true
         break
       }
       default:
-        prompt += addRolePrefix(preset, scene) + scene.content + '\n'
+        prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
     }
   }
   if (!sentChatHistory) {
     for (const scene of dialogues) {
-      prompt += addRolePrefix(preset, scene) + scene.content + '\n'
+      prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
     }
   }
   return prompt
