@@ -45,17 +45,40 @@ export function replaceNames(prompts: SceneType[], dict: StringDictionary) {
   })
 }
 
-function replaceCharSetting(char: Char) {
-  return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
+function replaceCharSetting(tag: string, char: Char) {
+  return `<${tag}>\nName: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n</${tag}>\n`
+}
+
+function replaceCharSettings(chars: Char[], user: Char) {
+  let str = ''
+  for (const char of chars) {
+    let charDesc = replaceCharSetting('Character', char)
+    const dict = makeReplaceDict(char, user)
+    charDesc = replaceName(charDesc, dict)
+    str += charDesc
+  }
+  return str
 }
 
 export function replaceChar(prompts: SceneType[], char: Char, user: Char) {
   return prompts.map(prompt => {
     let content = prompt.content
     if (prompt.role === charSetting) {
-      content = replaceCharSetting(char)
+      content = replaceCharSetting('Character', char)
     } else if (prompt.role === userSetting) {
-      content = replaceCharSetting(user)
+      content = replaceCharSetting('User', user)
+    }
+    return { ...prompt, content }
+  })
+}
+
+export function replaceChars(prompts: SceneType[], chars: Char[], user: Char) {
+  return prompts.map(prompt => {
+    let content = prompt.content
+    if (prompt.role === charSetting) {
+      content = replaceCharSettings(chars, user)
+    } else if (prompt.role === userSetting) {
+      content = replaceCharSetting('User', user)
     }
     return { ...prompt, content }
   })

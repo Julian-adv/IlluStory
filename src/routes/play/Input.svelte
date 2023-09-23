@@ -25,6 +25,7 @@
 
   export let role = 'user'
   export let value = ''
+  export let chatOrder = 'random'
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
 
@@ -79,11 +80,16 @@
     $dialogues = [...$dialogues, userScene]
     await tick()
     scrollToEnd()
-    ++$session.lastSpeaker
-    if ($session.lastSpeaker >= $chars.length) {
-      $session.lastSpeaker = 0
+    if (chatOrder === 'random') {
+      $session.lastSpeaker = Math.floor(Math.random() * $chars.length)
+    } else {
+      ++$session.lastSpeaker
+      if ($session.lastSpeaker >= $chars.length) {
+        $session.lastSpeaker = 0
+      }
     }
-    console.log('lastSpeaker: ' + $session.lastSpeaker)
+    console.log('lastSpeaker: ' + $session.lastSpeaker + ' ' + $chars[$session.lastSpeaker].name)
+    // let prologs = replaceChars($prologues, $chars, $user)
     let prologs = replaceChar($prologues, $chars[$session.lastSpeaker], $user)
     $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
     prologs = replaceNames(prologs, $replaceDict)

@@ -47,6 +47,7 @@
   import { metadata } from 'tauri-plugin-fs-extra-api'
   import { extractImagePrompt } from '$lib/image'
   import { goto } from '$app/navigation'
+  import DropSelect from '../common/DropSelect.svelte'
 
   let userInput = ''
   let started = false
@@ -299,6 +300,7 @@
     $sessionPath = ''
     userInput = ''
     $summarySceneIndex = 0
+    $session.lastSpeaker = 0
     await saveSession()
   }
 
@@ -339,6 +341,12 @@
     }
     goto('/write_scene')
   }
+
+  const chatOrders = [
+    { value: 'random', name: 'Random' },
+    { value: 'round_robin', name: 'Round robin' }
+  ]
+  let chatOrder = 'random'
 </script>
 
 <main>
@@ -473,7 +481,7 @@
           Since the number of tokens can overflow the context size, you may want to summarize them.
         </div>
       {/if}
-      <div class="col-span-3 text-sm text-stone-400">
+      <div class="col-span-3 text-sm text-stone-400 flex gap-2 items-center">
         <Button color="alternative" size="sm" on:click={goBack}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -504,8 +512,14 @@
           </svg>
           <span class="pl-2">Summarize</span>
         </Button>
+        <span>Chat order:</span>
+        <DropSelect
+          items={chatOrders}
+          size="sm"
+          classStr="text-sm self-start text-center"
+          bind:value={chatOrder} />
       </div>
-      <Input bind:value={userInput} />
+      <Input bind:value={userInput} {chatOrder} />
     </div>
   {/if}
 </main>

@@ -51,7 +51,7 @@ function generateMessages(
         case chatHistory: {
           const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
           for (const mesg of dialogues.slice(start, end)) {
-            messages.push({ role: mesg.role, content: mesg.content })
+            messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
           }
           sentChatHistory = true
           break
