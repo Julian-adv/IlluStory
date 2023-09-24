@@ -77,6 +77,7 @@ export interface Preset {
   title: string
   image: string
   api: Api
+  streaming: boolean
   visualizePrompt: string
   summarizePrompt: string
   openAi: OpenAiParam
@@ -201,4 +202,10 @@ export interface Session {
 export interface ChatResult {
   scene: SceneType
   usage: Usage
+}
+
+export interface SceneResult {
+  showImage: boolean
+  imageFromSD: Promise<string>
+  imageSize: ImageSize
 }

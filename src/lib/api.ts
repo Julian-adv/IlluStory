@@ -1,6 +1,6 @@
 import { Api } from './interfaces'
-import { sendChatOobabooga } from './apiOobabooga'
-import { sendChatOpenAi } from './apiOpenAi'
+import { sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
+import { sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
 import { isWithinTokenLimit } from 'gpt-tokenizer'
 import llamaTokenizer from 'llama-tokenizer-js'
 
@@ -40,6 +40,7 @@ export const chatRoles = [
 ]
 
 export let sendChat = sendChatOobabooga
+export let sendChatStream = sendChatOobaboogaStream
 const tokenLimit = 4096
 
 function countTokensGpt(str: string): number {
@@ -59,10 +60,12 @@ export function changeApi(api: Api) {
   switch (api) {
     case Api.OpenAi:
       sendChat = sendChatOpenAi
+      sendChatStream = sendChatOpenAiStream
       countTokensApi = countTokensGpt
       break
     case Api.Oobabooga:
       sendChat = sendChatOobabooga
+      sendChatStream = sendChatOobaboogaStream
       countTokensApi = countTokensLlama
       break
   }

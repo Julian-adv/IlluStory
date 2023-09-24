@@ -1,66 +1,40 @@
 <script lang="ts">
-  import type { ImageSize, SceneType } from '$lib/interfaces'
-  import { onMount, tick } from 'svelte'
+  import type { SceneType, SceneResult } from '$lib/interfaces'
+  import { onMount } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
   import { dialogues, replaceDict, settings } from '$lib/store'
-  import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
+  import { getRandomSize, lastScene, realImageSize } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
-  import { assistantRole, systemRole, waitingResponse } from '$lib/api'
   import { extractImagePrompt } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
-  import { Spinner } from 'flowbite-svelte'
+  import { generateImageIfNeeded } from '$lib/scene'
 
   export let scene: SceneType
   let translated: boolean
-  let showImage = false
-  let imageFromSD = new Promise<string>((_resolve, _reject) => {})
-  let waitingImage = false
-  let imageSize: ImageSize = scene.imageSize ?? { width: 512, height: 512 }
+  const last = lastScene($dialogues).id == scene.id
+  let info: SceneResult = {
+    showImage: false,
+    imageSize: { width: 512, height: 512 },
+    imageFromSD: Promise.resolve('')
+  }
 
-  $: imageWidth = realImageSize(imageSize.width)
+  $: imageWidth = realImageSize(info.imageSize.width)
   $: imageClass =
     imageWidth > window.innerWidth / 2
       ? 'clear-both flex justify-center items-end z-10 wrapper'
       : 'wrapper float-left flex items-end pl-4 mr-4'
 
-  export async function generateImageIfNeeded(_sceneParam: SceneType) {
-    if (scene.image) {
-      showImage = true
-      imageFromSD = Promise.resolve(scene.image)
-    } else {
-      if (!waitingImage && (scene.role === systemRole || scene.role === assistantRole)) {
-        showImage = !!scene.visualContent
-        let imageSource = ''
-        if ($settings.imageSource === 'full_desc') {
-          imageSource = scene.textContent ?? ''
-        } else if ($settings.imageSource === 'visual_tag') {
-          imageSource = scene.visualContent ?? ''
-        }
-        if (imageSource) {
-          showImage = true
-          imageSize = getRandomSize($settings.imageSizes)
-          if (lastScene($dialogues).id === scene.id) {
-            await tick()
-            scrollToEnd()
-          }
-          imageFromSD = generateImage(
-            $settings,
-            imageSize.width,
-            imageSize.height,
-            imageSource
-          ).then(result => {
-            scene.image = result
-            scene.imageSize = imageSize
-            return result
-          })
-        }
-      }
-    }
+  async function genImage() {
+    info = await generateImageIfNeeded($settings, scene, last)
+  }
+
+  $: if (!scene.image && scene.done) {
+    genImage()
   }
 
   onMount(async () => {
-    await generateImageIfNeeded(scene)
+    info = await generateImageIfNeeded($settings, scene, last)
     translated = !!scene.translatedContent
   })
 
@@ -141,16 +115,16 @@
   }
 
   function generateNewImage() {
-    showImage = true
-    imageSize = getRandomSize($settings.imageSizes)
-    imageFromSD = generateImage(
+    info.showImage = true
+    info.imageSize = getRandomSize($settings.imageSizes)
+    info.imageFromSD = generateImage(
       $settings,
-      imageSize.width,
-      imageSize.height,
+      info.imageSize.width,
+      info.imageSize.height,
       scene.textContent ?? ''
     ).then(result => {
       scene.image = result
-      scene.imageSize = imageSize
+      scene.imageSize = info.imageSize
       return result
     })
   }
@@ -170,32 +144,29 @@
     scene.translatedContent = ''
     scene.image = ''
     scene = await extractImagePrompt($settings, scene, $replaceDict)
-    generateImageIfNeeded(scene)
+    generateImageIfNeeded($settings, scene, last)
   }
 </script>
 
 <div class="block w-full mt-4">
-  {#if showImage}
+  {#if info.showImage}
     <ImageWithControl
-      {imageFromSD}
-      bind:imageSize
+      imageFromSD={info.imageFromSD}
+      bind:imageSize={info.imageSize}
       bind:image={scene.image}
       tooltip={scene.visualContent}
       class={imageClass} />
   {/if}
   <div class="px-4">
-    {#if scene.role === waitingResponse}
-      <Spinner class="mr-3" size="3" />
-    {:else}
-      <Markdown
-        bind:value={scene.textContent}
-        bind:translatedValue={scene.translatedContent}
-        bind:visualValue={scene.visualContent}
-        bind:translated
-        {onTranslate}
-        {onEditDone}
-        {generateNewImage} />
-    {/if}
+    <Markdown
+      bind:value={scene.textContent}
+      bind:translatedValue={scene.translatedContent}
+      bind:visualValue={scene.visualContent}
+      bind:translated
+      {onTranslate}
+      {onEditDone}
+      {generateNewImage}
+      waiting={!scene.done} />
   </div>
 </div>
 <div class="clear-both p-2"></div>

@@ -2,16 +2,17 @@
   import { settings, user, chars } from '$lib/store'
   import { marked } from 'marked'
   import FlexibleTextarea from './FlexibleTextarea.svelte'
-  import { Button } from 'flowbite-svelte'
+  import { Button, Spinner } from 'flowbite-svelte'
   import { getUniqueId, translateButtonClass } from '$lib'
   import { visualEnd, visualStart } from '$lib/image'
 
   export let value = ''
   export let translatedValue = ''
   export let visualValue = ''
+  export let waiting = false
   export let translated = false
   export let readOnly = true
-  export let placeholder = 'Write a prompt.'
+  export let placeholder = ''
   export let onEnter = stopEditing
   export let onArrowUp = () => {}
   export let onArrowDown = () => {}
@@ -144,57 +145,61 @@
     {:else}
       {@html marked.parse(markdown)}
     {/if}
-    <Button
-      color="alternative"
-      class={`w-6 h-6 p-0 focus:ring-0 bg-stone-100 inline-flex justify-center ml-1 ${transButtonClass}`}
-      on:click={toggleTranslate}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-4 h-4">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
-      </svg>
-    </Button>
-    <Button
-      color="alternative"
-      class={'w-6 h-6 p-0 focus:ring-0 bg-stone-100 inline-flex justify-center ml-1 text-stone-400 focus:text-stone-400'}
-      on:click={edit}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-4 h-4">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-      </svg>
-    </Button>
-    <Button
-      color="alternative"
-      class={'w-6 h-6 p-0 focus:ring-0 bg-stone-100 inline-flex justify-center ml-1 text-stone-400 focus:text-stone-400'}
-      on:click={generateNewImage}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-4 h-4">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-      </svg>
-    </Button>
+    {#if waiting}
+      <Spinner class="mr-3" size="3" />
+    {:else}
+      <Button
+        color="alternative"
+        class={`w-6 h-6 p-0 focus:ring-0 bg-stone-100 inline-flex justify-center ml-1 ${transButtonClass}`}
+        on:click={toggleTranslate}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-4 h-4">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
+        </svg>
+      </Button>
+      <Button
+        color="alternative"
+        class={'w-6 h-6 p-0 focus:ring-0 bg-stone-100 inline-flex justify-center ml-1 text-stone-400 focus:text-stone-400'}
+        on:click={edit}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-4 h-4">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+        </svg>
+      </Button>
+      <Button
+        color="alternative"
+        class={'w-6 h-6 p-0 focus:ring-0 bg-stone-100 inline-flex justify-center ml-1 text-stone-400 focus:text-stone-400'}
+        on:click={generateNewImage}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-4 h-4">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+      </Button>
+    {/if}
   </div>
 {:else}
   <FlexibleTextarea

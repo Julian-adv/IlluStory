@@ -10,6 +10,9 @@ export async function loadSession(path: string) {
   if (!session.nextSpeaker) {
     session.nextSpeaker = 0
   }
+  session.scenes.forEach(scene => {
+    scene.done = true
+  })
   return session
 }
 

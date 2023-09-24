@@ -1,7 +1,7 @@
 <script lang="ts">
   import Markdown from '../common/Markdown.svelte'
   import DropSelect from '../common/DropSelect.svelte'
-  import { chatRoles, sendChat, waitingResponse } from '$lib/api'
+  import { chatRoles, countTokensApi, sendChat, sendChatStream, waitingResponse } from '$lib/api'
   import {
     sessionPath,
     preset,
@@ -66,6 +66,34 @@
     $dialogues[$dialogues.length - 1].done = true
   }
 
+  async function received(text: string) {
+    let scene = lastScene($dialogues)
+    scene.content += text
+    scene.textContent += text
+    $dialogues = $dialogues
+    $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
+    $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
+    await tick()
+    scrollToEnd()
+  }
+
+  async function closed() {
+    let scene = lastScene($dialogues)
+    scene = await extractImagePrompt($settings, scene, $replaceDict)
+    $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
+    $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
+    scene.done = true
+    $dialogues = $dialogues
+    if (nextChar !== 'random') {
+      $session.nextSpeaker++
+      if ($session.nextSpeaker >= $chars.length) {
+        $session.nextSpeaker = 0
+      }
+      nextChar = $chars[$session.nextSpeaker].name
+    }
+    saveSession()
+  }
+
   async function sendInput(content: string) {
     if (content[0] === '"') {
       content = `${$user.name}: ` + content
@@ -76,7 +104,7 @@
       role: role,
       content: content,
       textContent: content,
-      done: false
+      done: true
     }
     const waitingScene = {
       id: sceneId + 1,
@@ -97,7 +125,17 @@
     let prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     prologs = replaceNames(prologs, $replaceDict)
-    const result = await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
+    const result = $preset.streaming
+      ? await sendChatStream(
+          $preset,
+          prologs,
+          $dialogues,
+          false,
+          $summarySceneIndex,
+          received,
+          closed
+        )
+      : await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)

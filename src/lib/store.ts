@@ -20,6 +20,7 @@ export const defaultPreset: Preset = {
   title: '',
   image: '',
   api: Api.OpenAi,
+  streaming: false,
   visualizePrompt:
     "Add a visual summary at the end of the output. It's crucial to include details about <char>'s look, clothing, stance, and nearby setting. The description should be short phrases inside <Visual> and </Visual>. For example: <Visual>blonde hair, shirt, pants, sitting on a chair</Visual>",
   // This prompt is copied from https://arca.live/b/characterai/81890153

@@ -1,6 +1,6 @@
 import { get } from 'svelte/store'
 import type { SceneType, Preset, Usage, ChatResult } from './interfaces'
-import { user, zeroUsage } from './store'
+import { user } from './store'
 import { assistantRole, chatHistory, countTokensApi, startStory, systemRole, userRole } from './api'
 import { getStartEndIndex } from '$lib'
 
@@ -125,7 +125,8 @@ export async function sendChatOobabooga(
     const scene: SceneType = {
       id: 0,
       role: assistantRole,
-      content: dataFromOoga.results[0].text
+      content: dataFromOoga.results[0].text,
+      done: true
     }
     usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text)
     usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
@@ -137,30 +138,40 @@ export async function sendChatOobabooga(
 
 export async function sendChatOobaboogaStream(
   preset: Preset,
-  scenes: SceneType[],
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  summary: boolean,
+  sendStartIndex: number,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream')
   const userName = get(user).name
 
+  let prompt = ''
+  prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
+  prompt += preset.oobabooga.assistantPrefix
+  console.log('prompt:', prompt)
+  const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+  usage.prompt_tokens = countTokensApi(prompt)
   conn.onopen = () => {
-    let prompt = ''
-    scenes.forEach(scene => {
-      prompt += scene.content + '\n'
-    })
     const request = {
       max_new_tokens: preset.oobabooga.maxTokens,
       temperature: preset.oobabooga.temperature,
       top_k: preset.oobabooga.topK,
       top_p: preset.oobabooga.topP,
       typical_p: preset.oobabooga.typicalP,
+      tfs: preset.oobabooga.tfs,
       top_a: preset.oobabooga.topA,
       repetition_penalty: preset.oobabooga.repetitionPenalty,
+      repetition_penalty_range: preset.oobabooga.repetitionPenaltyRange,
       encoder_repetition_penalty: preset.oobabooga.encoderRepetitionPenalty,
       no_repeat_ngram_size: preset.oobabooga.noRepeatNgramSize,
       min_length: preset.oobabooga.minLength,
       do_sample: preset.oobabooga.doSample,
+      mirostat_mode: preset.oobabooga.mirostatMode,
+      mirostat_tau: preset.oobabooga.mirostatTau,
+      mirostat_eta: preset.oobabooga.mirostatEta,
       penalty_alpha: preset.oobabooga.penaltyAlpha,
       num_beams: preset.oobabooga.numBeams,
       length_penalty: preset.oobabooga.lengthPenalty,
@@ -177,9 +188,12 @@ export async function sendChatOobaboogaStream(
         '### USER',
         '### INSTRUCTION',
         '### Instruction',
+        '\n```',
         '\nUser:',
         '\nuser:',
-        `\n${userName}:`
+        '\n<|user|>',
+        `\n${userName}:`,
+        `\n${userName} `
       ],
       prompt: prompt
     }
@@ -210,10 +224,10 @@ export async function sendChatOobaboogaStream(
     console.log('on close')
   }
 
-  const addedScene: SceneType = {
+  const scene: SceneType = {
     id: 0,
     role: assistantRole,
     content: ''
   }
-  return { scene: addedScene, usage: zeroUsage }
+  return { scene, usage }
 }

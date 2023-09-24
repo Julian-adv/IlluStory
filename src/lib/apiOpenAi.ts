@@ -172,8 +172,21 @@ export async function sendChatOpenAi(
       scene = dataFromGPT.choices[0].message
       scene.id = 0
     }
+    scene.done = true
     return { scene, usage: dataFromGPT.usage ?? zeroUsage }
   } else {
     return null
   }
+}
+
+export async function sendChatOpenAiStream(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  summary: boolean,
+  sendStartIndex: number,
+  received: (text: string) => void,
+  closedCallback: () => void
+): Promise<ChatResult> {
+  return { scene: { id: 0, role: assistantRole, content: '' }, usage: zeroUsage }
 }
