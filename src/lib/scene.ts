@@ -1,11 +1,13 @@
 import { readTextFile } from '@tauri-apps/api/fs'
-import { savePath, sceneExt } from './fs'
+import { saveImageToFile, savePath, sceneExt } from './fs'
 import type { FirstScene, SceneResult, SceneType, Settings } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { assistantRole, systemRole } from './api'
 import { getRandomSize, scrollToEnd } from '$lib'
 import { tick } from 'svelte'
 import { generateImage } from './imageApi'
+import { sep } from '@tauri-apps/api/path'
+import { convertFileSrc } from '@tauri-apps/api/tauri'
 
 export async function loadScene(path: string) {
   const json = await readTextFile(path)
@@ -30,9 +32,16 @@ export async function saveScene(scene: FirstScene) {
   return savePath(fileName, sceneExt, scene)
 }
 
+export function saveImage(sessionPath: string, result: string) {
+  const imagePath = sessionPath + sep + 'image' + Date.now() + '.png'
+  saveImageToFile(result, imagePath)
+  return convertFileSrc(imagePath)
+}
+
 export async function generateImageIfNeeded(
   settings: Settings,
   scene: SceneType,
+  sessionPath: string,
   lastScene: boolean
 ): Promise<SceneResult> {
   let showImage = false
@@ -40,7 +49,16 @@ export async function generateImageIfNeeded(
   let imageSize = { width: 0, height: 0 }
   if (scene.image) {
     showImage = true
-    imageFromSD = Promise.resolve(scene.image)
+    imageFromSD = new Promise<string>((resolve, _reject) => {
+      const img = new Image()
+      img.onload = function () {
+        imageSize.width = (this as HTMLImageElement).width
+        imageSize.height = (this as HTMLImageElement).height
+        resolve(scene.image ?? '')
+      }
+      img.src = scene.image ?? ''
+    })
+    await imageFromSD
   } else {
     if (scene.role === systemRole || scene.role === assistantRole) {
       showImage = !!scene.visualContent
@@ -59,7 +77,7 @@ export async function generateImageIfNeeded(
         }
         imageFromSD = generateImage(settings, imageSize.width, imageSize.height, imageSource).then(
           result => {
-            scene.image = result
+            scene.image = saveImage(sessionPath, result)
             scene.imageSize = imageSize
             return result
           }

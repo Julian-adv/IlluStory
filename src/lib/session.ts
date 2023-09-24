@@ -12,6 +12,16 @@ export async function loadSession(path: string) {
   }
   session.scenes.forEach(scene => {
     scene.done = true
+    if (scene.image) {
+      const img = new Image()
+      img.onload = function () {
+        scene.imageSize = {
+          width: (this as HTMLImageElement).width,
+          height: (this as HTMLImageElement).height
+        }
+      }
+      img.src = scene.image
+    }
   })
   return session
 }
@@ -26,7 +36,7 @@ export async function loadSessionDialog(): Promise<[Session | null, string]> {
 
 export async function saveSessionAuto(path: string, session: Session, dialogues: SceneType[]) {
   session.scenes = dialogues.map(scene => {
-    return { id: scene.id, role: scene.role, content: scene.content }
+    return { id: scene.id, role: scene.role, content: scene.content, image: scene.image }
   })
   await saveObjQuietly(path, session)
 }

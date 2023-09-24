@@ -1,4 +1,11 @@
-import { BaseDirectory, copyFile, createDir, exists, writeTextFile } from '@tauri-apps/api/fs'
+import {
+  BaseDirectory,
+  copyFile,
+  createDir,
+  exists,
+  writeBinaryFile,
+  writeTextFile
+} from '@tauri-apps/api/fs'
 import { appDataDir, resolveResource, sep } from '@tauri-apps/api/path'
 import type { Preset, Char, FirstScene, Session } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
@@ -43,6 +50,17 @@ function dataURIToBlob(dataURI: string) {
 }
 
 export function saveImageToFile(dataURI: string, filename: string) {
+  const byteString = atob(dataURI.split(',')[1])
+  const arrayBuffer = new ArrayBuffer(byteString.length)
+  const uint8Array = new Uint8Array(arrayBuffer)
+
+  for (let i = 0; i < byteString.length; i++) {
+    uint8Array[i] = byteString.charCodeAt(i)
+  }
+  writeBinaryFile(filename, uint8Array)
+}
+
+export function saveImageToFileOrg(dataURI: string, filename: string) {
   const blob = dataURIToBlob(dataURI)
 
   const url = window.URL.createObjectURL(blob)

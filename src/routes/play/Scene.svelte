@@ -2,13 +2,15 @@
   import type { SceneType, SceneResult } from '$lib/interfaces'
   import { onMount } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
-  import { dialogues, replaceDict, settings } from '$lib/store'
+  import { dialogues, replaceDict, session, sessionPath, settings } from '$lib/store'
   import { getRandomSize, lastScene, realImageSize } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { extractImagePrompt } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
-  import { generateImageIfNeeded } from '$lib/scene'
+  import { generateImageIfNeeded, saveImage } from '$lib/scene'
+  import { dirname } from '@tauri-apps/api/path'
+  import { saveSessionAuto } from '$lib/session'
 
   export let scene: SceneType
   let translated: boolean
@@ -18,6 +20,7 @@
     imageSize: { width: 512, height: 512 },
     imageFromSD: Promise.resolve('')
   }
+  let sessionDir = ''
 
   $: imageWidth = realImageSize(info.imageSize.width)
   $: imageClass =
@@ -25,17 +28,17 @@
       ? 'clear-both flex justify-center items-end z-10 wrapper'
       : 'wrapper float-left flex items-end pl-4 mr-4'
 
-  async function genImage() {
-    info = await generateImageIfNeeded($settings, scene, last)
-  }
-
-  $: if (!scene.image && scene.done) {
-    genImage()
-  }
-
   onMount(async () => {
-    info = await generateImageIfNeeded($settings, scene, last)
+    sessionDir = await dirname($sessionPath)
+    console.log(sessionDir)
+    info = await generateImageIfNeeded($settings, scene, sessionDir, last)
     translated = !!scene.translatedContent
+    info.imageFromSD.then(() => {
+      console.log('image loaded')
+      // _extractColors(info.imageSize)
+      console.log(scene)
+      saveSessionAuto($sessionPath, $session, $dialogues)
+    })
   })
 
   // afterUpdate(async () => {
@@ -123,7 +126,7 @@
       info.imageSize.height,
       scene.textContent ?? ''
     ).then(result => {
-      scene.image = result
+      scene.image = saveImage(sessionDir, result)
       scene.imageSize = info.imageSize
       return result
     })
@@ -144,7 +147,7 @@
     scene.translatedContent = ''
     scene.image = ''
     scene = await extractImagePrompt($settings, scene, $replaceDict)
-    generateImageIfNeeded($settings, scene, last)
+    info = await generateImageIfNeeded($settings, scene, sessionDir, last)
   }
 </script>
 

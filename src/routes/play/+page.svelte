@@ -114,15 +114,17 @@
   const sessionsDir = 'sessions'
 
   async function saveSession() {
-    if (!(await exists(sessionsDir, { dir: BaseDirectory.AppData }))) {
-      createDir(sessionsDir, {
+    const timestamp = formatDate(new Date())
+    const thisSessionDir = sessionsDir + sep + timestamp
+    if (!(await exists(thisSessionDir, { dir: BaseDirectory.AppData }))) {
+      createDir(thisSessionDir, {
         dir: BaseDirectory.AppData,
         recursive: true
       })
     }
     const dataDir = await appDataDir()
-    const sessionsPath = dataDir + sessionsDir
-    const tempPath = sessionsPath + sep + 'session-' + formatDate(new Date()) + '.' + sessionExt
+    const thisSessionPath = dataDir + thisSessionDir
+    const tempPath = thisSessionPath + sep + 'session-' + timestamp + '.' + sessionExt
     $session.presetCard = relativePath(dataDir, $presetCard.path)
     $session.userCard = relativePath(dataDir, $userCard.path)
     $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
@@ -135,10 +137,14 @@
     let mostRecent = { path: '', modified: new Date(0) }
     const entries = await readDir(sessionsDir, { dir: BaseDirectory.AppData, recursive: true })
     for (const entry of entries) {
-      if (entry.name && entry.name.endsWith(sessionExt)) {
-        const stat = await metadata(entry.path)
-        if (stat.modifiedAt > mostRecent.modified) {
-          mostRecent = { path: entry.path, modified: stat.modifiedAt }
+      if (entry.children) {
+        for (const child of entry.children) {
+          if (child.name && child.name.endsWith(sessionExt)) {
+            const stat = await metadata(child.path)
+            if (stat.modifiedAt > mostRecent.modified) {
+              mostRecent = { path: child.path, modified: stat.modifiedAt }
+            }
+          }
         }
       }
     }
