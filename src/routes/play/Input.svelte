@@ -1,7 +1,7 @@
 <script lang="ts">
   import Markdown from '../common/Markdown.svelte'
   import DropSelect from '../common/DropSelect.svelte'
-  import { chatRoles, sendChat } from '$lib/api'
+  import { chatRoles, sendChat, waitingResponse } from '$lib/api'
   import {
     sessionPath,
     preset,
@@ -15,7 +15,7 @@
     user,
     replaceDict
   } from '$lib/store'
-  import { newSceneId, scrollToEnd, translateButtonClass } from '$lib'
+  import { lastScene, newSceneId, scrollToEnd, translateButtonClass } from '$lib'
   import { onMount, tick } from 'svelte'
   import { Button } from 'flowbite-svelte'
   import { translateText } from '$lib/deepLApi'
@@ -25,7 +25,7 @@
 
   export let role = 'user'
   export let value = ''
-  export let chatOrder = 'random'
+  export let nextChar = 'random'
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
 
@@ -70,37 +70,50 @@
     if (content[0] === '"') {
       content = `${$user.name}: ` + content
     }
+    const sceneId = newSceneId($dialogues)
     const userScene = {
-      id: newSceneId($dialogues),
+      id: sceneId,
       role: role,
       content: content,
       textContent: content,
       done: false
     }
-    $dialogues = [...$dialogues, userScene]
+    const waitingScene = {
+      id: sceneId + 1,
+      role: waitingResponse,
+      content: '',
+      textContent: '',
+      done: false
+    }
+    $dialogues = [...$dialogues, userScene, waitingScene]
     await tick()
     scrollToEnd()
-    if (chatOrder === 'random') {
-      $session.lastSpeaker = Math.floor(Math.random() * $chars.length)
+    if (nextChar === 'random') {
+      $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
     } else {
-      ++$session.lastSpeaker
-      if ($session.lastSpeaker >= $chars.length) {
-        $session.lastSpeaker = 0
-      }
+      $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
     }
-    console.log('lastSpeaker: ' + $session.lastSpeaker + ' ' + $chars[$session.lastSpeaker].name)
     // let prologs = replaceChars($prologues, $chars, $user)
-    let prologs = replaceChar($prologues, $chars[$session.lastSpeaker], $user)
-    $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
+    let prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     prologs = replaceNames(prologs, $replaceDict)
     const result = await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
     if (result) {
       $usage = result.usage
-      result.addedScene.id = newSceneId($dialogues)
-      const scene = await extractImagePrompt($settings, result.addedScene, $replaceDict)
-      $dialogues = [...$dialogues, scene]
+      let scene = lastScene($dialogues)
+      scene.role = result.scene.role
+      scene.content = result.scene.content
+      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      $dialogues = $dialogues
       await tick()
       scrollToEnd()
+      if (nextChar !== 'random') {
+        $session.nextSpeaker++
+        if ($session.nextSpeaker >= $chars.length) {
+          $session.nextSpeaker = 0
+        }
+        nextChar = $chars[$session.nextSpeaker].name
+      }
     }
     saveSession()
   }

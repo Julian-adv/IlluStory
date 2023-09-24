@@ -161,8 +161,8 @@
       $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
       await startWithoutSave()
       const result = splitPreset($preset.prompts)
-      $prologues = replaceChar(result.prologues, $chars[$session.lastSpeaker], $user)
-      $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
+      $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+      $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
       $dialogues = await convertScenes($session.scenes, $replaceDict)
     }
   }
@@ -177,8 +177,8 @@
 
   async function updateInitialScenes() {
     const result = splitPreset($preset.prompts)
-    $prologues = replaceChar(result.prologues, $chars[$session.lastSpeaker], $user)
-    $replaceDict = makeReplaceDict($chars[$session.lastSpeaker], $user)
+    $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     $dialogues = await convertScenes(result.dialogues, $replaceDict)
   }
 
@@ -216,11 +216,20 @@
     const result = await sendChat($preset, $prologues, $dialogues, true, $summarySceneIndex)
     if (result) {
       $usage = result.usage
-      result.addedScene.id = newSceneId($dialogues)
+      result.scene.id = newSceneId($dialogues)
       $summarySceneIndex = $dialogues.length
-      $dialogues = [...$dialogues, result.addedScene]
+      $dialogues = [...$dialogues, result.scene]
       await tick()
       scrollToEnd()
+    }
+  }
+
+  let characters = [{ value: 'random', name: 'Random' }]
+
+  function fillCharacters() {
+    characters = [{ value: 'random', name: 'Random' }]
+    for (const char of $chars) {
+      characters.push({ value: char.name, name: char.name })
     }
   }
 
@@ -231,6 +240,7 @@
     } else {
       started = true
     }
+    fillCharacters()
   })
 
   let warningTokens: boolean
@@ -300,7 +310,8 @@
     $sessionPath = ''
     userInput = ''
     $summarySceneIndex = 0
-    $session.lastSpeaker = 0
+    $session.nextSpeaker = 0
+    fillCharacters()
     await saveSession()
   }
 
@@ -342,11 +353,7 @@
     goto('/write_scene')
   }
 
-  const chatOrders = [
-    { value: 'random', name: 'Random' },
-    { value: 'round_robin', name: 'Round robin' }
-  ]
-  let chatOrder = 'random'
+  let nextChar = 'random'
 </script>
 
 <main>
@@ -512,14 +519,14 @@
           </svg>
           <span class="pl-2">Summarize</span>
         </Button>
-        <span>Chat order:</span>
+        <span>Next character:</span>
         <DropSelect
-          items={chatOrders}
+          items={characters}
           size="sm"
           classStr="text-sm self-start text-center"
-          bind:value={chatOrder} />
+          bind:value={nextChar} />
       </div>
-      <Input bind:value={userInput} {chatOrder} />
+      <Input bind:value={userInput} bind:nextChar />
     </div>
   {/if}
 </main>

@@ -193,12 +193,12 @@ export interface Session {
   presetCard: string
   userCard: string
   charCards: string[]
-  lastSpeaker: number
+  nextSpeaker: number
   sceneCard: string
   scenes: SceneType[]
 }
 
 export interface ChatResult {
-  addedScene: SceneType
+  scene: SceneType
   usage: Usage
 }

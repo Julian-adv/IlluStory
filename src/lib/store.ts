@@ -81,7 +81,7 @@ export const defaultSession: Session = {
   presetCard: '',
   userCard: '',
   charCards: [],
-  lastSpeaker: 0,
+  nextSpeaker: 0,
   sceneCard: '',
   scenes: []
 }

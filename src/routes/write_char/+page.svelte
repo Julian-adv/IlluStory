@@ -7,7 +7,7 @@
   import SelectField from '../common/SelectField.svelte'
   import TextField from '../common/TextField.svelte'
   import { countTokensApi } from '$lib/api'
-  import { curChar, curCharPath, settings } from '$lib/store'
+  import { charCards, chars, curChar, curCharPath, settings, user, userPath } from '$lib/store'
   import { generateImage } from '$lib/imageApi'
   import { decodeBase64 } from '$lib'
 
@@ -75,6 +75,14 @@
   async function autoSaveFunc() {
     if (autoSave && $curCharPath !== '') {
       saveObjQuietly($curCharPath, $curChar)
+      if ($curCharPath === $userPath) {
+        $user = $curChar
+      }
+      for (let i = 0; i < $charCards.length; ++i) {
+        if ($charCards[i].path === $curCharPath) {
+          $chars[i] = $curChar
+        }
+      }
     }
   }
 

@@ -161,18 +161,18 @@ export async function sendChatOpenAi(
   const dataFromGPT = await respFromGPT.json()
   console.log('dataFromGPT', dataFromGPT)
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
-    let addedScene: SceneType
+    let scene: SceneType
     if (instructModel) {
-      addedScene = {
+      scene = {
         id: 0,
         role: assistantRole,
         content: dataFromGPT.choices[0].text
       }
     } else {
-      addedScene = dataFromGPT.choices[0].message
-      addedScene.id = 0
+      scene = dataFromGPT.choices[0].message
+      scene.id = 0
     }
-    return { addedScene, usage: dataFromGPT.usage ?? zeroUsage }
+    return { scene, usage: dataFromGPT.usage ?? zeroUsage }
   } else {
     return null
   }

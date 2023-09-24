@@ -16,6 +16,7 @@ export const authorNote = 'author_note'
 export const globalNote = 'global_note'
 export const loreBook = 'lore_book'
 export const firstScene = 'first_scene'
+export const waitingResponse = 'waiting_response'
 
 export const roles = [
   { value: systemRole, name: 'System' },

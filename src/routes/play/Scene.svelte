@@ -6,9 +6,10 @@
   import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
-  import { assistantRole, systemRole } from '$lib/api'
+  import { assistantRole, systemRole, waitingResponse } from '$lib/api'
   import { extractImagePrompt } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
+  import { Spinner } from 'flowbite-svelte'
 
   export let scene: SceneType
   let translated: boolean
@@ -183,14 +184,18 @@
       class={imageClass} />
   {/if}
   <div class="px-4">
-    <Markdown
-      bind:value={scene.textContent}
-      bind:translatedValue={scene.translatedContent}
-      bind:visualValue={scene.visualContent}
-      bind:translated
-      {onTranslate}
-      {onEditDone}
-      {generateNewImage} />
+    {#if scene.role === waitingResponse}
+      <Spinner class="mr-3" size="3" />
+    {:else}
+      <Markdown
+        bind:value={scene.textContent}
+        bind:translatedValue={scene.translatedContent}
+        bind:visualValue={scene.visualContent}
+        bind:translated
+        {onTranslate}
+        {onEditDone}
+        {generateNewImage} />
+    {/if}
   </div>
 </div>
 <div class="clear-both p-2"></div>

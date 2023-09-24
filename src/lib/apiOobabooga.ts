@@ -122,14 +122,14 @@ export async function sendChatOobabooga(
   const dataFromOoga = await respFromOoga.json()
   console.log('dataFromOoga', dataFromOoga)
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
-    const addedScene: SceneType = {
+    const scene: SceneType = {
       id: 0,
       role: assistantRole,
       content: dataFromOoga.results[0].text
     }
     usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text)
     usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
-    return { addedScene, usage }
+    return { scene, usage }
   } else {
     return null
   }
@@ -215,5 +215,5 @@ export async function sendChatOobaboogaStream(
     role: assistantRole,
     content: ''
   }
-  return { addedScene, usage: zeroUsage }
+  return { scene: addedScene, usage: zeroUsage }
 }

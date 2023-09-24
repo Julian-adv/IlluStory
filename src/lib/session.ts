@@ -7,8 +7,8 @@ import { charSetting, userSetting } from './api'
 export async function loadSession(path: string) {
   const json = await readTextFile(path)
   const session = JSON.parse(json) as Session
-  if (!session.lastSpeaker) {
-    session.lastSpeaker = 0
+  if (!session.nextSpeaker) {
+    session.nextSpeaker = 0
   }
   return session
 }
