@@ -11,6 +11,7 @@
   import { generateImageIfNeeded, saveImage } from '$lib/scene'
   import { dirname } from '@tauri-apps/api/path'
   import { saveSessionAuto } from '$lib/session'
+  import { assistantRole } from '$lib/api'
 
   export let scene: SceneType
   let translated: boolean
@@ -28,15 +29,15 @@
       ? 'clear-both flex justify-center items-end z-10 wrapper'
       : 'wrapper float-left flex items-end pl-4 mr-4'
 
+  $: if (!info.showImage && !scene.image && scene.role === assistantRole && scene.done) {
+    generateNewImage()
+  }
+
   onMount(async () => {
     sessionDir = await dirname($sessionPath)
-    console.log(sessionDir)
     info = await generateImageIfNeeded($settings, scene, sessionDir, last)
     translated = !!scene.translatedContent
     info.imageFromSD.then(() => {
-      console.log('image loaded')
-      // _extractColors(info.imageSize)
-      console.log(scene)
       saveSessionAuto($sessionPath, $session, $dialogues)
     })
   })

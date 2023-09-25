@@ -77,6 +77,7 @@
     for (let i = 0; i < newScenes.length; i++) {
       let scene = newScenes[i]
       scene = await extractImagePrompt($settings, newScenes[i], dict)
+      scene.done = true
       scenes.push(scene)
     }
     return scenes
