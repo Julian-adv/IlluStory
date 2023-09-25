@@ -1,6 +1,6 @@
 [package]
 name = "illustory"
-version = "0.7.2"
+version = "0.8.0"
 description = "IlluStory is an app which generates illustrated stories."
 authors = ["Julian adventurer"]
 license = ""
