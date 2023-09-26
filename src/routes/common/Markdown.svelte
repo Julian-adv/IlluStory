@@ -126,6 +126,7 @@
         "<span class='description'>$1</span>"
       )
       text = text.replace(/(?<=>"[^"]*?)<span class='description'>(?=.*?"<)/g, '<span>')
+      text = text.replace(/\n\n/g, '\n<div class="line-break"></div>')
       const userNameRegex = new RegExp($user.name, 'g')
       text = text.replace(userNameRegex, "<span class='userName'>$&</span>")
       for (const char of $chars) {
@@ -256,5 +257,10 @@
 
   :global(.markdown > p) {
     display: inline;
+  }
+
+  :global(.markdown .line-break) {
+    display: block;
+    height: 0.5em;
   }
 </style>

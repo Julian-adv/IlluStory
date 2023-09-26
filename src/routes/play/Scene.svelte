@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { SceneType, SceneResult } from '$lib/interfaces'
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
   import { dialogues, replaceDict, session, sessionPath, settings } from '$lib/store'
-  import { getRandomSize, lastScene, realImageSize } from '$lib'
+  import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { extractImagePrompt } from '$lib/image'
@@ -31,6 +31,11 @@
 
   $: if (!info.showImage && !scene.image && scene.role === assistantRole && scene.done) {
     generateNewImage()
+    if (last) {
+      tick().then(() => {
+        scrollToEnd()
+      })
+    }
   }
 
   onMount(async () => {
@@ -146,7 +151,6 @@
   async function onEditDone(content: string) {
     scene.content = content
     scene.translatedContent = ''
-    scene.image = ''
     scene = await extractImagePrompt($settings, scene, $replaceDict)
     info = await generateImageIfNeeded($settings, scene, sessionDir, last)
   }

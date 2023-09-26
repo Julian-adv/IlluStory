@@ -1,7 +1,7 @@
 <script lang="ts">
   import Markdown from '../common/Markdown.svelte'
   import DropSelect from '../common/DropSelect.svelte'
-  import { chatRoles, countTokensApi, sendChat, sendChatStream, waitingResponse } from '$lib/api'
+  import { assistantRole, chatRoles, countTokensApi, sendChat, sendChatStream } from '$lib/api'
   import {
     sessionPath,
     preset,
@@ -108,7 +108,7 @@
     }
     const waitingScene = {
       id: sceneId + 1,
-      role: waitingResponse,
+      role: assistantRole,
       content: '',
       textContent: '',
       done: false

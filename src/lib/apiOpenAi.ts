@@ -5,6 +5,7 @@ import {
   assistantRole,
   charSetting,
   chatHistory,
+  countTokensApi,
   endTag,
   startStory,
   systemRole,
@@ -57,7 +58,10 @@ function generateMessages(
           break
         }
         default:
-          messages.push({ role: convertRole(scene.role), content: scene.content })
+          messages.push({
+            role: convertRole(scene.role),
+            content: scene.textContent ?? scene.content
+          })
       }
     }
     if (!sentChatHistory) {
@@ -187,6 +191,76 @@ export async function sendChatOpenAiStream(
   sendStartIndex: number,
   received: (text: string) => void,
   closedCallback: () => void
-): Promise<ChatResult> {
-  return { scene: { id: 0, role: assistantRole, content: '' }, usage: zeroUsage }
+): Promise<ChatResult | null> {
+  const instructModel = preset.openAi.model.includes('instruct')
+  const uri = preset.openAi.apiUrl + apiUrl(instructModel)
+  const url = new URL(uri)
+  const commonReq = {
+    model: preset.openAi.model,
+    temperature: preset.openAi.temperature,
+    frequency_penalty: preset.openAi.frequencyPenalty,
+    presence_penalty: preset.openAi.presencePenalty,
+    max_tokens: preset.openAi.maxTokens,
+    stream: true
+  }
+  let request
+  let promptTokens = 0
+  if (instructModel) {
+    request = {
+      ...commonReq,
+      prompt: generatePrompt(preset, prologues, dialogues, summary, sendStartIndex)
+    }
+  } else {
+    request = {
+      ...commonReq,
+      messages: generateMessages(preset, prologues, dialogues, summary, sendStartIndex)
+    }
+    promptTokens = request.messages
+      .map(mesg => countTokensApi(mesg.content))
+      .reduce((a, b) => a + b, 0)
+  }
+  console.log('request', request)
+  const respFromGPT = await fetch(url, {
+    body: JSON.stringify(request),
+    headers: {
+      Authorization: 'Bearer ' + get(settings).openAiApiKey,
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    signal: null
+  })
+  if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
+    const reader = respFromGPT.body?.getReader()
+    const decoder = new TextDecoder()
+    reader?.read().then(async function processText({ value }): Promise<void> {
+      const str = decoder.decode(value)
+      const strs = str.split('\n')
+      for (const str of strs) {
+        if (str.startsWith('data: ')) {
+          const text = str.slice(6)
+          if (text === '[DONE]') {
+            closedCallback()
+            return
+          } else {
+            const json = JSON.parse(text)
+            if (json.choices[0].delta.content) {
+              received(json.choices[0].delta.content)
+            }
+          }
+        }
+      }
+      return reader?.read().then(processText)
+    })
+    const scene = {
+      id: 0,
+      role: assistantRole,
+      content: ''
+    }
+    return {
+      scene,
+      usage: { prompt_tokens: promptTokens, completion_tokens: 0, total_tokens: promptTokens }
+    }
+  } else {
+    return null
+  }
 }

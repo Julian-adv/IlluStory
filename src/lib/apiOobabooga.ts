@@ -144,7 +144,7 @@ export async function sendChatOobaboogaStream(
   sendStartIndex: number,
   received: (text: string) => void,
   closedCallback: () => void
-): Promise<ChatResult> {
+): Promise<ChatResult | null> {
   const conn = new WebSocket('ws://localhost:5005/api/v1/stream')
   const userName = get(user).name
 
