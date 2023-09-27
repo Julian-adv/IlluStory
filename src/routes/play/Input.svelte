@@ -69,7 +69,7 @@
   async function received(text: string) {
     let scene = lastScene($dialogues)
     scene.content += text
-    scene.textContent += text
+    scene.textContent = scene.content
     $dialogues = $dialogues
     $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
@@ -141,6 +141,7 @@
       let scene = lastScene($dialogues)
       scene.role = result.scene.role
       scene.content = result.scene.content
+      scene.done = result.scene.done
       scene = await extractImagePrompt($settings, scene, $replaceDict)
       $dialogues = $dialogues
       await tick()

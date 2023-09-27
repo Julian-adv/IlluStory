@@ -49,7 +49,8 @@
   export let data: PageData
   const apis = [
     { value: Api.OpenAi, name: 'Open AI' },
-    { value: Api.Oobabooga, name: 'Oobabooga' }
+    { value: Api.Oobabooga, name: 'Oobabooga' },
+    { value: Api.KoboldAi, name: 'Kobold AI' }
   ]
   const parameterPresets = [
     { value: 'tfs-with-top-a', name: 'tfs-with-top-a' },
@@ -320,6 +321,10 @@
       ...$preset.oobabooga,
       ...paramPreset
     }
+    $preset.koboldAi = {
+      ...$preset.koboldAi,
+      ...paramPreset
+    }
     autoSaveFunc()
   }
 </script>
@@ -467,7 +472,7 @@
     {#if $preset.api === Api.Oobabooga}
       <StringField
         label="URL"
-        help="For example, http://localhost:5000/api/v1/generate"
+        help="For example, http://localhost:5000/api, or ws://localhost:5005/api for streaming."
         placeholder=""
         bind:value={$preset.oobabooga.apiUrl}
         save={autoSaveFunc} />
@@ -665,6 +670,141 @@
         label="Context size"
         help="Represents the model's context size. If story tokens near this, the chat history will be summarized."
         bind:value={$preset.oobabooga.contextSize}
+        min={512}
+        max={32768}
+        step={1}
+        save={autoSaveFunc} />
+    {/if}
+    {#if $preset.api === Api.KoboldAi}
+      <StringField
+        label="URL"
+        help="For example, http://localhost:5001/api."
+        placeholder=""
+        bind:value={$preset.koboldAi.apiUrl}
+        save={autoSaveFunc} />
+      <SelectField
+        label="Parameter preset"
+        items={parameterPresets}
+        help="Parameter preset to use."
+        search={false}
+        bind:value={$preset.koboldAi.preset}
+        save={onChangeParameterPreset} />
+      <NumberField
+        label="Temperature"
+        help="Primary factor to control randomness of outputs. 0 = deterministic (only the most likely token is used). Higher value = more randomness."
+        bind:value={$preset.koboldAi.temperature}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Top p"
+        help="If not set to 1, select tokens with probabilities adding up to less than this number. Higher value = higher range of possible random results."
+        bind:value={$preset.koboldAi.topP}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Top k"
+        help="Similar to top_p, but select instead only the top_k most likely tokens. Higher value = higher range of possible random results."
+        bind:value={$preset.koboldAi.topK}
+        min={0}
+        max={100}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Typical p"
+        help="If not set to 1, select only tokens that are at least this much more likely to appear than random tokens, given the prior text."
+        bind:value={$preset.koboldAi.typicalP}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="TFS"
+        help="Tail Free Sampling, https://www.trentonbricken.com/Tail-Free-Sampling/"
+        bind:value={$preset.koboldAi.tfs}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Top a"
+        help=""
+        bind:value={$preset.koboldAi.topA}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Repetition penalty"
+        help="Exponential penalty factor for repeating prior tokens. 1 means no penalty, higher value = less repetition, lower value = more repetition."
+        bind:value={$preset.koboldAi.repetitionPenalty}
+        min={1.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Repetition penalty range"
+        help="Higher means it reads farther back into it's memory to try to not repeat itself."
+        bind:value={$preset.koboldAi.repetitionPenaltyRange}
+        min={0}
+        max={4096}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Repetition penalty slope"
+        help="If both this and Repetition Penalty Range are above 0, then repetition penalty will have more effect closer to the end of the prompt."
+        bind:value={$preset.koboldAi.repetitionPenaltySlope}
+        min={0}
+        max={4096}
+        step={1}
+        save={autoSaveFunc} />
+      <StringField label="Seed" bind:value={$preset.koboldAi.seed} save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat mode"
+        help="Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text."
+        bind:value={$preset.koboldAi.mirostatMode}
+        min={0}
+        max={2}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat tau"
+        help="Set the Mirostat target entropy, parameter tau."
+        bind:value={$preset.koboldAi.mirostatTau}
+        min={0}
+        max={10}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat eta"
+        help="Set the Mirostat learning rate, parameter eta."
+        bind:value={$preset.koboldAi.mirostatEta}
+        min={0}
+        max={1}
+        save={autoSaveFunc} />
+      <TextField
+        label="System prefix"
+        help="String to prefix system role prompt."
+        bind:value={$preset.koboldAi.systemPrefix}
+        save={autoSaveFunc} />
+      <TextField
+        label="User prefix"
+        help="String to prefix user role prompt."
+        bind:value={$preset.koboldAi.userPrefix}
+        save={autoSaveFunc} />
+      <TextField
+        label="Assistant prefix"
+        help="String to prefix assistant role prompt."
+        bind:value={$preset.koboldAi.assistantPrefix}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Max tokens"
+        help="The maximum number of tokens to generate in the completion."
+        bind:value={$preset.koboldAi.maxTokens}
+        min={50}
+        max={1000}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Context size"
+        help="Represents the model's context size. If story tokens near this, the chat history will be summarized."
+        bind:value={$preset.koboldAi.contextSize}
         min={512}
         max={32768}
         step={1}

@@ -72,6 +72,29 @@ export const defaultPreset: Preset = {
     assistantPrefix: '### Response:\n\n'
   },
 
+  koboldAi: {
+    apiUrl: 'http://localhost:5001/api',
+    preset: 'tfs-with-top-a',
+    maxTokens: 300,
+    temperature: 0.7,
+    topK: 0,
+    topP: 1.0,
+    typicalP: 1.0,
+    tfs: 0.95,
+    topA: 0.2,
+    repetitionPenalty: 1.15,
+    repetitionPenaltyRange: 0,
+    repetitionPenaltySlope: 0,
+    seed: -1,
+    mirostatMode: 0,
+    mirostatTau: 5,
+    mirostatEta: 0.1,
+    contextSize: 8192,
+    systemPrefix: '### Instruction:\n',
+    userPrefix: '### Input:\n',
+    assistantPrefix: '### Response:\n\n'
+  },
+
   prompts: []
 }
 

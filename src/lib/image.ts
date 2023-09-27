@@ -16,10 +16,10 @@ export async function extractImagePrompt(
   scene: SceneType,
   dict: StringDictionary
 ) {
-  scene.textContent = replaceName(scene.content, dict)
+  scene.content = replaceName(scene.content, dict)
   const matches = scene.content.match(regexp) || []
   const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
-  scene.textContent = clearImagePrompt(scene.textContent)
+  scene.textContent = clearImagePrompt(scene.content)
   scene.visualContent = extractedContents.join(',')
   if (settings.translateOutput && !scene.translatedContent) {
     scene.translatedContent = await translateText(settings, settings.userLang, scene.textContent)

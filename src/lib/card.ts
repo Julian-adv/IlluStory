@@ -1,5 +1,5 @@
 import { readTextFile } from '@tauri-apps/api/fs'
-import { allExts, basenameOf, charExt, extOf, presetExt, sceneExt, sessionExt } from './fs'
+import { allExts, charExt, extOf, presetExt, sceneExt, sessionExt } from './fs'
 import { CardType, type StoryCard } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { defaultImage } from '$lib'

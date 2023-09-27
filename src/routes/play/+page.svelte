@@ -114,6 +114,17 @@
 
   const sessionsDir = 'sessions'
 
+  async function saveCardUpdate() {
+    if ($sessionPath) {
+      const dataDir = await appDataDir()
+      $session.presetCard = relativePath(dataDir, $presetCard.path)
+      $session.userCard = relativePath(dataDir, $userCard.path)
+      $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
+      $session.sceneCard = relativePath(dataDir, $sceneCard.path)
+      saveSessionAuto($sessionPath, $session, $dialogues)
+    }
+  }
+
   async function saveSession() {
     const timestamp = formatDate(new Date())
     const thisSessionDir = sessionsDir + sep + timestamp
@@ -126,12 +137,8 @@
     const dataDir = await appDataDir()
     const thisSessionPath = dataDir + thisSessionDir
     const tempPath = thisSessionPath + sep + 'session-' + timestamp + '.' + sessionExt
-    $session.presetCard = relativePath(dataDir, $presetCard.path)
-    $session.userCard = relativePath(dataDir, $userCard.path)
-    $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
-    $session.sceneCard = relativePath(dataDir, $sceneCard.path)
-    saveSessionAuto(tempPath, $session, $dialogues)
     $sessionPath = tempPath
+    saveCardUpdate()
   }
 
   async function findMostRecentSession() {
@@ -154,31 +161,34 @@
 
   let shortSessionPath = ''
 
-  async function loadRecentSession() {
+  async function loadSessionCommon(path: string) {
     const dataDir = await appDataDir()
+    $sessionPath = path
+    shortSessionPath = basenameOf(path)
+    $presetCard = await cardFromPath(dataDir + $session.presetCard)
+    $userCard = await cardFromPath(dataDir + $session.userCard)
+    $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
+    $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
+    await startWithoutSave()
+    const result = splitPreset($preset.prompts)
+    $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    $dialogues = await convertScenes($session.scenes, $replaceDict)
+  }
+
+  async function loadRecentSession() {
     const mostRecentPath = await findMostRecentSession()
     if (mostRecentPath) {
-      let _dialogues
       $session = await loadSession(mostRecentPath)
-      $sessionPath = mostRecentPath
-      shortSessionPath = basenameOf(mostRecentPath)
-      $presetCard = await cardFromPath(dataDir + $session.presetCard)
-      $userCard = await cardFromPath(dataDir + $session.userCard)
-      $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
-      $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
-      await startWithoutSave()
-      const result = splitPreset($preset.prompts)
-      $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
-      $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
-      $dialogues = await convertScenes($session.scenes, $replaceDict)
+      await loadSessionCommon(mostRecentPath)
     }
   }
 
   async function load() {
-    const [session, path] = await loadSessionDialog()
-    if (session) {
-      $dialogues = session.scenes
-      $sessionPath = path
+    const [tempSession, path] = await loadSessionDialog()
+    if (tempSession) {
+      $session = tempSession
+      await loadSessionCommon(path)
     }
   }
 
@@ -263,6 +273,7 @@
     const card = await loadCardDialog([presetExt])
     if (card) {
       $presetCard = card
+      await saveCardUpdate()
     }
   }
 
@@ -270,6 +281,7 @@
     const card = await loadCardDialog([charExt])
     if (card) {
       $userCard = card
+      await saveCardUpdate()
     }
   }
 
@@ -277,6 +289,7 @@
     const card = await loadCardDialog([sceneExt])
     if (card) {
       $sceneCard = card
+      await saveCardUpdate()
     }
   }
 
@@ -288,6 +301,7 @@
       }
       $charCards.push(card)
       $charCards = $charCards
+      await saveCardUpdate()
     }
   }
 

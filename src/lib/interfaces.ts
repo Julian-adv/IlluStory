@@ -26,7 +26,8 @@ export interface Message {
 
 export enum Api {
   OpenAi = 'openAi',
-  Oobabooga = 'oobabooga'
+  Oobabooga = 'oobabooga',
+  KoboldAi = 'koboldAi'
 }
 
 export interface OpenAiParam {
@@ -73,6 +74,29 @@ export interface OobaboogaParam {
   assistantPrefix: string
 }
 
+export interface KoboldAiParam {
+  apiUrl: string
+  preset: string
+  maxTokens: number
+  temperature: number
+  topP: number
+  topK: number
+  typicalP: number
+  tfs: number
+  topA: number
+  repetitionPenalty: number
+  repetitionPenaltyRange: number
+  repetitionPenaltySlope: number
+  seed: number
+  mirostatMode: number
+  mirostatTau: number
+  mirostatEta: number
+  contextSize: number
+  systemPrefix: string
+  userPrefix: string
+  assistantPrefix: string
+}
+
 export interface Preset {
   title: string
   image: string
@@ -82,6 +106,7 @@ export interface Preset {
   summarizePrompt: string
   openAi: OpenAiParam
   oobabooga: OobaboogaParam
+  koboldAi: KoboldAiParam
 
   prompts: SceneType[]
 }
