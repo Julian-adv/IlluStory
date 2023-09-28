@@ -1,7 +1,15 @@
 <script lang="ts">
   import SceneList from './SceneList.svelte'
   import { Button } from 'flowbite-svelte'
-  import { firstScene, sendChat, userRole } from '$lib/api'
+  import {
+    assistantRole,
+    countTokensApi,
+    firstScene,
+    sendChat,
+    sendChatStream,
+    systemRole,
+    userRole
+  } from '$lib/api'
   import Input from './Input.svelte'
   import { onMount, tick } from 'svelte'
   import {
@@ -32,6 +40,7 @@
     loadSessionDialog,
     makeReplaceDict,
     replaceChar,
+    replaceNames,
     saveSessionAuto
   } from '$lib/session'
   import CardList from '../common/CardList.svelte'
@@ -51,6 +60,8 @@
 
   let userInput = ''
   let started = false
+  let role = userRole
+  let nextChar = 'random'
 
   interface ScenePairs {
     prologues: SceneType[]
@@ -125,7 +136,7 @@
     }
   }
 
-  async function saveSession() {
+  async function saveSessionNew() {
     const timestamp = formatDate(new Date())
     const thisSessionDir = sessionsDir + sep + timestamp
     if (!(await exists(thisSessionDir, { dir: BaseDirectory.AppData }))) {
@@ -169,7 +180,7 @@
     $userCard = await cardFromPath(dataDir + $session.userCard)
     $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
     $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
-    await startWithoutSave()
+    await loadVarsFromPath()
     const result = splitPreset($preset.prompts)
     $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
@@ -230,12 +241,40 @@
   }
 
   async function summarize() {
-    const result = await sendChat($preset, $prologues, $dialogues, true, $summarySceneIndex)
+    const sceneId = newSceneId($dialogues)
+    const waitingScene = {
+      id: sceneId,
+      role: assistantRole,
+      content: '',
+      textContent: '',
+      done: false
+    }
+    $dialogues = [...$dialogues, waitingScene]
+    await tick()
+    scrollToEnd()
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
+    prologs = replaceNames(prologs, $replaceDict)
+    const result = $preset.streaming
+      ? await sendChatStream(
+          $preset,
+          prologs,
+          $dialogues,
+          true,
+          $summarySceneIndex,
+          received,
+          closed
+        )
+      : await sendChat($preset, prologs, $dialogues, true, $summarySceneIndex)
     if (result) {
       $usage = result.usage
-      result.scene.id = newSceneId($dialogues)
-      $summarySceneIndex = $dialogues.length
-      $dialogues = [...$dialogues, result.scene]
+      let scene = lastScene($dialogues)
+      scene.role = result.scene.role
+      scene.content = result.scene.content
+      scene.done = result.scene.done
+      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      $summarySceneIndex = $dialogues.length - 1
+      $dialogues = $dialogues
       await tick()
       scrollToEnd()
     }
@@ -312,7 +351,7 @@
     $charCards.length > 0 &&
     $charCards[0] !== emptyCard
 
-  async function startWithoutSave() {
+  async function loadVarsFromPath() {
     $preset = await loadPreset($presetCard.path)
     $presetPath = $presetCard.path
     $user = await loadChar($userCard.path)
@@ -325,7 +364,7 @@
   }
 
   async function start() {
-    await startWithoutSave()
+    await loadVarsFromPath()
     await updateInitialScenes()
     $usage = zeroUsage
     $sessionPath = ''
@@ -333,7 +372,7 @@
     $summarySceneIndex = 0
     $session.nextSpeaker = 0
     fillCharacters()
-    await saveSession()
+    await saveSessionNew()
   }
 
   function onRemove(index: number) {
@@ -374,7 +413,117 @@
     goto('/write_scene')
   }
 
-  let nextChar = 'random'
+  function saveSession() {
+    if ($sessionPath !== '') {
+      saveSessionAuto($sessionPath, $session, $dialogues)
+    }
+  }
+
+  async function received(text: string) {
+    let scene = lastScene($dialogues)
+    scene.content += text
+    scene.textContent = scene.content
+    $dialogues = $dialogues
+    $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
+    $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
+    await tick()
+    scrollToEnd()
+  }
+
+  async function closed() {
+    let scene = lastScene($dialogues)
+    scene = await extractImagePrompt($settings, scene, $replaceDict)
+    $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
+    $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
+    scene.done = true
+    $dialogues = $dialogues
+    if (nextChar !== 'random') {
+      $session.nextSpeaker++
+      if ($session.nextSpeaker >= $chars.length) {
+        $session.nextSpeaker = 0
+      }
+      nextChar = $chars[$session.nextSpeaker].name
+    }
+    saveSession()
+  }
+
+  async function sendInput(role: string, content: string) {
+    if (content[0] === '"') {
+      content = `${$user.name}: ` + content
+    }
+    const sceneId = newSceneId($dialogues)
+    if (content) {
+      const userScene = {
+        id: sceneId,
+        role: role,
+        content: content,
+        textContent: content,
+        done: true
+      }
+      const waitingScene = {
+        id: sceneId + 1,
+        role: assistantRole,
+        content: '',
+        textContent: '',
+        done: false
+      }
+      $dialogues = [...$dialogues, userScene, waitingScene]
+    } else {
+      const waitingScene = {
+        id: sceneId,
+        role: assistantRole,
+        content: '',
+        textContent: '',
+        done: false
+      }
+      $dialogues = [...$dialogues, waitingScene]
+    }
+    await tick()
+    scrollToEnd()
+    if (nextChar === 'random') {
+      $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
+    } else {
+      $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
+    }
+    // let prologs = replaceChars($prologues, $chars, $user)
+    let prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    prologs = replaceNames(prologs, $replaceDict)
+    const result = $preset.streaming
+      ? await sendChatStream(
+          $preset,
+          prologs,
+          $dialogues,
+          false,
+          $summarySceneIndex,
+          received,
+          closed
+        )
+      : await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
+    if (result) {
+      $usage = result.usage
+      let scene = lastScene($dialogues)
+      scene.role = result.scene.role
+      scene.content = result.scene.content
+      scene.done = result.scene.done
+      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      $dialogues = $dialogues
+      await tick()
+      scrollToEnd()
+      if (nextChar !== 'random') {
+        $session.nextSpeaker++
+        if ($session.nextSpeaker >= $chars.length) {
+          $session.nextSpeaker = 0
+        }
+        nextChar = $chars[$session.nextSpeaker].name
+      }
+    }
+    saveSession()
+  }
+
+  async function continueDialogue() {
+    await sendInput(userRole, '')
+  }
 </script>
 
 <main>
@@ -525,6 +674,21 @@
           </svg>
           <span class="pl-2">Back</span>
         </Button>
+        <Button color="alternative" size="sm" on:click={continueDialogue}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+          </svg>
+          <span class="pl-2">Continue</span>
+        </Button>
         <Button color="alternative" size="sm" on:click={summarize}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -547,7 +711,7 @@
           classStr="text-sm self-start text-center"
           bind:value={nextChar} />
       </div>
-      <Input bind:value={userInput} bind:nextChar />
+      <Input bind:role bind:value={userInput} {sendInput} />
     </div>
   {/if}
 </main>

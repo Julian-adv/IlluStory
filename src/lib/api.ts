@@ -94,7 +94,8 @@ export function generatePrompt(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  sendStartIndex: number
+  sendStartIndex: number,
+  summary = false
 ) {
   let prompt = ''
   let sentChatHistory = false
@@ -115,8 +116,18 @@ export function generatePrompt(
     }
   }
   if (!sentChatHistory) {
+    if (summary) {
+      prompt += '<Conversation>\n'
+    }
     for (const scene of dialogues) {
-      prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+      if (summary) {
+        prompt += scene.textContent + '\n'
+      } else {
+        prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+      }
+    }
+    if (summary) {
+      prompt += '</Conversation>\n'
     }
   }
   return prompt

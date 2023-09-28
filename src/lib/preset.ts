@@ -130,6 +130,9 @@ function convertMainPrompt(preset: Preset, prompt: string) {
 export async function loadPreset(path: string): Promise<Preset> {
   const json = await readTextFile(path)
   const preset = JSON.parse(json)
+  if (!preset.koboldAi) {
+    preset.koboldAi = defaultPreset.koboldAi
+  }
   changeApi(preset.api)
   return preset
 }

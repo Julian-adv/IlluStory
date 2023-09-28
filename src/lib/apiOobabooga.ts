@@ -103,8 +103,10 @@ export async function sendChatOobaboogaStream(
   const userName = get(user).name
 
   let prompt = ''
-  prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
-  prompt += preset.oobabooga.assistantPrefix
+  prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex, summary)
+  if (summary) {
+    prompt += preset.oobabooga.assistantPrefix
+  }
   console.log('prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)

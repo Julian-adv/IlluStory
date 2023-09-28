@@ -1,31 +1,17 @@
 <script lang="ts">
   import Markdown from '../common/Markdown.svelte'
   import DropSelect from '../common/DropSelect.svelte'
-  import { assistantRole, chatRoles, countTokensApi, sendChat, sendChatStream } from '$lib/api'
-  import {
-    sessionPath,
-    preset,
-    prologues,
-    dialogues,
-    usage,
-    summarySceneIndex,
-    settings,
-    session,
-    chars,
-    user,
-    replaceDict
-  } from '$lib/store'
-  import { lastScene, newSceneId, scrollToEnd, translateButtonClass } from '$lib'
-  import { onMount, tick } from 'svelte'
+  import { chatRoles } from '$lib/api'
+  import { dialogues, settings } from '$lib/store'
+  import { translateButtonClass } from '$lib'
+  import { onMount } from 'svelte'
   import { Button } from 'flowbite-svelte'
   import { translateText } from '$lib/deepLApi'
   import { getNextHistory, getPrevHistory, pushHistory } from '$lib/history'
-  import { makeReplaceDict, replaceChar, replaceNames, saveSessionAuto } from '$lib/session'
-  import { extractImagePrompt } from '$lib/image'
 
   export let role = 'user'
   export let value = ''
-  export let nextChar = 'random'
+  export let sendInput: (role: string, text: string) => void
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
 
@@ -51,12 +37,6 @@
 
   let currentIndex = 0
 
-  function saveSession() {
-    if ($sessionPath !== '') {
-      saveSessionAuto($sessionPath, $session, $dialogues)
-    }
-  }
-
   function _received(text: string) {
     $dialogues[$dialogues.length - 1].content += text
     $dialogues[$dialogues.length - 1].done = false
@@ -64,97 +44,6 @@
 
   function _closedCb() {
     $dialogues[$dialogues.length - 1].done = true
-  }
-
-  async function received(text: string) {
-    let scene = lastScene($dialogues)
-    scene.content += text
-    scene.textContent = scene.content
-    $dialogues = $dialogues
-    $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
-    $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
-    await tick()
-    scrollToEnd()
-  }
-
-  async function closed() {
-    let scene = lastScene($dialogues)
-    scene = await extractImagePrompt($settings, scene, $replaceDict)
-    $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
-    $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
-    scene.done = true
-    $dialogues = $dialogues
-    if (nextChar !== 'random') {
-      $session.nextSpeaker++
-      if ($session.nextSpeaker >= $chars.length) {
-        $session.nextSpeaker = 0
-      }
-      nextChar = $chars[$session.nextSpeaker].name
-    }
-    saveSession()
-  }
-
-  async function sendInput(content: string) {
-    if (content[0] === '"') {
-      content = `${$user.name}: ` + content
-    }
-    const sceneId = newSceneId($dialogues)
-    const userScene = {
-      id: sceneId,
-      role: role,
-      content: content,
-      textContent: content,
-      done: true
-    }
-    const waitingScene = {
-      id: sceneId + 1,
-      role: assistantRole,
-      content: '',
-      textContent: '',
-      done: false
-    }
-    $dialogues = [...$dialogues, userScene, waitingScene]
-    await tick()
-    scrollToEnd()
-    if (nextChar === 'random') {
-      $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
-    } else {
-      $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
-    }
-    // let prologs = replaceChars($prologues, $chars, $user)
-    let prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
-    prologs = replaceNames(prologs, $replaceDict)
-    const result = $preset.streaming
-      ? await sendChatStream(
-          $preset,
-          prologs,
-          $dialogues,
-          false,
-          $summarySceneIndex,
-          received,
-          closed
-        )
-      : await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
-    if (result) {
-      $usage = result.usage
-      let scene = lastScene($dialogues)
-      scene.role = result.scene.role
-      scene.content = result.scene.content
-      scene.done = result.scene.done
-      scene = await extractImagePrompt($settings, scene, $replaceDict)
-      $dialogues = $dialogues
-      await tick()
-      scrollToEnd()
-      if (nextChar !== 'random') {
-        $session.nextSpeaker++
-        if ($session.nextSpeaker >= $chars.length) {
-          $session.nextSpeaker = 0
-        }
-        nextChar = $chars[$session.nextSpeaker].name
-      }
-    }
-    saveSession()
   }
 
   async function nextState(state: ValueState, transition: Transition): Promise<ValueState> {
@@ -183,12 +72,12 @@
             entered: trimmed
           }
         } else {
-          sendInput(state.entered)
+          sendInput(role, state.entered)
           return { state: 'start', value: '', translated: '', entered: '' }
         }
       },
       translated: () => {
-        sendInput(state.translated)
+        sendInput(role, state.translated)
         return { state: 'start', value: '', translated: '', entered: '' }
       },
       unmodified: () => {
