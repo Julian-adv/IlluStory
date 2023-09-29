@@ -14,7 +14,7 @@
     "contextSize": 4000
   },
   "oobabooga": {
-    "apiUrl": "http://localhost:5000/api/v1/generate",
+    "apiUrl": "http://localhost:5000/api",
     "maxTokens": 500,
     "temperature": 0.7,
     "topK": 0,

@@ -39,7 +39,7 @@ export const defaultPreset: Preset = {
 
   // oobabooga
   oobabooga: {
-    apiUrl: 'http://localhost:5000/api/v1/generate',
+    apiUrl: 'http://localhost:5000/api',
     preset: 'tfs-with-top-a',
     maxTokens: 300,
     temperature: 0.7,
