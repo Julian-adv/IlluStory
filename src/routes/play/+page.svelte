@@ -287,6 +287,7 @@
     for (const char of $chars) {
       characters.push({ value: char.name, name: char.name })
     }
+    nextChar = characters[characters.length - 1].value
   }
 
   onMount(async () => {

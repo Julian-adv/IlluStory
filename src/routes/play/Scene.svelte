@@ -16,11 +16,18 @@
   export let scene: SceneType
   let translated: boolean
   const last = lastScene($dialogues).id == scene.id
-  let info: SceneResult = {
-    showImage: false,
-    imageSize: { width: 512, height: 512 },
-    imageFromSD: Promise.resolve('')
-  }
+  let info: SceneResult =
+    scene.role === assistantRole
+      ? {
+          showImage: true,
+          imageSize: getRandomSize($settings.imageSizes),
+          imageFromSD: new Promise((_resolve, _reject) => {})
+        }
+      : {
+          showImage: false,
+          imageSize: { width: 0, height: 0 },
+          imageFromSD: new Promise((_resolve, _reject) => {})
+        }
   let sessionDir = ''
 
   $: imageWidth = realImageSize(info.imageSize.width)
@@ -29,7 +36,7 @@
       ? 'clear-both flex justify-center items-end z-10 wrapper'
       : 'wrapper float-left flex items-end pl-4 mr-4'
 
-  $: if (!info.showImage && !scene.image && scene.role === assistantRole && scene.done) {
+  $: if (!scene.image && scene.role === assistantRole && scene.done) {
     generateNewImage()
     if (last) {
       tick().then(() => {
@@ -40,7 +47,9 @@
 
   onMount(async () => {
     sessionDir = await dirname($sessionPath)
-    info = await generateImageIfNeeded($settings, scene, sessionDir, last)
+    if (scene.done) {
+      info = await generateImageIfNeeded($settings, scene, sessionDir, last)
+    }
     translated = !!scene.translatedContent
     info.imageFromSD.then(() => {
       saveSessionAuto($sessionPath, $session, $dialogues)
@@ -124,8 +133,6 @@
   }
 
   function generateNewImage() {
-    info.showImage = true
-    info.imageSize = getRandomSize($settings.imageSizes)
     info.imageFromSD = generateImage(
       $settings,
       info.imageSize.width,
