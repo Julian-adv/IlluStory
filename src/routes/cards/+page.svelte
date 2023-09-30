@@ -6,7 +6,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { loadSettings, saveSettings } from '$lib/settings'
-  import { readDir, BaseDirectory } from '@tauri-apps/api/fs'
   import {
     Button,
     Card,
@@ -34,13 +33,13 @@
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { cardFromPreset, loadChar } from '$lib/charSettings'
-  import { appDataDir } from '@tauri-apps/api/path'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
   import { loadSession } from '$lib/session'
   import { slide } from 'svelte/transition'
   import { loadScene } from '$lib/scene'
   import { loadPreset } from '$lib/preset'
   import { cardFromPath } from '$lib/card'
+  import { tcAppDataDir, tcReadDir } from '$lib/tauriCompat'
 
   let showingCards: StoryCard[] = []
   let extFlag = FileType.All
@@ -50,7 +49,7 @@
   async function reloadCards() {
     working = true
     cards = []
-    const entries = await readDir('.', { dir: BaseDirectory.AppData, recursive: true })
+    const entries = await tcReadDir('.')
     for (const entry of entries) {
       if (entry.name) {
         const ext = extOf(entry.name)
@@ -75,7 +74,7 @@
     reloadCards()
     loading = false
     if (!unlisten) {
-      invoke('start_watch', { path: await appDataDir() }).catch(err => console.log(err))
+      invoke('start_watch', { path: await tcAppDataDir() }).catch(err => console.log(err))
       unlisten = await listen<string>('change', _event => {
         if (!working) {
           reloadCards()

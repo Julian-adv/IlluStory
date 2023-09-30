@@ -1,4 +1,3 @@
-import { readTextFile } from '@tauri-apps/api/fs'
 import { saveImageToFile, savePath, sceneExt } from './fs'
 import type { FirstScene, SceneResult, SceneType, Settings } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
@@ -8,9 +7,10 @@ import { tick } from 'svelte'
 import { generateImage } from './imageApi'
 import { sep } from '@tauri-apps/api/path'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { tcReadTextFile } from './tauriCompat'
 
 export async function loadScene(path: string) {
-  const json = await readTextFile(path)
+  const json = await tcReadTextFile(path)
   const scene = JSON.parse(json) as FirstScene
   return scene
 }

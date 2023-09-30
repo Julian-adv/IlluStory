@@ -1,7 +1,6 @@
 import { open } from '@tauri-apps/api/dialog'
 import { Api, type Preset, type SceneType } from './interfaces'
 import { presetExt } from './fs'
-import { readTextFile } from '@tauri-apps/api/fs'
 import { defaultPreset } from './store'
 import {
   assistantRole,
@@ -16,6 +15,7 @@ import {
   userRole,
   userSetting
 } from './api'
+import { tcReadTextFile } from './tauriCompat'
 
 interface RisuPrompt {
   text: string
@@ -128,7 +128,7 @@ function convertMainPrompt(preset: Preset, prompt: string) {
 }
 
 export async function loadPreset(path: string): Promise<Preset> {
-  const json = await readTextFile(path)
+  const json = await tcReadTextFile(path)
   const preset = JSON.parse(json)
   if (!preset.koboldAi) {
     preset.koboldAi = defaultPreset.koboldAi
@@ -138,7 +138,7 @@ export async function loadPreset(path: string): Promise<Preset> {
 }
 
 export async function importPreset(path: string): Promise<Preset> {
-  const json = await readTextFile(path)
+  const json = await tcReadTextFile(path)
   const tempPreset = JSON.parse(json)
   const preset = structuredClone(defaultPreset)
   preset.prompts = []

@@ -1,10 +1,9 @@
-import { readTextFile } from '@tauri-apps/api/fs'
 import { allExts, charExt, extOf, presetExt, sceneExt, sessionExt } from './fs'
 import { CardType, type StoryCard } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { defaultImage } from '$lib'
 import { metadata } from 'tauri-plugin-fs-extra-api'
-import { appDataDir } from '@tauri-apps/api/path'
+import { tcAppDataDir, tcReadTextFile } from './tauriCompat'
 
 function cardTypeFromExt(ext: string) {
   switch (ext) {
@@ -22,7 +21,7 @@ function cardTypeFromExt(ext: string) {
 }
 
 export async function cardFromPath(path: string): Promise<StoryCard> {
-  const text = await readTextFile(path)
+  const text = await tcReadTextFile(path)
   const obj = JSON.parse(text)
   let image = defaultImage
   let name = ''
@@ -65,7 +64,7 @@ export async function cardFromPath(path: string): Promise<StoryCard> {
 
 export async function loadCardDialog(exts: string[]): Promise<StoryCard | null> {
   const selected = await open({
-    defaultPath: await appDataDir(),
+    defaultPath: await tcAppDataDir(),
     filters: [{ name: '*', extensions: exts }]
   })
   if (typeof selected === 'string') {

@@ -11,3 +11,7 @@ vite.config.ts.timestamp-*
 memo.md
 package-lock.json
 src/lib/secrets.ts
+__pycache__
+server/data
+target/
+/venv

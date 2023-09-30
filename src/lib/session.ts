@@ -1,11 +1,11 @@
-import { readTextFile } from '@tauri-apps/api/fs'
 import { saveObjQuietly, sessionExt } from './fs'
 import type { Char, SceneType, Session, StringDictionary } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { charSetting, userSetting } from './api'
+import { tcReadTextFile } from './tauriCompat'
 
 export async function loadSession(path: string) {
-  const json = await readTextFile(path)
+  const json = await tcReadTextFile(path)
   const session = JSON.parse(json) as Session
   if (!session.nextSpeaker) {
     session.nextSpeaker = 0

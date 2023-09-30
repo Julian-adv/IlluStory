@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { settingsFile } from '$lib/fs'
-  import { BaseDirectory, exists } from '@tauri-apps/api/fs'
+  import { tcExists } from '$lib/tauriCompat'
 
   async function checkSettings() {
-    if (!(await exists(settingsFile, { dir: BaseDirectory.AppConfig }))) {
+    if (!(await tcExists(settingsFile))) {
       goto('/settings')
     } else {
       goto('/play')

@@ -2,8 +2,8 @@
   import { Button, Dropdown, Helper, Label, Search } from 'flowbite-svelte'
   import { onMount } from 'svelte'
   import { helperClassHidden, helperClassVisible } from '$lib'
-  import { invoke } from '@tauri-apps/api/tauri'
   import { ChevronDownSolid } from 'flowbite-svelte-icons'
+  import { tcListFonts } from '$lib/tauriCompat'
 
   export let label = ''
   export let value = ''
@@ -29,10 +29,6 @@
     helperClass = helperClassHidden
   }
 
-  async function fetchFonts() {
-    fonts = await invoke('list_fonts')
-  }
-
   function selectFont(font: string) {
     return () => {
       value = font
@@ -41,9 +37,9 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
     helperClass = helperClassHidden
-    fetchFonts()
+    fonts = await tcListFonts()
   })
 </script>
 

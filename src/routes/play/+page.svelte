@@ -51,12 +51,12 @@
   import { loadScene } from '$lib/scene'
   import { presetCard, userCard, charCards, sceneCard, curChar, curCharPath } from '$lib/store'
   import { loadSettings } from '$lib/settings'
-  import { BaseDirectory, createDir, readDir, exists } from '@tauri-apps/api/fs'
   import { appDataDir, sep } from '@tauri-apps/api/path'
   import { metadata } from 'tauri-plugin-fs-extra-api'
   import { extractImagePrompt } from '$lib/image'
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
+  import { tcAppDataDir, tcCreateDir, tcExists, tcReadDir } from '$lib/tauriCompat'
 
   let userInput = ''
   let started = false
@@ -139,11 +139,8 @@
   async function saveSessionNew() {
     const timestamp = formatDate(new Date())
     const thisSessionDir = sessionsDir + sep + timestamp
-    if (!(await exists(thisSessionDir, { dir: BaseDirectory.AppData }))) {
-      createDir(thisSessionDir, {
-        dir: BaseDirectory.AppData,
-        recursive: true
-      })
+    if (!(await tcExists(thisSessionDir))) {
+      tcCreateDir(thisSessionDir)
     }
     const dataDir = await appDataDir()
     const thisSessionPath = dataDir + thisSessionDir
@@ -154,7 +151,7 @@
 
   async function findMostRecentSession() {
     let mostRecent = { path: '', modified: new Date(0) }
-    const entries = await readDir(sessionsDir, { dir: BaseDirectory.AppData, recursive: true })
+    const entries = await tcReadDir(sessionsDir)
     for (const entry of entries) {
       if (entry.children) {
         for (const child of entry.children) {
@@ -173,7 +170,7 @@
   let shortSessionPath = ''
 
   async function loadSessionCommon(path: string) {
-    const dataDir = await appDataDir()
+    const dataDir = await tcAppDataDir()
     $sessionPath = path
     shortSessionPath = basenameOf(path)
     $presetCard = await cardFromPath(dataDir + $session.presetCard)

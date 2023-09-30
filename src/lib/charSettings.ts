@@ -1,4 +1,3 @@
-import { readTextFile } from '@tauri-apps/api/fs'
 import { open } from '@tauri-apps/api/dialog'
 import { charExt, loadMetaData, savePath } from './fs'
 import type { Char, Preset } from './interfaces'
@@ -6,9 +5,10 @@ import { dirname, sep } from '@tauri-apps/api/path'
 import { firstScene, userSetting } from './api'
 import { curScene, curScenePath, user, userPath } from './store'
 import { loadScene } from './scene'
+import { tcReadTextFile } from './tauriCompat'
 
 export async function loadChar(path: string) {
-  const json = await readTextFile(path)
+  const json = await tcReadTextFile(path)
   const char = JSON.parse(json) as Char
   return char
 }

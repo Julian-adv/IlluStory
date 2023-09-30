@@ -1,16 +1,17 @@
-import {
-  BaseDirectory,
-  copyFile,
-  createDir,
-  exists,
-  writeBinaryFile,
-  writeTextFile
-} from '@tauri-apps/api/fs'
-import { appDataDir, resolveResource, sep } from '@tauri-apps/api/path'
+import { writeBinaryFile } from '@tauri-apps/api/fs'
+import { sep } from '@tauri-apps/api/path'
 import type { Preset, Char, FirstScene, Session } from './interfaces'
 import { open, save } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
+import {
+  tcAppDataDir,
+  tcCopyFile,
+  tcCreateDir,
+  tcExists,
+  tcResolveResource,
+  tcWriteTextFile
+} from './tauriCompat'
 
 async function readAsDataURL(blob: Blob): Promise<string | null> {
   return new Promise((resolve, reject) => {
@@ -80,7 +81,7 @@ export function saveImageToFileOrg(dataURI: string, filename: string) {
 export async function savePath(path: string, ext: string, data: any) {
   const filePath = await save({ defaultPath: path, filters: [{ name: '*', extensions: [ext] }] })
   if (filePath) {
-    writeTextFile(filePath, JSON.stringify(data, null, 2))
+    tcWriteTextFile(filePath, JSON.stringify(data, null, 2))
   }
   return filePath
 }
@@ -95,7 +96,7 @@ export async function savePreset(preset: Preset) {
 }
 
 export async function saveObjQuietly(filePath: string, obj: Preset | Char | FirstScene | Session) {
-  writeTextFile(filePath, JSON.stringify(obj, null, 2))
+  tcWriteTextFile(filePath, JSON.stringify(obj, null, 2))
 }
 
 export const presetExt = 'preset'
@@ -146,17 +147,17 @@ export async function loadMetaData(path: string) {
 export async function installDefaults() {
   const filesToCopy = ['default.preset', 'Julian.char', 'Eliane.char', "Adventurer's Guild.scene"]
 
-  if (await exists(filesToCopy[0], { dir: BaseDirectory.AppData })) {
+  if (await tcExists(filesToCopy[0])) {
     return
   }
 
-  const dataDir = await appDataDir()
-  if (!(await exists(dataDir))) {
-    createDir('', { dir: BaseDirectory.AppData, recursive: true })
+  const dataDir = await tcAppDataDir()
+  if (!(await tcExists(dataDir))) {
+    tcCreateDir('')
   }
 
   for (const file of filesToCopy) {
-    const filePath = await resolveResource('resources/' + file)
-    copyFile(filePath, file, { dir: BaseDirectory.AppData })
+    const filePath = await tcResolveResource('resources/' + file)
+    tcCopyFile(filePath, file)
   }
 }
