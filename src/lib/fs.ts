@@ -10,6 +10,7 @@ import {
   tcCreateDir,
   tcExists,
   tcResolveResource,
+  tcWriteBinaryFile,
   tcWriteTextFile
 } from './tauriCompat'
 
@@ -51,14 +52,18 @@ function dataURIToBlob(dataURI: string) {
 }
 
 export function saveImageToFile(dataURI: string, filename: string) {
-  const byteString = atob(dataURI.split(',')[1])
-  const arrayBuffer = new ArrayBuffer(byteString.length)
-  const uint8Array = new Uint8Array(arrayBuffer)
+  if (window.__TAURI_METADATA__) {
+    const byteString = atob(dataURI.split(',')[1])
+    const arrayBuffer = new ArrayBuffer(byteString.length)
+    const uint8Array = new Uint8Array(arrayBuffer)
 
-  for (let i = 0; i < byteString.length; i++) {
-    uint8Array[i] = byteString.charCodeAt(i)
+    for (let i = 0; i < byteString.length; i++) {
+      uint8Array[i] = byteString.charCodeAt(i)
+    }
+    writeBinaryFile(filename, uint8Array)
+  } else {
+    tcWriteBinaryFile(filename, dataURI)
   }
-  writeBinaryFile(filename, uint8Array)
 }
 
 export function saveImageToFileOrg(dataURI: string, filename: string) {
@@ -125,6 +130,13 @@ export function extOf(path: string) {
     return ''
   }
   return path.slice(index + 1)
+}
+
+export function dirnameOf(path: string) {
+  const correctedPath = path.replace(/\\/g, '/')
+  const lastSlashIndex = correctedPath.lastIndexOf('/')
+  if (lastSlashIndex === -1) return ''
+  return correctedPath.substring(0, lastSlashIndex)
 }
 
 function loadFileAsBlob(path: string): Promise<Blob> {

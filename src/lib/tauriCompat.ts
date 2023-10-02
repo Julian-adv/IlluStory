@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/tauri'
+import { convertFileSrc, invoke } from '@tauri-apps/api/tauri'
 import {
   BaseDirectory,
   copyFile,
@@ -10,6 +10,8 @@ import {
   type FileEntry
 } from '@tauri-apps/api/fs'
 import { appDataDir, resolveResource } from '@tauri-apps/api/path'
+import { metadata } from 'tauri-plugin-fs-extra-api'
+import { Body, getClient } from '@tauri-apps/api/http'
 
 async function fetchGet(api: string) {
   const response = await fetch('http://localhost:8000/api/' + api, {
@@ -91,14 +93,54 @@ export async function tcWriteTextFile(path: string, text: string): Promise<void>
   }
 }
 
+export async function tcWriteBinaryFile(path: string, data: string): Promise<void> {
+  await fetchPost('fs/writeBinaryFile', { path: path, text: data })
+}
+
 export async function tcReadDir(path: string): Promise<FileEntry[]> {
   if (window.__TAURI_METADATA__) {
     return await readDir(path, { dir: BaseDirectory.AppData, recursive: true })
   } else {
     const result = await fetchPost('fs/readDir', { path: path })
-    console.log('entries', result.entries)
+    console.log(result.entries)
     return result.entries
   }
+}
+
+export async function tcMetadata(path: string) {
+  if (window.__TAURI_METADATA__) {
+    return await metadata(path)
+  } else {
+    const result = await fetchPost('fs/metadata', { path: path })
+    return result
+  }
+}
+
+interface OpenOption {
+  defaultPath: string
+  filters: {
+    name: string
+    extensions: string[]
+  }[]
+}
+
+export async function tcOpen(option: OpenOption) {
+  const result = new Promise<string>((resolve, _reject) => {
+    const input = document.getElementById('hiddenFileInput') as HTMLInputElement
+    if (input) {
+      input.accept = option.filters[0].extensions.map(ext => '.' + ext).join(' ')
+      input.click()
+      input.onchange = event => {
+        if (event.target) {
+          const target = event.target as HTMLInputElement
+          if (target.files) {
+            resolve(target.files[0].name)
+          }
+        }
+      }
+    }
+  })
+  return result
 }
 
 export async function tcListFonts(): Promise<string[]> {
@@ -107,5 +149,25 @@ export async function tcListFonts(): Promise<string[]> {
   } else {
     const result = await fetchGet('fonts/list')
     return result.fonts
+  }
+}
+
+export async function tcPost(url: string, body: any) {
+  if (window.__TAURI_METADATA__) {
+    const client = await getClient()
+    return await client.post(url, Body.json(body), {
+      headers: { 'Content-Type': 'application/json' }
+    })
+  } else {
+    const result = await fetchPost('request/post', { url: url, body: body })
+    return result
+  }
+}
+
+export function tcConvertFileSrc(path: string) {
+  if (window.__TAURI_METADATA__) {
+    return convertFileSrc(path)
+  } else {
+    return path.replace('\\', '/')
   }
 }

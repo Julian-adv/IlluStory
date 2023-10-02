@@ -51,12 +51,11 @@
   import { loadScene } from '$lib/scene'
   import { presetCard, userCard, charCards, sceneCard, curChar, curCharPath } from '$lib/store'
   import { loadSettings } from '$lib/settings'
-  import { appDataDir, sep } from '@tauri-apps/api/path'
-  import { metadata } from 'tauri-plugin-fs-extra-api'
+  import { sep } from '@tauri-apps/api/path'
   import { extractImagePrompt } from '$lib/image'
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
-  import { tcAppDataDir, tcCreateDir, tcExists, tcReadDir } from '$lib/tauriCompat'
+  import { tcAppDataDir, tcCreateDir, tcExists, tcMetadata, tcReadDir } from '$lib/tauriCompat'
 
   let userInput = ''
   let started = false
@@ -127,7 +126,7 @@
 
   async function saveCardUpdate() {
     if ($sessionPath) {
-      const dataDir = await appDataDir()
+      const dataDir = await tcAppDataDir()
       $session.presetCard = relativePath(dataDir, $presetCard.path)
       $session.userCard = relativePath(dataDir, $userCard.path)
       $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
@@ -142,7 +141,7 @@
     if (!(await tcExists(thisSessionDir))) {
       tcCreateDir(thisSessionDir)
     }
-    const dataDir = await appDataDir()
+    const dataDir = await tcAppDataDir()
     const thisSessionPath = dataDir + thisSessionDir
     const tempPath = thisSessionPath + sep + 'session-' + timestamp + '.' + sessionExt
     $sessionPath = tempPath
@@ -156,7 +155,7 @@
       if (entry.children) {
         for (const child of entry.children) {
           if (child.name && child.name.endsWith(sessionExt)) {
-            const stat = await metadata(child.path)
+            const stat = await tcMetadata(child.path)
             if (stat.modifiedAt > mostRecent.modified) {
               mostRecent = { path: child.path, modified: stat.modifiedAt }
             }
@@ -525,6 +524,7 @@
 </script>
 
 <main>
+  <input id="hiddenFileInput" type="file" class="hidden" />
   <h1 class="text-lg font-semibold mb-1 mt-3 px-4">
     Session <span class="text-stone-400 text-sm">{shortSessionPath}</span>
   </h1>

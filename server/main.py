@@ -3,6 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from src import fs
 from src import fonts
+from src import request
 
 app = FastAPI()
 
@@ -22,3 +23,4 @@ app.add_middleware(
 
 app.include_router(fs.router)
 app.include_router(fonts.router)
+app.include_router(request.router)

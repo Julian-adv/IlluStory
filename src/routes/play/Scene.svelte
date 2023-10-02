@@ -9,9 +9,9 @@
   import { extractImagePrompt } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
   import { generateImageIfNeeded, saveImage } from '$lib/scene'
-  import { dirname } from '@tauri-apps/api/path'
   import { saveSessionAuto } from '$lib/session'
   import { assistantRole } from '$lib/api'
+  import { dirnameOf } from '$lib/fs'
 
   export let scene: SceneType
   let translated: boolean
@@ -46,7 +46,7 @@
   }
 
   onMount(async () => {
-    sessionDir = await dirname($sessionPath)
+    sessionDir = dirnameOf($sessionPath)
     if (scene.done) {
       info = await generateImageIfNeeded($settings, scene, sessionDir, last)
     }

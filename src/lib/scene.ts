@@ -6,8 +6,7 @@ import { getRandomSize, scrollToEnd } from '$lib'
 import { tick } from 'svelte'
 import { generateImage } from './imageApi'
 import { sep } from '@tauri-apps/api/path'
-import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { tcReadTextFile } from './tauriCompat'
+import { tcConvertFileSrc, tcReadTextFile } from './tauriCompat'
 
 export async function loadScene(path: string) {
   const json = await tcReadTextFile(path)
@@ -33,9 +32,12 @@ export async function saveScene(scene: FirstScene) {
 }
 
 export function saveImage(sessionPath: string, result: string) {
+  if (!sessionPath) {
+    return ''
+  }
   const imagePath = sessionPath + sep + 'image' + Date.now() + '.png'
   saveImageToFile(result, imagePath)
-  return convertFileSrc(imagePath)
+  return tcConvertFileSrc(imagePath)
 }
 
 export async function generateImageIfNeeded(
