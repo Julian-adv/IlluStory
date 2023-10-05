@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { StoryCard } from '$lib/interfaces'
-  import CommonCard from './CommonCard.svelte'
+  import CommonCard from '$lib/CommonCard.svelte'
 
   export let cards: StoryCard[] = []
   export let onRemove = (_index: number) => {}

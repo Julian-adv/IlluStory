@@ -121,7 +121,9 @@ export enum CardType {
   Preset = 0,
   Char,
   Scene,
-  Session
+  Session,
+  Json,
+  Dir
 }
 
 export interface StoryCard {

@@ -5,6 +5,7 @@ from typing import List, Dict, Union
 import os
 import shutil
 import base64
+import stat
 
 
 router = APIRouter(
@@ -155,10 +156,10 @@ async def metadata(path: Path):
     print(path)
     try:
         info = os.stat(path)
-        return {"modifiedAt": info.st_mtime}
+        return {"modifiedAt": info.st_mtime, "isDir": stat.S_ISDIR(info.st_mode)}
     except Exception as e:
         print(f"Error occurred: {e}.")
-        return {"modifiedAt": 0}
+        return {"modifiedAt": 0, "isDir": False}
 
 
 @router.post("/listFonts")

@@ -44,7 +44,7 @@
     saveSessionAuto
   } from '$lib/session'
   import CardList from '../common/CardList.svelte'
-  import CommonCard from '../common/CommonCard.svelte'
+  import CommonCard from '$lib/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
   import { cardFromPath, loadCardDialog } from '$lib/card'
   import { loadPreset } from '$lib/preset'

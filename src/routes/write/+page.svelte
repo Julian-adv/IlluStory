@@ -45,6 +45,7 @@
   import SceneCard from '../common/SceneCard.svelte'
   import { loadSceneDialog } from '$lib/scene'
   import type { PageData } from './$types'
+  import FileDialog from '$lib/FileDialog.svelte'
 
   export let data: PageData
   const apis = [
@@ -59,6 +60,8 @@
   ]
   let autoSave = true
   let totalTokens = 0
+  let fileDialogOpen = false
+  let fileDialogExt = '.preset'
 
   onMount(async () => {
     totalTokens = 0
@@ -119,10 +122,14 @@
   }
 
   async function save() {
-    const tempFilePath = await savePreset($preset)
-    if (tempFilePath) {
-      $presetPath = tempFilePath
-      totalTokens = 0
+    if (window.__TAURI_METADATA__) {
+      const tempFilePath = await savePreset($preset)
+      if (tempFilePath) {
+        $presetPath = tempFilePath
+        totalTokens = 0
+      }
+    } else {
+      fileDialogOpen = true
     }
   }
 
@@ -330,7 +337,9 @@
 </script>
 
 <div class="px-4">
+  <input id="hiddenFileInput" type="file" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Preset Editing</h1>
+  <FileDialog bind:openDialog={fileDialogOpen} ext={fileDialogExt} />
   <Toast
     color="orange"
     transition={slide}

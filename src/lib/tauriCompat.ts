@@ -102,7 +102,6 @@ export async function tcReadDir(path: string): Promise<FileEntry[]> {
     return await readDir(path, { dir: BaseDirectory.AppData, recursive: true })
   } else {
     const result = await fetchPost('fs/readDir', { path: path })
-    console.log(result.entries)
     return result.entries
   }
 }

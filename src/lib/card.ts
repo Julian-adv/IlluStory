@@ -1,4 +1,4 @@
-import { allExts, charExt, extOf, presetExt, sceneExt, sessionExt } from './fs'
+import { allExts, basenameOf, charExt, extOf, jsonExt, presetExt, sceneExt, sessionExt } from './fs'
 import { CardType, type StoryCard } from './interfaces'
 import { defaultImage } from '$lib'
 import { tcAppDataDir, tcMetadata, tcOpen, tcReadTextFile } from './tauriCompat'
@@ -13,50 +13,67 @@ function cardTypeFromExt(ext: string) {
       return CardType.Scene
     case sessionExt:
       return CardType.Session
+    case jsonExt:
+      return CardType.Json
     default:
       throw new Error(`Unknown extension: ${ext}`)
   }
 }
 
 export async function cardFromPath(path: string): Promise<StoryCard> {
-  const text = await tcReadTextFile(path)
-  const obj = JSON.parse(text)
+  const stat = await tcMetadata(path)
   let image = defaultImage
   let name = ''
   let title = ''
-  if (obj) {
-    if (obj.image) {
-      image = obj.image
-    } else if (obj.prompts && obj.prompts.length > 0) {
-      for (const prompt of obj.prompts) {
-        if (prompt.image) {
-          image = prompt.image
-          break
+  if (stat.isDir) {
+    return {
+      type: CardType.Dir,
+      name: basenameOf(path),
+      title: title,
+      path: path,
+      modifiedAt: stat.modifiedAt,
+      image: image
+    }
+  } else {
+    const text = await tcReadTextFile(path)
+    if (text) {
+      const obj = JSON.parse(text)
+      if (obj) {
+        if (obj.image) {
+          image = obj.image
+        } else if (obj.prompts && obj.prompts.length > 0) {
+          for (const prompt of obj.prompts) {
+            if (prompt.image) {
+              image = prompt.image
+              break
+            }
+          }
+        } else if (obj.length > 0) {
+          for (const scene of obj) {
+            if (scene.image) {
+              image = scene.image
+              break
+            }
+          }
+        }
+        if (obj.name) {
+          name = obj.name
+        } else {
+          name = basenameOf(path)
+        }
+        if (obj.title) {
+          title = obj.title
         }
       }
-    } else if (obj.length > 0) {
-      for (const scene of obj) {
-        if (scene.image) {
-          image = scene.image
-          break
-        }
-      }
     }
-    if (obj.name) {
-      name = obj.name
+    return {
+      type: cardTypeFromExt(extOf(path)),
+      name: name,
+      title: title,
+      path: path,
+      modifiedAt: stat.modifiedAt,
+      image: image
     }
-    if (obj.title) {
-      title = obj.title
-    }
-  }
-  const stat = await tcMetadata(path)
-  return {
-    type: cardTypeFromExt(extOf(path)),
-    name: name,
-    title: title,
-    path: path,
-    modifiedAt: stat.modifiedAt,
-    image: image
   }
 }
 
