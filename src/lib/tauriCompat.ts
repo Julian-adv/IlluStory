@@ -12,6 +12,9 @@ import {
 import { appDataDir, resolveResource } from '@tauri-apps/api/path'
 import { metadata } from 'tauri-plugin-fs-extra-api'
 import { Body, getClient } from '@tauri-apps/api/http'
+import { save, type SaveDialogOptions } from '@tauri-apps/api/dialog'
+import { fileDialog } from './store'
+import { basenameOf } from './fs'
 
 async function fetchGet(api: string) {
   const response = await fetch('http://localhost:8000/api/' + api, {
@@ -140,6 +143,28 @@ export async function tcOpen(option: OpenOption) {
     }
   })
   return result
+}
+
+export async function tcSave(option: SaveDialogOptions) {
+  if (window.__TAURI_METADATA__) {
+    return await save(option)
+  } else {
+    const ext = option.filters ? option.filters[0].extensions[0] : ''
+    const value = option.defaultPath ? basenameOf(option.defaultPath) : ''
+    fileDialog.set({ open: true, value: value, ext: ext })
+    return new Promise<string>((resolve, _reject) => {
+      const unsub = fileDialog.subscribe(dialog => {
+        if (!dialog.open) {
+          if (dialog.value) {
+            resolve(dialog.value + '.' + ext)
+          } else {
+            resolve('')
+          }
+          unsub()
+        }
+      })
+    })
+  }
 }
 
 export async function tcListFonts(): Promise<string[]> {

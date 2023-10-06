@@ -211,3 +211,5 @@ export const presetCard = writable(emptyCard)
 export const userCard = writable(emptyCard)
 export const charCards = writable([emptyCard])
 export const sceneCard = writable(emptyCard)
+
+export const fileDialog = writable({ open: false, ext: '', value: '' })

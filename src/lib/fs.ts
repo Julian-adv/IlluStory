@@ -1,7 +1,7 @@
 import { writeBinaryFile } from '@tauri-apps/api/fs'
 import { sep } from '@tauri-apps/api/path'
 import type { Preset, Char, FirstScene, Session } from './interfaces'
-import { open, save } from '@tauri-apps/api/dialog'
+import { open } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
 import {
@@ -10,6 +10,7 @@ import {
   tcCreateDir,
   tcExists,
   tcResolveResource,
+  tcSave,
   tcWriteBinaryFile,
   tcWriteTextFile
 } from './tauriCompat'
@@ -84,28 +85,11 @@ export function saveImageToFileOrg(dataURI: string, filename: string) {
 }
 
 export async function savePath(path: string, ext: string, data: any) {
-  if (window.__TAURI_METADATA__) {
-    const filePath = await save({
-      defaultPath: path,
-      filters: [{ name: '*', extensions: [ext] }]
-    })
-    if (filePath) {
-      tcWriteTextFile(filePath, JSON.stringify(data, null, 2))
-    }
-    return filePath
-  } else {
-    const result = new Promise<string>((resolve, _reject) => {
-      const blob = new Blob([JSON.stringify(data)], { type: 'text/plain' })
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = path
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      resolve(path)
-    })
-    return result
+  const filePath = await tcSave({ defaultPath: path, filters: [{ name: '*', extensions: [ext] }] })
+  if (filePath) {
+    tcWriteTextFile(filePath, JSON.stringify(data, null, 2))
   }
+  return filePath
 }
 
 export async function savePreset(preset: Preset) {

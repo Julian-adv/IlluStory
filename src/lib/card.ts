@@ -61,7 +61,7 @@ export async function cardFromPath(path: string): Promise<StoryCard> {
         } else {
           name = basenameOf(path)
         }
-        if (obj.title) {
+        if (obj.title && obj.title.toLowerCase() !== name.toLowerCase()) {
           title = obj.title
         }
       }

@@ -24,7 +24,8 @@
     prologues,
     curScene,
     curScenePath,
-    chars
+    chars,
+    fileDialog
   } from '$lib/store'
   import { Api, type Char, type FirstScene } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
@@ -60,8 +61,6 @@
   ]
   let autoSave = true
   let totalTokens = 0
-  let fileDialogOpen = false
-  let fileDialogExt = '.preset'
 
   onMount(async () => {
     totalTokens = 0
@@ -122,14 +121,10 @@
   }
 
   async function save() {
-    if (window.__TAURI_METADATA__) {
-      const tempFilePath = await savePreset($preset)
-      if (tempFilePath) {
-        $presetPath = tempFilePath
-        totalTokens = 0
-      }
-    } else {
-      fileDialogOpen = true
+    const tempFilePath = await savePreset($preset)
+    if (tempFilePath) {
+      $presetPath = tempFilePath
+      totalTokens = 0
     }
   }
 
@@ -339,7 +334,10 @@
 <div class="px-4">
   <input id="hiddenFileInput" type="file" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Preset Editing</h1>
-  <FileDialog bind:openDialog={fileDialogOpen} ext={fileDialogExt} />
+  <FileDialog
+    bind:openDialog={$fileDialog.open}
+    bind:ext={$fileDialog.ext}
+    bind:value={$fileDialog.value} />
   <Toast
     color="orange"
     transition={slide}
