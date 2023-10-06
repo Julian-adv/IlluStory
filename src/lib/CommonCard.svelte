@@ -148,12 +148,12 @@
       {card.title}
     </h3>
   </div>
-  {#if card.name.length > 19}
-    <Popover class="w-auto h-auto text-sm z-30" triggeredBy={`#card${id}`}>
-      <span>{card.name}</span>
-    </Popover>
-  {/if}
 </Card>
+{#if card.name.length > 19}
+  <Popover class="w-auto h-auto text-sm z-30" triggeredBy={`#card${id}`}>
+    <span>{card.name}</span>
+  </Popover>
+{/if}
 
 <style>
   :global(.card-wide) {

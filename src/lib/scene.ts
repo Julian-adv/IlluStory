@@ -5,7 +5,6 @@ import { assistantRole, systemRole } from './api'
 import { getRandomSize, scrollToEnd } from '$lib'
 import { tick } from 'svelte'
 import { generateImage } from './imageApi'
-import { sep } from '@tauri-apps/api/path'
 import { tcConvertFileSrc, tcReadTextFile } from './tauriCompat'
 
 export async function loadScene(path: string) {
@@ -35,7 +34,7 @@ export function saveImage(sessionPath: string, result: string) {
   if (!sessionPath) {
     return ''
   }
-  const imagePath = sessionPath + sep + 'image' + Date.now() + '.png'
+  const imagePath = sessionPath + '/image' + Date.now() + '.png'
   saveImageToFile(result, imagePath)
   return tcConvertFileSrc(imagePath)
 }
@@ -53,12 +52,13 @@ export async function generateImageIfNeeded(
     showImage = true
     imageFromSD = new Promise<string>((resolve, _reject) => {
       const img = new Image()
+      const imageUrl = 'http://localhost:8000/api/' + scene.image
       img.onload = function () {
         imageSize.width = (this as HTMLImageElement).width
         imageSize.height = (this as HTMLImageElement).height
-        resolve(scene.image ?? '')
+        resolve(imageUrl ?? '')
       }
-      img.src = scene.image ?? ''
+      img.src = imageUrl
     })
     await imageFromSD
   } else {

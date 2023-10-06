@@ -4,18 +4,21 @@
   import CommonCard from './CommonCard.svelte'
   import type { StoryCard } from './interfaces'
   import { cardFromPath } from './card'
-  import { basenameOf } from './fs'
+  import { basenameOf, dirnameOf } from './fs'
 
   export let openDialog = false
   export let ext = ''
   export let value = ''
   let cards: StoryCard[] = []
+  let fileName = ''
+  let dir = ''
 
   function onClick(card: StoryCard) {
     value = basenameOf(card.path)
   }
 
   function onOk() {
+    value = dir + '/' + fileName + '.' + ext
     openDialog = false
   }
 
@@ -26,26 +29,28 @@
 
   function onKeyDown(ev: KeyboardEvent) {
     if (ev.code === 'Enter') {
-      openDialog = false
+      onOk()
     }
   }
 
-  async function readCards(openDialog: boolean) {
-    if (openDialog) {
-      const entries = await tcReadDir('')
-      const dotExt = '.' + ext
-      cards = await Promise.all(
-        entries
-          .filter(entry => entry.name?.endsWith(dotExt))
-          .map(entry => {
-            return cardFromPath(entry.path)
-          })
-      )
-      cards = cards
-    }
+  async function readCards() {
+    dir = dirnameOf(value)
+    fileName = basenameOf(value)
+    const entries = await tcReadDir(dir)
+    const dotExt = '.' + ext
+    cards = await Promise.all(
+      entries
+        .filter(entry => entry.name?.endsWith(dotExt))
+        .map(entry => {
+          return cardFromPath(entry.path)
+        })
+    )
+    cards = cards
   }
 
-  $: readCards(openDialog)
+  $: if (openDialog) {
+    readCards()
+  }
 </script>
 
 <Modal title="Save" bind:open={openDialog} autoclose>
@@ -57,7 +62,7 @@
   <div class="flex items-center">
     <Label class="w-28">
       <span>File Name</span></Label>
-    <Input bind:value on:keydown={onKeyDown} /><span class="p-2">.{ext}</span>
+    <Input bind:value={fileName} on:keydown={onKeyDown} /><span class="p-2">.{ext}</span>
   </div>
   <svelte:fragment slot="footer">
     <Button on:click={onOk}>Save</Button>

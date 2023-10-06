@@ -332,7 +332,6 @@
 </script>
 
 <div class="px-4">
-  <input id="hiddenFileInput" type="file" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Preset Editing</h1>
   <FileDialog
     bind:openDialog={$fileDialog.open}

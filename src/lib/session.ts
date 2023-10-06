@@ -20,7 +20,7 @@ export async function loadSession(path: string) {
           height: (this as HTMLImageElement).height
         }
       }
-      img.src = scene.image
+      img.src = 'http://localhost:8000/api/' + scene.image
     }
   })
   return session
@@ -34,11 +34,15 @@ export async function loadSessionDialog(): Promise<[Session | null, string]> {
   return [null, '']
 }
 
-export async function saveSessionAuto(path: string, session: Session, dialogues: SceneType[]) {
+export function prepareForSave(session: Session, dialogues: SceneType[]) {
   session.scenes = dialogues.map(scene => {
     return { id: scene.id, role: scene.role, content: scene.content, image: scene.image }
   })
-  await saveObjQuietly(path, session)
+  return session
+}
+
+export async function saveSessionAuto(path: string, session: Session, dialogues: SceneType[]) {
+  await saveObjQuietly(path, prepareForSave(session, dialogues))
 }
 
 export function replaceName(content: string, dict: StringDictionary): string {

@@ -1,5 +1,4 @@
 import { writeBinaryFile } from '@tauri-apps/api/fs'
-import { sep } from '@tauri-apps/api/path'
 import type { Preset, Char, FirstScene, Session } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
@@ -119,7 +118,7 @@ export function basenameOf(path: string) {
   if (endIndex < 0) {
     endIndex = path.length
   }
-  let startIndex = path.lastIndexOf(sep)
+  let startIndex = path.lastIndexOf('/')
   if (startIndex < 0) {
     startIndex = -1
   }

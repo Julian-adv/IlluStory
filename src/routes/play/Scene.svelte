@@ -29,6 +29,7 @@
           imageFromSD: new Promise((_resolve, _reject) => {})
         }
   let sessionDir = ''
+  let imageUrl = 'http://localhost:8000/api/' + scene.image
 
   $: imageWidth = realImageSize(info.imageSize.width)
   $: imageClass =
@@ -141,6 +142,7 @@
     ).then(result => {
       scene.image = saveImage(sessionDir, result)
       scene.imageSize = info.imageSize
+      saveSessionAuto($sessionPath, $session, $dialogues)
       return result
     })
   }
@@ -168,7 +170,7 @@
     <ImageWithControl
       imageFromSD={info.imageFromSD}
       bind:imageSize={info.imageSize}
-      bind:image={scene.image}
+      bind:image={imageUrl}
       tooltip={scene.visualContent}
       class={imageClass} />
   {/if}

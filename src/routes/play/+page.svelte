@@ -30,7 +30,8 @@
     emptyCard,
     settings,
     session,
-    replaceDict
+    replaceDict,
+    fileDialog
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
@@ -39,6 +40,7 @@
     loadSession,
     loadSessionDialog,
     makeReplaceDict,
+    prepareForSave,
     replaceChar,
     replaceNames,
     saveSessionAuto
@@ -56,6 +58,7 @@
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
   import { tcAppDataDir, tcCreateDir, tcExists, tcMetadata, tcReadDir } from '$lib/tauriCompat'
+  import FileDialog from '$lib/FileDialog.svelte'
 
   let userInput = ''
   let started = false
@@ -112,7 +115,8 @@
   }
 
   async function save() {
-    const tempPath = await savePath(insertTimestamp($presetPath), sessionExt, $dialogues)
+    const path = $sessionPath ? $sessionPath : insertTimestamp($presetPath)
+    const tempPath = await savePath(path, sessionExt, prepareForSave($session, $dialogues))
     if (tempPath) {
       $sessionPath = tempPath
     }
@@ -524,10 +528,13 @@
 </script>
 
 <main>
-  <input id="hiddenFileInput" type="file" class="hidden" />
   <h1 class="text-lg font-semibold mb-1 mt-3 px-4">
     Session <span class="text-stone-400 text-sm">{shortSessionPath}</span>
   </h1>
+  <FileDialog
+    bind:openDialog={$fileDialog.open}
+    bind:ext={$fileDialog.ext}
+    bind:value={$fileDialog.value} />
   <div class="px-4">
     <Button color="alternative" size="sm" on:click={newSession}>
       <svg
