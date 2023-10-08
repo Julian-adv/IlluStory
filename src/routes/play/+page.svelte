@@ -582,9 +582,9 @@
       <span class="pl-2">Save as ...</span>
     </Button>
   </div>
-  <div class="p-4 grid grid-cols-[9rem,16rem,9rem,16rem] gap-4 items-center">
-    <div class="text-right">Preset</div>
-    <div class="flex flex-wrap flex-none gap-2 items-end">
+  <div class="p-4 flex flex-wrap gap-4">
+    <div class="flex flex-none gap-2 items-end">
+      <div class="w-20 text-right self-center">Preset</div>
       <CommonCard card={$presetCard} onClick={onClickPresetCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addPresetCard}>
@@ -599,8 +599,8 @@
         </svg>
       </Button>
     </div>
-    <div class="text-right">User</div>
-    <div class="flex flex-wrap flex-none gap-2 items-end">
+    <div class="flex flex-none gap-2 items-end">
+      <div class="w-20 text-right self-center">User</div>
       <CommonCard card={$userCard} onClick={onClickCharCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addUserCard}>
@@ -615,8 +615,8 @@
         </svg>
       </Button>
     </div>
-    <div class="text-right">Characters</div>
-    <div class="flex flex-wrap flex-none gap-2 col-span-3 items-end">
+    <div class="flex flex-none gap-2 items-end">
+      <div class="w-20 text-right self-center">Characters</div>
       <CardList cards={$charCards} {onRemove} onClick={onClickCharCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addCharCard}>
@@ -631,8 +631,8 @@
         </svg>
       </Button>
     </div>
-    <div class="text-right">Scene</div>
-    <div class="flex flex-wrap flex-none gap-2 col-span-3 items-end">
+    <div class="flex flex-none gap-2 items-end">
+      <div class="w-20 text-right self-center">Scene</div>
       <CommonCard card={$sceneCard} onClick={onClickSceneCard} />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>

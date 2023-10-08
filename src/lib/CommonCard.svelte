@@ -15,10 +15,10 @@
     const ext = extOf(card.path)
     if (ext === sceneExt || ext === sessionExt) {
       // return 'w-[424px] h-[310px] card-wide'
-      return 'w-26 h-[155px] card-wide'
+      return 'w-[150px] h-[155px] card-wide'
     }
     // return 'w-52 h-[310px] card'
-    return 'w-26 h-[155px] card'
+    return 'w-[150px] h-[155px] card'
   }
 
   function borderColor(card: StoryCard) {
