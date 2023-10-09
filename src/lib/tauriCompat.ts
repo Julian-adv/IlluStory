@@ -119,14 +119,14 @@ export async function tcMetadata(path: string) {
 
 interface OpenOption {
   defaultPath?: string
-  import?: boolean
+  mode?: 'text' | 'image'
   filters: {
     name: string
     extensions: string[]
   }[]
 }
 
-async function openWithInputElement(ext: string): Promise<string> {
+async function openWithInputElement(ext: string, mode: string): Promise<string> {
   return new Promise((resolve, _reject) => {
     const elem = document.getElementById('fileInput')
 
@@ -149,7 +149,11 @@ async function openWithInputElement(ext: string): Promise<string> {
                 }
               }
 
-              reader.readAsText(selectedFile)
+              if (mode === 'text') {
+                reader.readAsText(selectedFile)
+              } else {
+                reader.readAsDataURL(selectedFile)
+              }
             }
           }
         }
@@ -158,13 +162,40 @@ async function openWithInputElement(ext: string): Promise<string> {
   })
 }
 
-export async function tcOpen(option: OpenOption) {
+async function readAsDataURL(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+export async function tcOpen(option: OpenOption): Promise<string> {
   if (window.__TAURI_METADATA__) {
-    return await open(option)
+    const path = await open(option)
+    if (typeof path === 'string' && path) {
+      if (option.mode === 'text') {
+        return await tcReadTextFile(path)
+      } else if (option.mode === 'image') {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhr.responseType = 'blob'
+          xhr.onload = () => resolve(readAsDataURL(xhr.response))
+          xhr.onerror = reject
+          xhr.open('GET', convertFileSrc(path))
+          xhr.send()
+        })
+      } else {
+        return ''
+      }
+    } else {
+      return ''
+    }
   } else {
     const ext = option.filters ? option.filters[0].extensions[0] : ''
-    if (option.import) {
-      return await openWithInputElement(ext)
+    if (option.mode) {
+      return await openWithInputElement(ext, option.mode)
     } else {
       const value = option.defaultPath ? option.defaultPath : ''
       fileDialog.set({ open: true, value: value, ext: ext, title: 'Open' })

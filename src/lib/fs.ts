@@ -1,6 +1,5 @@
 import { writeBinaryFile } from '@tauri-apps/api/fs'
 import type { Preset, Char, FirstScene, Session } from './interfaces'
-import { open } from '@tauri-apps/api/dialog'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
 import {
@@ -8,34 +7,18 @@ import {
   tcCopyFile,
   tcCreateDir,
   tcExists,
+  tcOpen,
   tcResolveResource,
   tcSave,
   tcWriteBinaryFile,
   tcWriteTextFile
 } from './tauriCompat'
 
-async function readAsDataURL(blob: Blob): Promise<string | null> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
-}
-
 export async function loadImage(): Promise<string | null> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['png', 'jpg'] }] })
-  if (typeof selected === 'string') {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.responseType = 'blob'
-      xhr.onload = () => resolve(readAsDataURL(xhr.response))
-      xhr.onerror = reject
-      xhr.open('GET', convertFileSrc(selected))
-      xhr.send()
-    })
-  }
-  return null
+  return await tcOpen({
+    mode: 'image',
+    filters: [{ name: '*', extensions: ['png', 'jpg'] }]
+  })
 }
 
 function dataURIToBlob(dataURI: string) {

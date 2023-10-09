@@ -246,7 +246,7 @@ export async function importPreset(json: string): Promise<Preset> {
 
 export async function loadPresetDialog(): Promise<[Preset | null, string]> {
   const selected = await tcOpen({ filters: [{ name: '*', extensions: [presetExt] }] })
-  if (typeof selected === 'string' && selected) {
+  if (selected) {
     const preset = await loadPreset(selected)
     return [preset, selected]
   }
@@ -254,14 +254,8 @@ export async function loadPresetDialog(): Promise<[Preset | null, string]> {
 }
 
 export async function importPresetDialog(): Promise<Preset | null> {
-  const selected = await tcOpen({ import: true, filters: [{ name: '*', extensions: ['json'] }] })
-  if (typeof selected === 'string' && selected) {
-    let json
-    if (window.__TAURI_METADATA__) {
-      json = await tcReadTextFile(selected)
-    } else {
-      json = selected
-    }
+  const json = await tcOpen({ mode: 'text', filters: [{ name: '*', extensions: ['json'] }] })
+  if (json) {
     const preset = await importPreset(json)
     return preset
   }
