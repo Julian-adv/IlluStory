@@ -534,7 +534,8 @@
   <FileDialog
     bind:openDialog={$fileDialog.open}
     bind:ext={$fileDialog.ext}
-    bind:value={$fileDialog.value} />
+    bind:value={$fileDialog.value}
+    bind:title={$fileDialog.title} />
   <div class="px-4">
     <Button color="alternative" size="sm" on:click={newSession}>
       <svg

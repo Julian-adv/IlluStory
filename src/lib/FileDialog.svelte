@@ -9,16 +9,17 @@
   export let openDialog = false
   export let ext = ''
   export let value = ''
+  export let title = ''
   let cards: StoryCard[] = []
   let fileName = ''
   let dir = ''
 
   function onClick(card: StoryCard) {
-    value = basenameOf(card.path)
+    fileName = basenameOf(card.path)
   }
 
   function onOk() {
-    value = dir + '/' + fileName + '.' + ext
+    value = (dir ? dir + '/' : '') + fileName + '.' + ext
     openDialog = false
   }
 
@@ -53,7 +54,7 @@
   }
 </script>
 
-<Modal title="Save" bind:open={openDialog} autoclose>
+<Modal {title} bind:open={openDialog} autoclose>
   <div class="grid grid-cols-4 gap-2">
     {#each cards as card}
       <CommonCard {card} {onClick} />
@@ -65,7 +66,7 @@
     <Input bind:value={fileName} on:keydown={onKeyDown} /><span class="p-2">.{ext}</span>
   </div>
   <svelte:fragment slot="footer">
-    <Button on:click={onOk}>Save</Button>
+    <Button on:click={onOk}>{title}</Button>
     <Button on:click={onCancel} color="alternative">Cancel</Button>
   </svelte:fragment>
 </Modal>

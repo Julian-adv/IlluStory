@@ -1,4 +1,3 @@
-import { open } from '@tauri-apps/api/dialog'
 import { Api, type Preset, type SceneType } from './interfaces'
 import { presetExt } from './fs'
 import { defaultPreset } from './store'
@@ -15,7 +14,7 @@ import {
   userRole,
   userSetting
 } from './api'
-import { tcReadTextFile } from './tauriCompat'
+import { tcOpen, tcReadTextFile } from './tauriCompat'
 
 interface RisuPrompt {
   text: string
@@ -137,8 +136,7 @@ export async function loadPreset(path: string): Promise<Preset> {
   return preset
 }
 
-export async function importPreset(path: string): Promise<Preset> {
-  const json = await tcReadTextFile(path)
+export async function importPreset(json: string): Promise<Preset> {
   const tempPreset = JSON.parse(json)
   const preset = structuredClone(defaultPreset)
   preset.prompts = []
@@ -247,8 +245,8 @@ export async function importPreset(path: string): Promise<Preset> {
 }
 
 export async function loadPresetDialog(): Promise<[Preset | null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: [presetExt] }] })
-  if (typeof selected === 'string') {
+  const selected = await tcOpen({ filters: [{ name: '*', extensions: [presetExt] }] })
+  if (typeof selected === 'string' && selected) {
     const preset = await loadPreset(selected)
     return [preset, selected]
   }
@@ -256,9 +254,15 @@ export async function loadPresetDialog(): Promise<[Preset | null, string]> {
 }
 
 export async function importPresetDialog(): Promise<Preset | null> {
-  const selected = await open({ filters: [{ name: '*', extensions: ['json'] }] })
-  if (typeof selected === 'string') {
-    const preset = await importPreset(selected)
+  const selected = await tcOpen({ import: true, filters: [{ name: '*', extensions: ['json'] }] })
+  if (typeof selected === 'string' && selected) {
+    let json
+    if (window.__TAURI_METADATA__) {
+      json = await tcReadTextFile(selected)
+    } else {
+      json = selected
+    }
+    const preset = await importPreset(json)
     return preset
   }
   return null

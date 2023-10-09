@@ -12,7 +12,7 @@ import {
 import { appDataDir, resolveResource } from '@tauri-apps/api/path'
 import { metadata } from 'tauri-plugin-fs-extra-api'
 import { Body, getClient } from '@tauri-apps/api/http'
-import { save, type SaveDialogOptions } from '@tauri-apps/api/dialog'
+import { open, save, type SaveDialogOptions } from '@tauri-apps/api/dialog'
 import { fileDialog } from './store'
 
 async function fetchGet(api: string) {
@@ -118,30 +118,66 @@ export async function tcMetadata(path: string) {
 }
 
 interface OpenOption {
-  defaultPath: string
+  defaultPath?: string
+  import?: boolean
   filters: {
     name: string
     extensions: string[]
   }[]
 }
 
-export async function tcOpen(option: OpenOption) {
-  const result = new Promise<string>((resolve, _reject) => {
-    const input = document.getElementById('hiddenFileInput') as HTMLInputElement
-    if (input) {
-      input.accept = option.filters[0].extensions.map(ext => '.' + ext).join(' ')
-      input.click()
-      input.onchange = event => {
+async function openWithInputElement(ext: string): Promise<string> {
+  return new Promise((resolve, _reject) => {
+    const elem = document.getElementById('fileInput')
+
+    if (elem) {
+      const fileInput = elem as HTMLInputElement
+      fileInput.accept = '.' + ext
+      fileInput.click()
+      fileInput.addEventListener('change', event => {
         if (event.target) {
           const target = event.target as HTMLInputElement
           if (target.files) {
-            resolve(target.files[0].name)
+            const selectedFile = target.files[0]
+
+            if (selectedFile) {
+              const reader = new FileReader()
+
+              reader.onload = function (event) {
+                if (typeof event.target?.result === 'string') {
+                  resolve(event.target.result)
+                }
+              }
+
+              reader.readAsText(selectedFile)
+            }
           }
         }
-      }
+      })
     }
   })
-  return result
+}
+
+export async function tcOpen(option: OpenOption) {
+  if (window.__TAURI_METADATA__) {
+    return await open(option)
+  } else {
+    const ext = option.filters ? option.filters[0].extensions[0] : ''
+    if (option.import) {
+      return await openWithInputElement(ext)
+    } else {
+      const value = option.defaultPath ? option.defaultPath : ''
+      fileDialog.set({ open: true, value: value, ext: ext, title: 'Open' })
+      return new Promise<string>((resolve, _reject) => {
+        const unsub = fileDialog.subscribe(dialog => {
+          if (!dialog.open) {
+            resolve(dialog.value)
+            unsub()
+          }
+        })
+      })
+    }
+  }
 }
 
 export async function tcSave(option: SaveDialogOptions) {
@@ -150,7 +186,7 @@ export async function tcSave(option: SaveDialogOptions) {
   } else {
     const ext = option.filters ? option.filters[0].extensions[0] : ''
     const value = option.defaultPath ? option.defaultPath : ''
-    fileDialog.set({ open: true, value: value, ext: ext })
+    fileDialog.set({ open: true, value: value, ext: ext, title: 'Save' })
     return new Promise<string>((resolve, _reject) => {
       const unsub = fileDialog.subscribe(dialog => {
         if (!dialog.open) {

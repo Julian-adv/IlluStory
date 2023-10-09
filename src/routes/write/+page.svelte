@@ -332,11 +332,13 @@
 </script>
 
 <div class="px-4">
+  <input type="file" id="fileInput" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Preset Editing</h1>
   <FileDialog
     bind:openDialog={$fileDialog.open}
     bind:ext={$fileDialog.ext}
-    bind:value={$fileDialog.value} />
+    bind:value={$fileDialog.value}
+    bind:title={$fileDialog.title} />
   <Toast
     color="orange"
     transition={slide}
