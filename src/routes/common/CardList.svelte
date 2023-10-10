@@ -9,6 +9,6 @@
 
 <div class="flex flex-wrap flex-none gap-2">
   {#each cards as card, i}
-    <CommonCard {card} onRemove={() => onRemove(i)} {onClick} />
+    <CommonCard {card} onRemove={() => onRemove(i)} {onClick} showTrash />
   {/each}
 </div>

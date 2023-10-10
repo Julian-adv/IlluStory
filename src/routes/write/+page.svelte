@@ -25,7 +25,8 @@
     curScene,
     curScenePath,
     chars,
-    fileDialog
+    fileDialog,
+    defaultPreset
   } from '$lib/store'
   import { Api, type Char, type FirstScene } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
@@ -329,6 +330,17 @@
     }
     autoSaveFunc()
   }
+
+  function onStreamingChange() {
+    if ($preset.api === Api.Oobabooga) {
+      if ($preset.streaming) {
+        $preset.oobabooga.apiUrl = 'ws://localhost:5005/api'
+      } else {
+        $preset.oobabooga.apiUrl = defaultPreset.oobabooga.apiUrl
+      }
+    }
+    autoSaveFunc()
+  }
 </script>
 
 <div class="px-4">
@@ -417,7 +429,11 @@
       search={false}
       bind:value={$preset.api}
       save={apiChange} />
-    <CheckField label="Text streaming" help="" bind:value={$preset.streaming} save={autoSaveFunc} />
+    <CheckField
+      label="Text streaming"
+      help=""
+      bind:value={$preset.streaming}
+      save={onStreamingChange} />
     {#if $preset.api === Api.OpenAi}
       <StringField
         label="URL"

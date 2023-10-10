@@ -586,7 +586,7 @@
   <div class="p-4 flex flex-wrap gap-4">
     <div class="flex flex-none gap-2 items-end">
       <div class="w-20 text-right self-center">Preset</div>
-      <CommonCard card={$presetCard} onClick={onClickPresetCard} />
+      <CommonCard card={$presetCard} onClick={onClickPresetCard} showTrash />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addPresetCard}>
         <svg
@@ -602,7 +602,7 @@
     </div>
     <div class="flex flex-none gap-2 items-end">
       <div class="w-20 text-right self-center">User</div>
-      <CommonCard card={$userCard} onClick={onClickCharCard} />
+      <CommonCard card={$userCard} onClick={onClickCharCard} showTrash />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addUserCard}>
         <svg
@@ -634,7 +634,7 @@
     </div>
     <div class="flex flex-none gap-2 items-end">
       <div class="w-20 text-right self-center">Scene</div>
-      <CommonCard card={$sceneCard} onClick={onClickSceneCard} />
+      <CommonCard card={$sceneCard} onClick={onClickSceneCard} showTrash />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>
         <svg
