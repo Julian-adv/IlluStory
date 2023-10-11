@@ -3,7 +3,7 @@
   import StringField from '../common/StringField.svelte'
   import ImageField from '../common/ImageField.svelte'
   import DropSelect from '../common/DropSelect.svelte'
-  import { curScene, curScenePath, settings } from '$lib/store'
+  import { curScene, curScenePath, settings, fileDialog } from '$lib/store'
   import DragnDropList from '$lib/DragnDropList.svelte'
   import { assistantRole, chatRoles, countTokensApi, systemRole } from '$lib/api'
   import FlexibleTextarea from '../common/FlexibleTextarea.svelte'
@@ -13,6 +13,7 @@
   import { generateImage } from '$lib/imageApi'
   import { loadSceneDialog, saveScene } from '$lib/scene'
   import { loadMetaDataDialog } from '$lib/charSettings'
+  import FileDialog from '$lib/FileDialog.svelte'
 
   let autoSave = true
   let totalTokens = 0
@@ -95,7 +96,13 @@
 </script>
 
 <div class="px-4">
+  <input type="file" id="fileInput" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Scene Editing</h1>
+  <FileDialog
+    bind:openDialog={$fileDialog.open}
+    bind:ext={$fileDialog.ext}
+    bind:value={$fileDialog.value}
+    bind:title={$fileDialog.title} />
   <div class="mt-2 mb-5 flex gap-2">
     <Button color="alternative" size="sm" on:click={load}>
       <svg

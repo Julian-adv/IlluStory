@@ -13,8 +13,10 @@ class UrlBody(BaseModel):
 @router.post("/post")
 async def proxy(req: UrlBody):
     try:
+        print(req.url)
         response = requests.post(req.url, json=req.body)
         json = response.json()
+        return {"ok": True, "data": json}
     except Exception as e:
         print(f"Failed to post data: {e}")
-    return {"ok": True, "data": response.json()}
+        return {"ok": False, "data": json}

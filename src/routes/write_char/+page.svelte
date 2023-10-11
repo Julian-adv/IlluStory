@@ -7,9 +7,19 @@
   import SelectField from '../common/SelectField.svelte'
   import TextField from '../common/TextField.svelte'
   import { countTokensApi } from '$lib/api'
-  import { charCards, chars, curChar, curCharPath, settings, user, userPath } from '$lib/store'
+  import {
+    charCards,
+    chars,
+    curChar,
+    curCharPath,
+    settings,
+    user,
+    userPath,
+    fileDialog
+  } from '$lib/store'
   import { generateImage } from '$lib/imageApi'
   import { decodeBase64 } from '$lib'
+  import FileDialog from '$lib/FileDialog.svelte'
 
   let autoSave = true
   const genders = [
@@ -104,7 +114,13 @@
 </script>
 
 <div class="px-4">
+  <input type="file" id="fileInput" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Character Editing</h1>
+  <FileDialog
+    bind:openDialog={$fileDialog.open}
+    bind:ext={$fileDialog.ext}
+    bind:value={$fileDialog.value}
+    bind:title={$fileDialog.title} />
   <div class="mt-2 mb-5 flex gap-2">
     <Button color="alternative" size="sm" on:click={load}>
       <svg
