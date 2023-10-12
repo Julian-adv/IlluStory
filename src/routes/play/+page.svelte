@@ -31,7 +31,8 @@
     settings,
     session,
     replaceDict,
-    fileDialog
+    fileDialog,
+    memory
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
@@ -58,7 +59,15 @@
   import { extractImagePrompt } from '$lib/image'
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
-  import { tcAppDataDir, tcCreateDir, tcExists, tcMetadata, tcReadDir } from '$lib/tauriCompat'
+  import {
+    tcAppDataDir,
+    tcCreateDir,
+    tcExists,
+    tcGetMemory,
+    tcMetadata,
+    tcReadDir,
+    tcSaveMemory
+  } from '$lib/tauriCompat'
   import FileDialog from '$lib/FileDialog.svelte'
 
   let userInput = ''
@@ -289,6 +298,70 @@
     }
   }
 
+  async function _summarizeEarlyScene() {
+    const sceneId = newSceneId($dialogues)
+    const waitingScene = {
+      id: sceneId,
+      role: assistantRole,
+      content: '',
+      textContent: '',
+      done: false
+    }
+    $dialogues = [...$dialogues, waitingScene]
+    await tick()
+    scrollToEnd()
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
+    prologs = replaceNames(prologs, $replaceDict)
+    const result = $preset.streaming
+      ? await sendChatStream(
+          $preset,
+          prologs,
+          $dialogues.slice(0, 1),
+          true,
+          $summarySceneIndex,
+          received,
+          closed
+        )
+      : await sendChat($preset, prologs, $dialogues.slice(0, 1), true, $summarySceneIndex)
+    if (result) {
+      $usage = result.usage
+      let scene = lastScene($dialogues)
+      scene.role = result.scene.role
+      scene.content = result.scene.content
+      scene.done = result.scene.done
+      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      $summarySceneIndex = $dialogues.length - 1
+      $dialogues = $dialogues
+      await tick()
+      scrollToEnd()
+    }
+  }
+
+  async function saveEarlyScenes() {
+    if (!$sessionPath || $session.startIndex >= $dialogues.length) {
+      return
+    }
+    const collection = basenameOf($sessionPath)
+    const doc = $dialogues[$session.startIndex].content
+    const meta = {
+      image: $dialogues[$session.startIndex].image,
+      role: $dialogues[$session.startIndex].role
+    }
+    const id = String($dialogues[$session.startIndex].id)
+    $session.startIndex++
+    await tcSaveMemory(collection, doc, meta, id)
+  }
+
+  async function getMemory(text: string) {
+    const collection = basenameOf($sessionPath)
+    const memo = await tcGetMemory(collection, text, 1)
+    console.log('memory:', memo)
+    $memory[0].id = Number(memo.results.ids[0])
+    $memory[0].role = memo.results.metadatas[0][0].role
+    $memory[0].content = memo.results.documents[0]
+  }
+
   let characters = [{ value: 'random', name: 'Random' }]
 
   function fillCharacters() {
@@ -309,13 +382,12 @@
     fillCharacters()
   })
 
-  let warningTokens: boolean
-
-  $: if ($preset.api === Api.OpenAi) {
-    warningTokens = $usage.total_tokens + $preset.openAi.maxTokens > $preset.openAi.contextSize
-  } else {
-    warningTokens =
-      $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize
+  function warningTokens() {
+    if ($preset.api === Api.OpenAi) {
+      return $usage.total_tokens + $preset.openAi.maxTokens > $preset.openAi.contextSize
+    } else {
+      return $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize
+    }
   }
 
   async function addPresetCard() {
@@ -381,6 +453,7 @@
     userInput = ''
     $summarySceneIndex = 0
     $session.nextSpeaker = 0
+    $session.startIndex = 0
     fillCharacters()
     await saveSessionNew()
   }
@@ -457,7 +530,12 @@
     saveSession()
   }
 
-  async function sendInput(role: string, content: string) {
+  async function sendInput(role: string, orgContent: string) {
+    const longPrompt = warningTokens() || true
+    if (longPrompt) {
+      await saveEarlyScenes()
+    }
+    let content = orgContent
     if (content[0] === '"') {
       content = `${$user.name}: ` + content
     }
@@ -476,6 +554,9 @@
         content: '',
         textContent: '',
         done: false
+      }
+      if (longPrompt) {
+        await getMemory(orgContent)
       }
       $dialogues = [...$dialogues, userScene, waitingScene]
     } else {
@@ -672,7 +753,7 @@
         Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total
         tokens: {$usage.total_tokens}
       </div>
-      {#if warningTokens}
+      {#if warningTokens()}
         <div class="col-span-3 text-sm text-red-400">
           Since the number of tokens can overflow the context size, you may want to summarize them.
         </div>

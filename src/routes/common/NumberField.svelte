@@ -9,7 +9,7 @@
   export let max = 1.0
   export let help = ''
   export let step = 0.01
-  export let save = () => {}
+  export let save = (_value: number) => {}
 
   let helperClass = helperClassHidden
 
@@ -36,7 +36,9 @@
     type="number"
     bind:value
     {step}
-    on:blur={save}
+    on:blur={() => {
+      save(value)
+    }}
     class="px-2 py-1 self-center text-base" />
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -48,7 +50,9 @@
     {min}
     {max}
     {step}
-    on:change={save}
+    on:change={() => {
+      save(value)
+    }}
     class="self-center" />
 </div>
 

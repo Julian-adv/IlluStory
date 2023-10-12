@@ -225,6 +225,7 @@ export interface Session {
   charCards: string[]
   nextSpeaker: number
   sceneCard: string
+  startIndex: number
   scenes: SceneType[]
 }
 

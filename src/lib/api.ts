@@ -6,7 +6,7 @@ import llamaTokenizer from 'llama-tokenizer-js'
 import { sendChatKoboldAi, sendChatKoboldAiStream } from './apiKoboldAi'
 import { getStartEndIndex } from '$lib'
 import { get } from 'svelte/store'
-import { settings } from './store'
+import { memory, settings } from './store'
 
 export const systemRole = 'system'
 export const assistantRole = 'assistant'
@@ -20,6 +20,7 @@ export const authorNote = 'author_note'
 export const globalNote = 'global_note'
 export const loreBook = 'lore_book'
 export const firstScene = 'first_scene'
+export const assocMemory = 'assoc_memory'
 
 export const roles = [
   { value: systemRole, name: 'System' },
@@ -33,7 +34,8 @@ export const roles = [
   { value: authorNote, name: 'Author note' },
   { value: globalNote, name: 'Global note' },
   { value: loreBook, name: 'Lore book' },
-  { value: firstScene, name: 'First scene' }
+  { value: firstScene, name: 'First scene' },
+  { value: assocMemory, name: 'Assoc Memory' }
 ]
 
 export const chatRoles = [
@@ -120,13 +122,20 @@ export function generatePrompt(
         sentChatHistory = true
         break
       }
+      case assocMemory: {
+        prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+        for (const mesg of get(memory)) {
+          prompt += addRolePrefix(preset, mesg) + mesg.content + '\n'
+        }
+        break
+      }
       default:
         prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
     }
   }
   if (!sentChatHistory) {
     if (summary) {
-      prompt += '<Conversation>\n'
+      prompt += '<Story>\n'
     }
     for (const scene of dialogues) {
       if (summary) {
@@ -136,10 +145,10 @@ export function generatePrompt(
       }
     }
     if (summary) {
-      prompt += '</Conversation>\n'
+      prompt += '</Story>\n'
     }
   }
-  if (oneInstruction) {
+  if (oneInstruction || summary) {
     prompt += preset.oobabooga.assistantPrefix
   }
   return prompt

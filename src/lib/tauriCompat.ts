@@ -261,3 +261,26 @@ export function tcConvertFileSrc(path: string) {
     return path.replace('\\', '/')
   }
 }
+
+export async function tcSaveMemory(collection: string, doc: string, meta: any, id: string) {
+  if (window.__TAURI_METADATA__) {
+    throw Error('Not implemented')
+  } else {
+    const result = await fetchPost('memory/save', {
+      collection: collection,
+      doc: doc,
+      meta: meta,
+      id: id
+    })
+    return result
+  }
+}
+
+export async function tcGetMemory(collection: string, text: string, n: number) {
+  if (window.__TAURI_METADATA__) {
+    throw Error('Not implemented')
+  } else {
+    const result = await fetchPost('memory/get', { collection: collection, text: text, n: n })
+    return result
+  }
+}

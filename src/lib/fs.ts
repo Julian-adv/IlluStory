@@ -97,6 +97,7 @@ export const allExts = [presetExt, sessionExt, charExt, sceneExt]
 export const settingsFile = 'settings.json'
 
 export function basenameOf(path: string) {
+  path = path.replace(/\\/g, '/')
   let endIndex = path.lastIndexOf('.')
   if (endIndex < 0) {
     endIndex = path.length

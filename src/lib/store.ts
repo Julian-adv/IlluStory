@@ -10,6 +10,7 @@ import type {
 } from './interfaces'
 import { Api, CardType, SortOrder, SortType } from './interfaces'
 import { defaultImage } from '$lib'
+import { assistantRole } from './api'
 
 const defaultScenes: SceneType[] = []
 
@@ -107,6 +108,7 @@ export const defaultSession: Session = {
   charCards: [],
   nextSpeaker: 0,
   sceneCard: '',
+  startIndex: 0,
   scenes: []
 }
 
@@ -118,6 +120,16 @@ export const usage = writable(zeroUsage)
 
 export const summarySceneIndex = writable(0)
 export const summarizePrompt = writable('')
+
+const defaultMemory = [
+  {
+    id: 0,
+    role: assistantRole,
+    content: ''
+  }
+]
+
+export const memory = writable(defaultMemory)
 
 export const defaultSettings: Settings = {
   openAiApiKey: '',

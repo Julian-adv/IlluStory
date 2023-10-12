@@ -12,7 +12,8 @@
     userSetting,
     systemRole,
     chatHistory,
-    firstScene
+    firstScene,
+    assocMemory
   } from '$lib/api'
   import {
     preset,
@@ -241,12 +242,14 @@
   function onChangeRangeStart(i: number) {
     return (value: string | number) => {
       $preset.prompts[i].rangeStart = Number(value)
+      autoSaveFunc()
     }
   }
 
   function onChangeRangeEnd(i: number) {
     return (value: string | number) => {
       $preset.prompts[i].rangeEnd = String(value)
+      autoSaveFunc()
     }
   }
 
@@ -895,6 +898,29 @@
           </div>
         {:else if prompt.role === firstScene}
           <SceneCard scene={$curScene} onSceneClick={onSceneClick(i)} {onEditScene} />
+        {:else if prompt.role === assocMemory}
+          <div class="flex flex-col w-full text-left">
+            <FlexibleTextarea
+              id={getUniqueId()}
+              placeholder="Write your prompt"
+              value={prompt.content}
+              onUpdate={text => update(i, text)}
+              on:blur={autoSaveFunc} />
+            <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(prompt.content)}</span>
+            <div class="flex w-full gap-4">
+              <NumberField
+                label="Number of scenes"
+                value={prompt.rangeStart}
+                save={onChangeRangeStart(i)}
+                min={1}
+                max={5}
+                step={1} />
+            </div>
+            <div class="flex">
+              <em class="text-xs text-stone-400 pl-2">
+                Max number of scenes to recall from memory.</em>
+            </div>
+          </div>
         {:else}
           <div class="flex flex-col w-full text-left">
             <FlexibleTextarea
