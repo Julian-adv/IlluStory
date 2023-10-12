@@ -238,14 +238,18 @@ export async function tcListFonts(): Promise<string[]> {
   }
 }
 
-export async function tcPost(url: string, body: any) {
+export async function tcPost(url: string, body: any, headers?: any) {
   if (window.__TAURI_METADATA__) {
     const client = await getClient()
     return await client.post(url, Body.json(body), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: headers ?? { 'Content-Type': 'application/json' }
     })
   } else {
-    const result = await fetchPost('request/post', { url: url, body: body })
+    const result = await fetchPost('request/post', {
+      url: url,
+      body: body,
+      headers: headers ?? { 'Content-Type': 'application/json' }
+    })
     return result
   }
 }

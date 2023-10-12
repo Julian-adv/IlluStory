@@ -166,7 +166,9 @@ export const defaultSettings: Settings = {
   translateOutput: false,
   translateInput: false,
   history: [],
-  maxHistory: 500
+  maxHistory: 500,
+  oneInstruction: true,
+  allChars: true
 }
 
 export const settings = writable(defaultSettings)

@@ -123,6 +123,7 @@ export async function sendChatKoboldAiStream(
         '### USER',
         '### INSTRUCTION',
         '### Instruction',
+        '### Response',
         '\n```',
         '\nUser:',
         '\nuser:',

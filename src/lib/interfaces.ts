@@ -177,6 +177,8 @@ export interface Settings {
   translateInput: boolean
   history: string[]
   maxHistory: number
+  oneInstruction: boolean
+  allChars: boolean
 }
 
 export enum SortType {

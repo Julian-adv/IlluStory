@@ -269,6 +269,17 @@
         sample="Characters' names will look like this."
         {save} />
     {/if}
+    <h1 class="text-lg font-semibold mt-4 col-span-3">Prompt generation</h1>
+    <CheckField
+      label="One instruction"
+      help="When generating prompts for the llama model, the entire content is generated as a single instruction."
+      bind:value={$settings.oneInstruction}
+      {save} />
+    <CheckField
+      label="Include all characters"
+      help="Include information for all characters, regardless of the current speaker."
+      bind:value={$settings.allChars}
+      {save} />
   </div>
 </div>
 

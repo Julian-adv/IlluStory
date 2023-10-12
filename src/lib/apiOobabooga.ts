@@ -144,6 +144,7 @@ export async function sendChatOobaboogaStream(
         '### USER',
         '### INSTRUCTION',
         '### Instruction',
+        '### Response',
         '\n```',
         '\nUser:',
         '\nuser:',
@@ -157,12 +158,9 @@ export async function sendChatOobaboogaStream(
   }
 
   conn.onmessage = event => {
-    // console.log('on message', event)
     const resp = JSON.parse(event.data)
     switch (resp.event) {
       case 'text_stream':
-        // console.log(resp);
-        // console.log(resp.history.visible[resp.history.visible.length - 1][1])
         received(resp.text)
         break
       case 'stream_end':

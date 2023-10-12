@@ -238,6 +238,18 @@
     goto('/write_scene')
   }
 
+  function onChangeRangeStart(i: number) {
+    return (value: string | number) => {
+      $preset.prompts[i].rangeStart = Number(value)
+    }
+  }
+
+  function onChangeRangeEnd(i: number) {
+    return (value: string | number) => {
+      $preset.prompts[i].rangeEnd = String(value)
+    }
+  }
+
   const miroStatPreset = {
     temperature: 1.0,
     topP: 1.0,
@@ -869,8 +881,11 @@
         {:else if prompt.role === chatHistory}
           <div class="flex flex-col">
             <div class="flex">
-              <StringField label="Start index" value={prompt.rangeStart} />
-              <StringField label="End index" value={prompt.rangeEnd} />
+              <StringField
+                label="Start index"
+                value={prompt.rangeStart}
+                onBlur={onChangeRangeStart(i)} />
+              <StringField label="End index" value={prompt.rangeEnd} onBlur={onChangeRangeEnd(i)} />
             </div>
             <div class="flex">
               <em class="text-xs text-stone-400 pl-2">

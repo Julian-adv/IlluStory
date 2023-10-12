@@ -153,7 +153,7 @@ export async function importPreset(json: string): Promise<Preset> {
   if (tempPreset.textgenWebUIStreamURL) {
     preset.oobabooga.apiUrl = tempPreset.textgenWebUIBlockingURL
   }
-  preset.oobabooga.maxTokens = tempPreset.ooba.max_new_tokens
+  preset.oobabooga.maxTokens = Number(tempPreset.ooba.max_new_tokens)
   preset.oobabooga.doSample = tempPreset.ooba.do_sample
   preset.oobabooga.temperature = tempPreset.ooba.temperature
   preset.oobabooga.topP = tempPreset.ooba.top_p

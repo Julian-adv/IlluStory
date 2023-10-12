@@ -42,6 +42,7 @@
     makeReplaceDict,
     prepareForSave,
     replaceChar,
+    replaceChars,
     replaceNames,
     saveSessionAuto
   } from '$lib/session'
@@ -182,7 +183,11 @@
     $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
     await loadVarsFromPath()
     const result = splitPreset($preset.prompts)
-    $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+    if ($settings.allChars) {
+      $prologues = replaceChars(result.prologues, $chars, $user)
+    } else {
+      $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+    }
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     $dialogues = await convertScenes($session.scenes, $replaceDict)
   }
@@ -205,7 +210,11 @@
 
   async function updateInitialScenes() {
     const result = splitPreset($preset.prompts)
-    $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+    if ($settings.allChars) {
+      $prologues = replaceChars(result.prologues, $chars, $user)
+    } else {
+      $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
+    }
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     $dialogues = await convertScenes(result.dialogues, $replaceDict)
   }
@@ -486,8 +495,12 @@
     } else {
       $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
     }
-    // let prologs = replaceChars($prologues, $chars, $user)
-    let prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
+    let prologs
+    if ($settings.allChars) {
+      prologs = replaceChars($prologues, $chars, $user)
+    } else {
+      prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
+    }
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming

@@ -5,6 +5,8 @@ import { isWithinTokenLimit } from 'gpt-tokenizer'
 import llamaTokenizer from 'llama-tokenizer-js'
 import { sendChatKoboldAi, sendChatKoboldAiStream } from './apiKoboldAi'
 import { getStartEndIndex } from '$lib'
+import { get } from 'svelte/store'
+import { settings } from './store'
 
 export const systemRole = 'system'
 export const assistantRole = 'assistant'
@@ -78,6 +80,9 @@ export function changeApi(api: Api) {
 }
 
 function addRolePrefix(preset: Preset, scene: SceneType) {
+  if (get(settings).oneInstruction) {
+    return ''
+  }
   switch (scene.role) {
     case systemRole:
       return preset.oobabooga.systemPrefix
@@ -98,6 +103,10 @@ export function generatePrompt(
   summary = false
 ) {
   let prompt = ''
+  const oneInstruction = get(settings).oneInstruction
+  if (oneInstruction) {
+    prompt += preset.oobabooga.systemPrefix
+  }
   let sentChatHistory = false
   for (const scene of prologues) {
     switch (scene.role) {
@@ -129,6 +138,9 @@ export function generatePrompt(
     if (summary) {
       prompt += '</Conversation>\n'
     }
+  }
+  if (oneInstruction) {
+    prompt += preset.oobabooga.assistantPrefix
   }
   return prompt
 }
