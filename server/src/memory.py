@@ -24,8 +24,11 @@ class Query(BaseModel):
 
 @router.post("/save")
 def save_memory(memory: Memory):
+    print(f"{memory.id}")
     print(f"{memory.doc}")
-    collection = client.get_or_create_collection(name=memory.collection)
+    collection = client.get_or_create_collection(
+        name=memory.collection, metadata={"hnsw:space": "cosine"}
+    )
     collection.add(
         documents=[
             memory.doc
@@ -39,6 +42,7 @@ def save_memory(memory: Memory):
 @router.post("/get")
 def get_memory(query: Query):
     print(f"{query.text}")
+    print(f"{query.n}")
     collection = client.get_collection(name=query.collection)
     results = collection.query(
         query_texts=[query.text],
@@ -46,4 +50,6 @@ def get_memory(query: Query):
         # where={"metadata_field": "is_equal_to_this"}, # optional filter
         # where_document={"$contains":"search_string"}  # optional filter
     )
+    print(f"{results['ids'][0]}")
+    print(f"{results['documents'][0]}")
     return {"results": results}

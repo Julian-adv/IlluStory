@@ -123,9 +123,17 @@ export function generatePrompt(
         break
       }
       case assocMemory: {
-        prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+        let memoryPrompt = ''
+        let i = 1
         for (const mesg of get(memory)) {
-          prompt += addRolePrefix(preset, mesg) + mesg.content + '\n'
+          if (mesg.content) {
+            memoryPrompt += `<Memory fragment ${i++}>\n`
+            memoryPrompt += addRolePrefix(preset, mesg) + mesg.content + '\n'
+          }
+        }
+        if (memoryPrompt) {
+          prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+          prompt += memoryPrompt
         }
         break
       }

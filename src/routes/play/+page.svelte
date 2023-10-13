@@ -3,8 +3,10 @@
   import { Button } from 'flowbite-svelte'
   import {
     assistantRole,
+    assocMemory,
     countTokensApi,
     firstScene,
+    generatePrompt,
     sendChat,
     sendChatStream,
     systemRole,
@@ -18,7 +20,6 @@
     dialogues,
     usage,
     sessionPath,
-    zeroUsage,
     summarySceneIndex,
     chars,
     user,
@@ -36,7 +37,13 @@
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { lastScene, newSceneId, scrollToEnd } from '$lib'
-  import { Api, type SceneType, type StoryCard, type StringDictionary } from '$lib/interfaces'
+  import {
+    Api,
+    type Preset,
+    type SceneType,
+    type StoryCard,
+    type StringDictionary
+  } from '$lib/interfaces'
   import {
     loadSession,
     loadSessionDialog,
@@ -74,6 +81,7 @@
   let started = false
   let role = userRole
   let nextChar = 'random'
+  let numMemory = 1
 
   interface ScenePairs {
     prologues: SceneType[]
@@ -338,28 +346,63 @@
     }
   }
 
+  function maxTokenContextSize() {
+    switch ($preset.api) {
+      case Api.OpenAi:
+        return [$preset.openAi.maxTokens, $preset.openAi.contextSize]
+      case Api.Oobabooga:
+        return [$preset.oobabooga.maxTokens, $preset.oobabooga.contextSize]
+      case Api.KoboldAi:
+        return [$preset.koboldAi.maxTokens, $preset.koboldAi.contextSize]
+      default:
+        return [$preset.openAi.maxTokens, $preset.openAi.contextSize]
+    }
+  }
+
   async function saveEarlyScenes() {
     if (!$sessionPath || $session.startIndex >= $dialogues.length) {
       return
     }
-    const collection = basenameOf($sessionPath)
-    const doc = $dialogues[$session.startIndex].content
-    const meta = {
-      image: $dialogues[$session.startIndex].image,
-      role: $dialogues[$session.startIndex].role
+    let tokenCount = 0
+    const [maxToken, contextSize] = maxTokenContextSize()
+    const memoryCapacity = numMemory * maxToken
+    //  |------------------context size---------------------------|
+    //  |------------total token-----------------------|-maxToken-|
+    //  |                                              |          |
+    //  +------------+---------------------------------+----------+
+    //  |            |                                 |          |
+    //  +------------+---------------------------------+----------+
+    //  |            |
+    //  |-tokenCount-|
+    //  startIndex
+    while ($usage.total_tokens + maxToken - tokenCount + memoryCapacity > contextSize) {
+      const collection = basenameOf($sessionPath)
+      const doc = $dialogues[$session.startIndex].content
+      const meta = {
+        image: $dialogues[$session.startIndex].image,
+        role: $dialogues[$session.startIndex].role
+      }
+      const id = String($dialogues[$session.startIndex].id)
+      tokenCount += countTokensApi(doc)
+      await tcSaveMemory(collection, doc, meta, id)
+      $session.startIndex++
     }
-    const id = String($dialogues[$session.startIndex].id)
-    $session.startIndex++
-    await tcSaveMemory(collection, doc, meta, id)
   }
 
   async function getMemory(text: string) {
     const collection = basenameOf($sessionPath)
-    const memo = await tcGetMemory(collection, text, 1)
-    console.log('memory:', memo)
-    $memory[0].id = Number(memo.results.ids[0])
-    $memory[0].role = memo.results.metadatas[0][0].role
-    $memory[0].content = memo.results.documents[0]
+    const memo = await tcGetMemory(collection, text, numMemory)
+    let i = 0
+    for (; i < memo.results.documents[0].length; i++) {
+      $memory[i].id = Number(memo.results.ids[0][i])
+      $memory[i].role = memo.results.metadatas[0][i].role
+      $memory[i].content = memo.results.documents[0][i]
+    }
+    for (; i < 5; i++) {
+      $memory[i].id = 0
+      $memory[i].role = ''
+      $memory[i].content = ''
+    }
   }
 
   let characters = [{ value: 'random', name: 'Random' }]
@@ -372,6 +415,29 @@
     nextChar = characters[characters.length - 1].value
   }
 
+  function preparePrologue() {
+    let prologs
+    if ($settings.allChars) {
+      prologs = replaceChars($prologues, $chars, $user)
+    } else {
+      prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
+    }
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    prologs = replaceNames(prologs, $replaceDict)
+    return prologs
+  }
+
+  function calcUsage() {
+    const prologs = preparePrologue()
+    const prompt = generatePrompt($preset, prologs, $dialogues, 0, false)
+    const tokens = countTokensApi(prompt)
+    return {
+      prompt_tokens: tokens,
+      completion_tokens: 0,
+      total_tokens: tokens
+    }
+  }
+
   onMount(async () => {
     await loadSettings()
     if ($dialogues.length === 0) {
@@ -379,15 +445,15 @@
     } else {
       started = true
     }
+    numMemory = findNumberOfMemory($preset)
+    $usage = calcUsage()
     fillCharacters()
   })
 
   function warningTokens() {
-    if ($preset.api === Api.OpenAi) {
-      return $usage.total_tokens + $preset.openAi.maxTokens > $preset.openAi.contextSize
-    } else {
-      return $usage.total_tokens + $preset.oobabooga.maxTokens > $preset.oobabooga.contextSize
-    }
+    const [maxToken, contextSize] = maxTokenContextSize()
+    const memoryCapacity = numMemory * maxToken
+    return $usage.total_tokens + maxToken + memoryCapacity > contextSize
   }
 
   async function addPresetCard() {
@@ -433,6 +499,15 @@
     $charCards.length > 0 &&
     $charCards[0] !== emptyCard
 
+  function findNumberOfMemory(preset: Preset) {
+    for (const scene of preset.prompts) {
+      if (scene.role === assocMemory) {
+        return scene.rangeStart ?? 1
+      }
+    }
+    return 1
+  }
+
   async function loadVarsFromPath() {
     $preset = await loadPreset($presetCard.path)
     $presetPath = $presetCard.path
@@ -442,13 +517,14 @@
     $charPaths = $charCards.map(card => card.path)
     $curScene = await loadScene($sceneCard.path)
     $curScenePath = $sceneCard.path
+    numMemory = findNumberOfMemory($preset)
     started = true
   }
 
   async function start() {
     await loadVarsFromPath()
     await updateInitialScenes()
-    $usage = zeroUsage
+    $usage = calcUsage()
     $sessionPath = ''
     userInput = ''
     $summarySceneIndex = 0
@@ -531,7 +607,7 @@
   }
 
   async function sendInput(role: string, orgContent: string) {
-    const longPrompt = warningTokens() || true
+    const longPrompt = warningTokens()
     if (longPrompt) {
       await saveEarlyScenes()
     }
@@ -576,25 +652,24 @@
     } else {
       $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
     }
-    let prologs
-    if ($settings.allChars) {
-      prologs = replaceChars($prologues, $chars, $user)
-    } else {
-      prologs = replaceChar($prologues, $chars[$session.nextSpeaker], $user)
-    }
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
-    prologs = replaceNames(prologs, $replaceDict)
+    const prologs = preparePrologue()
     const result = $preset.streaming
       ? await sendChatStream(
           $preset,
           prologs,
-          $dialogues,
+          $dialogues.slice($session.startIndex),
           false,
           $summarySceneIndex,
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues, false, $summarySceneIndex)
+      : await sendChat(
+          $preset,
+          prologs,
+          $dialogues.slice($session.startIndex),
+          false,
+          $summarySceneIndex
+        )
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
@@ -753,11 +828,11 @@
         Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total
         tokens: {$usage.total_tokens}
       </div>
-      {#if warningTokens()}
+      <!-- {#if warningTokens()}
         <div class="col-span-3 text-sm text-red-400">
           Since the number of tokens can overflow the context size, you may want to summarize them.
         </div>
-      {/if}
+      {/if} -->
       <div class="col-span-3 text-sm text-stone-400 flex gap-2 items-center">
         <Button color="alternative" size="sm" on:click={goBack}>
           <svg

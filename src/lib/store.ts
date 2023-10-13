@@ -126,6 +126,26 @@ const defaultMemory = [
     id: 0,
     role: assistantRole,
     content: ''
+  },
+  {
+    id: 0,
+    role: assistantRole,
+    content: ''
+  },
+  {
+    id: 0,
+    role: assistantRole,
+    content: ''
+  },
+  {
+    id: 0,
+    role: assistantRole,
+    content: ''
+  },
+  {
+    id: 0,
+    role: assistantRole,
+    content: ''
   }
 ]
 
