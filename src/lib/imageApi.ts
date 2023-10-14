@@ -1,5 +1,5 @@
 import type { Settings } from './interfaces'
-import { tcPost } from './tauriCompat'
+import { tcLog, tcPost } from './tauriCompat'
 
 export async function generateImage(
   settings: Settings,
@@ -96,7 +96,7 @@ export async function generateImage(
   if (responseFromSD.ok) {
     return `data:image/png;base64,${responseFromSD.data.images[0]}`
   } else {
-    console.log('responseFromSD', responseFromSD)
+    tcLog('ERROR', 'responseFromSD', JSON.stringify(responseFromSD))
     return ''
   }
 }

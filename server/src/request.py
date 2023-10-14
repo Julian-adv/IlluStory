@@ -20,4 +20,4 @@ async def proxy(req: UrlBody):
         return {"ok": True, "data": json}
     except Exception as e:
         print(f"Failed to post data: {e}")
-        return {"ok": False, "data": json}
+        return {"ok": False, "data": {}}

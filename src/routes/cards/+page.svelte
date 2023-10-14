@@ -39,7 +39,7 @@
   import { loadScene } from '$lib/scene'
   import { loadPreset } from '$lib/preset'
   import { cardFromPath } from '$lib/card'
-  import { tcAppDataDir, tcReadDir } from '$lib/tauriCompat'
+  import { tcAppDataDir, tcLog, tcReadDir } from '$lib/tauriCompat'
 
   let showingCards: StoryCard[] = []
   let extFlag = FileType.All
@@ -74,7 +74,7 @@
     reloadCards()
     loading = false
     if (!unlisten) {
-      invoke('start_watch', { path: await tcAppDataDir() }).catch(err => console.log(err))
+      invoke('start_watch', { path: await tcAppDataDir() }).catch(err => tcLog('ERROR', err))
       unlisten = await listen<string>('change', _event => {
         if (!working) {
           reloadCards()

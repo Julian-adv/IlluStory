@@ -1,5 +1,5 @@
 import type { Settings } from './interfaces'
-import { tcPost } from './tauriCompat'
+import { tcLog, tcPost } from './tauriCompat'
 
 export async function translateText(
   settings: Settings,
@@ -19,10 +19,10 @@ export async function translateText(
     }
   )
   if (response.ok) {
-    console.log('data from deepL:', response.data)
+    tcLog('INFO', 'data from deepL:', JSON.stringify(response.data))
     return response.data.translations[0].text
   } else {
-    console.log('response from deepl', response)
+    tcLog('ERROR', 'error from deepl', JSON.stringify(response))
     return text
   }
 }

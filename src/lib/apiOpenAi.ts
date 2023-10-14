@@ -13,6 +13,7 @@ import {
   userSetting
 } from './api'
 import { getStartEndIndex } from '$lib'
+import { tcLog } from './tauriCompat'
 
 function convertRole(role: string) {
   switch (role) {
@@ -131,7 +132,6 @@ export async function sendChatOpenAi(
   const instructModel = preset.openAi.model.includes('instruct')
   const uri = preset.openAi.apiUrl + apiUrl(instructModel)
   const url = new URL(uri)
-  // console.log('messages', messages)
   const commonReq = {
     model: preset.openAi.model,
     temperature: preset.openAi.temperature,
@@ -152,7 +152,7 @@ export async function sendChatOpenAi(
       messages: generateMessages(preset, prologues, dialogues, summary, sendStartIndex)
     }
   }
-  console.log('request', request)
+  tcLog('INFO', 'request', JSON.stringify(request))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {
@@ -163,7 +163,7 @@ export async function sendChatOpenAi(
     signal: null
   })
   const dataFromGPT = await respFromGPT.json()
-  console.log('dataFromGPT', dataFromGPT)
+  tcLog('INFO', 'dataFromGPT', JSON.stringify(dataFromGPT))
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     let scene: SceneType
     if (instructModel) {
@@ -219,7 +219,7 @@ export async function sendChatOpenAiStream(
       .map(mesg => countTokensApi(mesg.content))
       .reduce((a, b) => a + b, 0)
   }
-  console.log('request', request)
+  tcLog('INFO', 'request', JSON.stringify(request))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {

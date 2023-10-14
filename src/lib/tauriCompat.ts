@@ -13,7 +13,8 @@ import { appDataDir, resolveResource } from '@tauri-apps/api/path'
 import { metadata } from 'tauri-plugin-fs-extra-api'
 import { Body, getClient } from '@tauri-apps/api/http'
 import { open, save, type SaveDialogOptions } from '@tauri-apps/api/dialog'
-import { fileDialog } from './store'
+import { fileDialog, sessionPath } from './store'
+import { get } from 'svelte/store'
 
 async function fetchGet(api: string) {
   const response = await fetch('http://localhost:8000/api/' + api, {
@@ -31,8 +32,12 @@ async function fetchPost(api: string, body: any) {
       'Content-Type': 'application/json'
     }
   })
-  const json = await response.json()
-  return json
+  if (response.status != 204) {
+    const json = await response.json()
+    return json
+  } else {
+    return {}
+  }
 }
 
 export async function tcExists(path: string): Promise<boolean> {
@@ -282,5 +287,22 @@ export async function tcGetMemory(collection: string, text: string, n: number) {
   } else {
     const result = await fetchPost('memory/get', { collection: collection, text: text, n: n })
     return result
+  }
+}
+
+export async function tcLog(
+  level: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL',
+  ...messages: string[]
+) {
+  if (window.__TAURI_METADATA__) {
+    throw Error('Not implemented')
+  } else {
+    const path = get(sessionPath)
+    if (path) {
+      const logPath = path.replace('.session', '')
+      await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
+    } else {
+      console.log(messages)
+    }
   }
 }

@@ -71,6 +71,7 @@
     tcCreateDir,
     tcExists,
     tcGetMemory,
+    tcLog,
     tcMetadata,
     tcReadDir,
     tcSaveMemory
@@ -375,7 +376,10 @@
     //  |            |
     //  |-tokenCount-|
     //  startIndex
-    while ($usage.total_tokens + maxToken - tokenCount + memoryCapacity > contextSize) {
+    while (
+      $usage.total_tokens + maxToken - tokenCount + memoryCapacity > contextSize &&
+      $session.startIndex < $dialogues.length
+    ) {
       const collection = basenameOf($sessionPath)
       const doc = $dialogues[$session.startIndex].content
       const meta = {
@@ -591,6 +595,17 @@
 
   async function closed() {
     let scene = lastScene($dialogues)
+    tcLog('INFO', 'streaming done:', scene.content)
+    const stopWords = [`\n${$user.name}:$`, `\n${$user.name} \\w+$`]
+    for (const word of stopWords) {
+      const regex = new RegExp(word)
+      const matches = scene.content.match(regex)
+      if (matches) {
+        scene.content = scene.content.slice(0, scene.content.length - matches[0].length)
+        scene.textContent = scene.content
+        break
+      }
+    }
     scene = await extractImagePrompt($settings, scene, $replaceDict)
     $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens

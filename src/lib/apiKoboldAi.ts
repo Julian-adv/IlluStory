@@ -2,6 +2,7 @@ import { get } from 'svelte/store'
 import type { SceneType, Preset, Usage, ChatResult } from './interfaces'
 import { user } from './store'
 import { assistantRole, countTokensApi, generatePrompt } from './api'
+import { tcLog } from './tauriCompat'
 
 export async function sendChatKoboldAi(
   preset: Preset,
@@ -21,7 +22,7 @@ export async function sendChatKoboldAi(
     prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
   }
   prompt += preset.koboldAi.assistantPrefix
-  console.log('prompt:', prompt)
+  tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
   const userName = get(user).name
@@ -65,7 +66,7 @@ export async function sendChatKoboldAi(
   })
 
   const dataFromKobold = await respFromKobold.json()
-  console.log('dataFromKobold', dataFromKobold)
+  tcLog('INFO', 'dataFromKobold', dataFromKobold)
   if (respFromKobold.ok && respFromKobold.status >= 200 && respFromKobold.status < 300) {
     const scene: SceneType = {
       id: 0,
@@ -95,7 +96,7 @@ export async function sendChatKoboldAiStream(
 
   let prompt = ''
   prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
-  console.log('prompt:', prompt)
+  tcLog('INFO', 'prompt:', prompt)
   const promptTokens = countTokensApi(prompt)
   const userName = get(user).name
 

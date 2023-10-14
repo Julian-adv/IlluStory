@@ -2,6 +2,7 @@ import { get } from 'svelte/store'
 import type { SceneType, Preset, Usage, ChatResult } from './interfaces'
 import { user } from './store'
 import { assistantRole, countTokensApi, generatePrompt } from './api'
+import { tcLog } from './tauriCompat'
 
 export async function sendChatOobabooga(
   preset: Preset,
@@ -21,7 +22,7 @@ export async function sendChatOobabooga(
     prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
   }
   prompt += preset.oobabooga.assistantPrefix
-  console.log('prompt:', prompt)
+  tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
   const userName = get(user).name
@@ -74,7 +75,7 @@ export async function sendChatOobabooga(
     signal: null
   })
   const dataFromOoga = await respFromOoga.json()
-  console.log('dataFromOoga', dataFromOoga)
+  tcLog('INFO', 'dataFromOoga', dataFromOoga)
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
     const scene: SceneType = {
       id: 0,
@@ -104,7 +105,7 @@ export async function sendChatOobaboogaStream(
 
   let prompt = ''
   prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex, summary)
-  console.log('prompt:', prompt)
+  tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)
   conn.onopen = () => {
@@ -168,11 +169,11 @@ export async function sendChatOobaboogaStream(
   }
 
   conn.onerror = error => {
-    console.log('on error', error)
+    tcLog('ERROR', 'on error', String(error))
   }
 
   conn.onclose = () => {
-    console.log('on close')
+    tcLog('INFO', 'on close')
   }
 
   const scene: SceneType = {
