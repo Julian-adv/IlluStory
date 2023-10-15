@@ -4,7 +4,7 @@ import type { Char, Preset } from './interfaces'
 import { firstScene, userSetting } from './api'
 import { curScene, curScenePath, user, userPath } from './store'
 import { loadScene } from './scene'
-import { tcReadTextFile } from './tauriCompat'
+import { tcOpen, tcReadTextFile } from './tauriCompat'
 
 export async function loadChar(path: string) {
   const json = await tcReadTextFile(path)
@@ -13,7 +13,7 @@ export async function loadChar(path: string) {
 }
 
 export async function loadCharDialog(): Promise<[Char | null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: [charExt] }] })
+  const selected = await tcOpen({ filters: [{ name: '*', extensions: [charExt] }] })
   if (typeof selected === 'string') {
     return [await loadChar(selected), selected]
   }
