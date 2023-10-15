@@ -2,7 +2,7 @@ import { saveObjQuietly, sessionExt } from './fs'
 import type { Char, SceneType, Session, StringDictionary } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { charSetting, userSetting } from './api'
-import { tcReadTextFile } from './tauriCompat'
+import { tcConvertImageSrc, tcReadTextFile } from './tauriCompat'
 
 export async function loadSession(path: string) {
   const json = await tcReadTextFile(path)
@@ -20,7 +20,7 @@ export async function loadSession(path: string) {
           height: (this as HTMLImageElement).height
         }
       }
-      img.src = 'http://localhost:8000/api/' + scene.image
+      img.src = tcConvertImageSrc(scene.image)
     }
   })
   return session

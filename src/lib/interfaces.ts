@@ -146,6 +146,7 @@ export interface TextSettings {
 }
 
 export interface Settings {
+  dataDir: string
   openAiApiKey: string
   sortOrder: SortOrder
   sortType: SortType

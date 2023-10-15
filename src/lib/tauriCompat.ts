@@ -1,6 +1,5 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/tauri'
 import {
-  BaseDirectory,
   copyFile,
   createDir,
   exists,
@@ -9,12 +8,28 @@ import {
   writeTextFile,
   type FileEntry
 } from '@tauri-apps/api/fs'
-import { appDataDir, resolveResource } from '@tauri-apps/api/path'
+import { homeDir, resolveResource } from '@tauri-apps/api/path'
 import { metadata } from 'tauri-plugin-fs-extra-api'
 import { Body, getClient } from '@tauri-apps/api/http'
 import { open, save, type SaveDialogOptions } from '@tauri-apps/api/dialog'
-import { fileDialog, sessionPath } from './store'
+import { fileDialog, sessionPath, settings } from './store'
 import { get } from 'svelte/store'
+import { normalizePath } from '$lib'
+
+export async function tcSetDataDir() {
+  if (get(settings).dataDir) {
+    return
+  }
+  let dataDirectory = ''
+  if (window.__TAURI_METADATA__) {
+    dataDirectory = await homeDir()
+  } else {
+    const result = await fetchGet('fs/homeDir')
+    dataDirectory = result.path
+  }
+  dataDirectory = dataDirectory.replace(/\\/g, '/') + 'IlluStory'
+  get(settings).dataDir = dataDirectory
+}
 
 async function fetchGet(api: string) {
   const response = await fetch('http://localhost:8000/api/' + api, {
@@ -42,7 +57,8 @@ async function fetchPost(api: string, body: any) {
 
 export async function tcExists(path: string): Promise<boolean> {
   if (window.__TAURI_METADATA__) {
-    return await exists(path, { dir: BaseDirectory.AppConfig })
+    path = get(settings).dataDir + '/' + path
+    return await exists(path)
   } else {
     const result = await fetchPost('fs/exists', { path: path })
     return result.exists
@@ -51,7 +67,7 @@ export async function tcExists(path: string): Promise<boolean> {
 
 export async function tcAppDataDir(): Promise<string> {
   if (window.__TAURI_METADATA__) {
-    return await appDataDir()
+    return ''
   } else {
     const result = await fetchGet('fs/appDataDir')
     return result.path
@@ -60,7 +76,8 @@ export async function tcAppDataDir(): Promise<string> {
 
 export async function tcCreateDir(path: string): Promise<void> {
   if (window.__TAURI_METADATA__) {
-    await createDir(path, { dir: BaseDirectory.AppData, recursive: true })
+    path = get(settings).dataDir + '/' + path
+    await createDir(path, { recursive: true })
   } else {
     await fetchPost('fs/createDir', { path: path })
   }
@@ -77,7 +94,8 @@ export async function tcResolveResource(path: string): Promise<string> {
 
 export async function tcCopyFile(src: string, dest: string): Promise<void> {
   if (window.__TAURI_METADATA__) {
-    await copyFile(src, dest, { dir: BaseDirectory.AppData })
+    dest = get(settings).dataDir + '/' + dest
+    await copyFile(src, dest)
   } else {
     await fetchPost('fs/copyFile', { src: src, dest: dest })
   }
@@ -85,7 +103,8 @@ export async function tcCopyFile(src: string, dest: string): Promise<void> {
 
 export async function tcReadTextFile(path: string): Promise<string> {
   if (window.__TAURI_METADATA__) {
-    return await readTextFile(path, { dir: BaseDirectory.AppData })
+    path = get(settings).dataDir + '/' + path
+    return await readTextFile(path)
   } else {
     const result = await fetchPost('fs/readTextFile', { path: path })
     return result.text
@@ -94,7 +113,8 @@ export async function tcReadTextFile(path: string): Promise<string> {
 
 export async function tcWriteTextFile(path: string, text: string): Promise<void> {
   if (window.__TAURI_METADATA__) {
-    await writeTextFile(path, text, { dir: BaseDirectory.AppData })
+    path = get(settings).dataDir + '/' + path
+    await writeTextFile(path, text)
   } else {
     await fetchPost('fs/writeTextFile', { path: path, text: text })
   }
@@ -106,7 +126,8 @@ export async function tcWriteBinaryFile(path: string, data: string): Promise<voi
 
 export async function tcReadDir(path: string): Promise<FileEntry[]> {
   if (window.__TAURI_METADATA__) {
-    return await readDir(path, { dir: BaseDirectory.AppData, recursive: true })
+    path = get(settings).dataDir + '/' + path
+    return await readDir(path, { recursive: true })
   } else {
     const result = await fetchPost('fs/readDir', { path: path })
     return result.entries
@@ -115,7 +136,7 @@ export async function tcReadDir(path: string): Promise<FileEntry[]> {
 
 export async function tcMetadata(path: string) {
   if (window.__TAURI_METADATA__) {
-    return await metadata(path)
+    return await metadata(get(settings).dataDir + '/' + path)
   } else {
     const result = await fetchPost('fs/metadata', { path: path })
     return result
@@ -192,7 +213,7 @@ export async function tcOpen(option: OpenOption): Promise<string> {
           xhr.send()
         })
       } else {
-        return ''
+        return normalizePath(path)
       }
     } else {
       return ''
@@ -236,7 +257,7 @@ export async function tcSave(option: SaveDialogOptions) {
 
 export async function tcListFonts(): Promise<string[]> {
   if (window.__TAURI_METADATA__) {
-    return await invoke('listFonts')
+    return await invoke('list_fonts')
   } else {
     const result = await fetchGet('fonts/list')
     return result.fonts
@@ -304,5 +325,13 @@ export async function tcLog(
     } else {
       console.log(messages)
     }
+  }
+}
+
+export function tcConvertImageSrc(src: string | undefined) {
+  if (window.__TAURI_METADATA__) {
+    return convertFileSrc(get(settings).dataDir + '/' + src)
+  } else {
+    return 'http://localhost:8000/api/' + src
   }
 }

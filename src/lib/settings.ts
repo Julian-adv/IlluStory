@@ -3,7 +3,7 @@ import { Api, type Settings, type Preset } from './interfaces'
 import OpenAI from 'openai'
 import { get } from 'svelte/store'
 import { settingsFile } from './fs'
-import { tcCreateDir, tcExists, tcReadTextFile, tcWriteTextFile } from './tauriCompat'
+import { tcCreateDir, tcExists, tcReadTextFile, tcSetDataDir, tcWriteTextFile } from './tauriCompat'
 
 let currentPreset: Preset
 let currentSettings: Settings
@@ -93,6 +93,7 @@ function fixSettings(settings: Settings) {
 }
 
 export async function loadSettings() {
+  await tcSetDataDir()
   const text = await tcReadTextFile(settingsFile)
   if (!text) {
     return []

@@ -36,7 +36,7 @@
     memory
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
-  import { lastScene, newSceneId, scrollToEnd } from '$lib'
+  import { lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
   import {
     Api,
     type Preset,
@@ -62,7 +62,6 @@
   import { loadScene } from '$lib/scene'
   import { presetCard, userCard, charCards, sceneCard, curChar, curCharPath } from '$lib/store'
   import { loadSettings } from '$lib/settings'
-  import { sep } from '@tauri-apps/api/path'
   import { extractImagePrompt } from '$lib/image'
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
@@ -160,13 +159,13 @@
 
   async function saveSessionNew() {
     const timestamp = formatDate(new Date())
-    const thisSessionDir = sessionsDir + sep + timestamp
+    const thisSessionDir = sessionsDir + '/' + timestamp
     if (!(await tcExists(thisSessionDir))) {
       tcCreateDir(thisSessionDir)
     }
     const dataDir = await tcAppDataDir()
     const thisSessionPath = dataDir + thisSessionDir
-    const tempPath = thisSessionPath + sep + 'session-' + timestamp + '.' + sessionExt
+    const tempPath = thisSessionPath + '/session-' + timestamp + '.' + sessionExt
     $sessionPath = tempPath
     saveCardUpdate()
   }
@@ -178,6 +177,7 @@
       if (entry.children) {
         for (const child of entry.children) {
           if (child.name && child.name.endsWith(sessionExt)) {
+            child.path = normalizePath(child.path)
             const stat = await tcMetadata(child.path)
             if (stat.modifiedAt > mostRecent.modified) {
               mostRecent = { path: child.path, modified: stat.modifiedAt }

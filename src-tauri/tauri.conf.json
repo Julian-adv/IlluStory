@@ -32,7 +32,7 @@
       "protocol": {
         "all": false,
         "asset": true,
-        "assetScope": ["$APPDATA/**"]
+        "assetScope": ["$APPDATA/**", "**/*"]
       },
       "http": {
         "request": true,

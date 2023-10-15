@@ -1,7 +1,9 @@
 import { allExts, basenameOf, charExt, extOf, jsonExt, presetExt, sceneExt, sessionExt } from './fs'
 import { CardType, type StoryCard } from './interfaces'
 import { defaultImage } from '$lib'
-import { tcAppDataDir, tcMetadata, tcOpen, tcReadTextFile } from './tauriCompat'
+import { tcMetadata, tcOpen, tcReadTextFile } from './tauriCompat'
+import { settings } from './store'
+import { get } from 'svelte/store'
 
 function cardTypeFromExt(ext: string) {
   switch (ext) {
@@ -79,7 +81,7 @@ export async function cardFromPath(path: string): Promise<StoryCard> {
 
 export async function loadCardDialog(exts: string[]): Promise<StoryCard | null> {
   const selected = await tcOpen({
-    defaultPath: await tcAppDataDir(),
+    defaultPath: get(settings).dataDir,
     filters: [{ name: '*', extensions: exts }]
   })
   if (typeof selected === 'string') {

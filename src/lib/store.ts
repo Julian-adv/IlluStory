@@ -152,6 +152,7 @@ const defaultMemory = [
 export const memory = writable(defaultMemory)
 
 export const defaultSettings: Settings = {
+  dataDir: '',
   openAiApiKey: '',
   sortOrder: SortOrder.Ascending,
   sortType: SortType.Name,

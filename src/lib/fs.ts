@@ -10,9 +10,12 @@ import {
   tcOpen,
   tcResolveResource,
   tcSave,
+  tcSetDataDir,
   tcWriteBinaryFile,
   tcWriteTextFile
 } from './tauriCompat'
+import { get } from 'svelte/store'
+import { settings } from './store'
 
 export async function loadImage(): Promise<string | null> {
   return await tcOpen({
@@ -43,7 +46,7 @@ export function saveImageToFile(dataURI: string, filename: string) {
     for (let i = 0; i < byteString.length; i++) {
       uint8Array[i] = byteString.charCodeAt(i)
     }
-    writeBinaryFile(filename, uint8Array)
+    writeBinaryFile(get(settings).dataDir + '/' + filename, uint8Array)
   } else {
     tcWriteBinaryFile(filename, dataURI)
   }
@@ -144,6 +147,7 @@ export async function loadMetaData(path: string) {
 export async function installDefaults() {
   const filesToCopy = ['default.preset', 'Julian.char', 'Eliane.char', "Adventurer's Guild.scene"]
 
+  await tcSetDataDir()
   if (await tcExists(filesToCopy[0])) {
     return
   }

@@ -12,6 +12,7 @@
   import { saveSessionAuto } from '$lib/session'
   import { assistantRole } from '$lib/api'
   import { dirnameOf } from '$lib/fs'
+  import { tcConvertImageSrc } from '$lib/tauriCompat'
 
   export let scene: SceneType
   let translated: boolean
@@ -29,7 +30,7 @@
           imageFromSD: new Promise((_resolve, _reject) => {})
         }
   let sessionDir = ''
-  let imageUrl = 'http://localhost:8000/api/' + scene.image
+  let imageUrl = tcConvertImageSrc(scene.image)
   let waitingImage = false
 
   $: imageWidth = realImageSize(info.imageSize.width)

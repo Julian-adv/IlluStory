@@ -1,4 +1,6 @@
+import { get } from 'svelte/store'
 import type { ImageSize, SceneType } from './interfaces'
+import { settings } from './store'
 
 export const helperClassVisible = 'text-stone-700'
 export const helperClassHidden = 'text-stone-400'
@@ -85,4 +87,8 @@ export function decodeBase64(base64: string) {
   }
   const decoder = new TextDecoder() // default is utf-8
   return decoder.decode(bytes)
+}
+
+export function normalizePath(path: string) {
+  return path.replaceAll('\\', '/').replace(get(settings).dataDir + '/', '')
 }

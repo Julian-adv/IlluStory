@@ -72,6 +72,11 @@
   <h1 class="text-lg font-semibold mb-1">Settings</h1>
   <div class="grid grid-cols-[9rem,5rem,1fr] gap-0">
     <StringField
+      label="Data directory"
+      bind:value={$settings.dataDir}
+      help="A directory where various data such as presets, character cards, etc. will be stored."
+      {save} />
+    <StringField
       label="Open AI API Key"
       placeholder="sk-xxxxx"
       help="Open AI API key."
