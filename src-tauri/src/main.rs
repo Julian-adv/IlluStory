@@ -1,11 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::path::Path;
+use std::{path::Path, fs::OpenOptions, io::Write};
 use font_kit::source::SystemSource;
 use tauri::api::private::OnceCell;
 use trash;
 use notify::{Watcher, RecursiveMode};
+use chrono;
 
 #[tauri::command]
 fn trash_delete(path: String) -> String {
@@ -48,11 +49,31 @@ fn start_watch(window: tauri::Window, path: String) -> () {
     }
 }
 
+#[tauri::command]
+fn log(path: String, level: String, msg: String) -> () {
+    let mut file = match OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path) {
+            Ok(file) => file,
+            Err(e) => {
+                eprintln!("Error opening log file: {}", e);
+                return;
+            }
+        };
+    let now = chrono::Local::now();
+    let date = now.format("%Y-%m-%d %H:%M:%S");
+    let log = format!("{}:{}:{}\n", date, level, msg);
+    if let Err(e) = file.write_all(log.as_bytes()) {
+        eprintln!("Error writing to log file: {}", e);
+    }
+}
+
 fn main() {
   tauri::Builder::default()
     .plugin(tauri_plugin_window_state::Builder::default().build())
     .plugin(tauri_plugin_fs_extra::init())
-    .invoke_handler(tauri::generate_handler![list_fonts, trash_delete, start_watch])
+    .invoke_handler(tauri::generate_handler![list_fonts, trash_delete, start_watch, log])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

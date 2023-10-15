@@ -315,16 +315,16 @@ export async function tcLog(
   level: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL',
   ...messages: string[]
 ) {
-  if (window.__TAURI_METADATA__) {
-    throw Error('Not implemented')
-  } else {
-    const path = get(sessionPath)
-    if (path) {
-      const logPath = path.replace('.session', '')
-      await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
+  const path = get(sessionPath)
+  if (path) {
+    const logPath = get(settings).dataDir + '/' + path.replace('.session', '.log')
+    if (window.__TAURI_METADATA__) {
+      await invoke('log', { path: logPath, level: level, msg: messages.join(' ') })
     } else {
-      console.log(messages)
+      await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
     }
+  } else {
+    console.log(messages)
   }
 }
 
