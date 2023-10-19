@@ -76,6 +76,7 @@
     tcSaveMemory
   } from '$lib/tauriCompat'
   import FileDialog from '$lib/FileDialog.svelte'
+  import { Command } from '@tauri-apps/api/shell'
 
   let userInput = ''
   let started = false
@@ -452,6 +453,20 @@
     numMemory = findNumberOfMemory($preset)
     $usage = calcUsage()
     fillCharacters()
+    const command = new Command('run-bat', ['/c', 'resources\\server\\start_server.bat'])
+    const _child = await command.spawn()
+    command.on('close', data => {
+      console.log('server  closed:', data)
+    })
+    command.on('error', error => {
+      console.log('server error:', error)
+    })
+    command.stdout.on('data', data => {
+      console.log('server stdout:', data)
+    })
+    command.stderr.on('data', data => {
+      console.log('server stderr:', data)
+    })
   })
 
   function warningTokens() {
@@ -674,17 +689,11 @@
           prologs,
           $dialogues.slice($session.startIndex),
           false,
-          $summarySceneIndex,
+          0,
           received,
           closed
         )
-      : await sendChat(
-          $preset,
-          prologs,
-          $dialogues.slice($session.startIndex),
-          false,
-          $summarySceneIndex
-        )
+      : await sendChat($preset, prologs, $dialogues.slice($session.startIndex), false, 0)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)

@@ -101,9 +101,15 @@ export async function tcCopyFile(src: string, dest: string): Promise<void> {
   }
 }
 
+function isAbsolute(path: string) {
+  return /^(?:[a-zA-Z]:|\/|\\)/.test(path)
+}
+
 export async function tcReadTextFile(path: string): Promise<string> {
   if (window.__TAURI_METADATA__) {
-    path = get(settings).dataDir + '/' + path
+    if (!isAbsolute(path)) {
+      path = get(settings).dataDir + '/' + path
+    }
     return await readTextFile(path)
   } else {
     const result = await fetchPost('fs/readTextFile', { path: path })
@@ -113,7 +119,9 @@ export async function tcReadTextFile(path: string): Promise<string> {
 
 export async function tcWriteTextFile(path: string, text: string): Promise<void> {
   if (window.__TAURI_METADATA__) {
-    path = get(settings).dataDir + '/' + path
+    if (!isAbsolute(path)) {
+      path = get(settings).dataDir + '/' + path
+    }
     await writeTextFile(path, text)
   } else {
     await fetchPost('fs/writeTextFile', { path: path, text: text })

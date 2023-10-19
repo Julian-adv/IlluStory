@@ -37,6 +37,17 @@
       "http": {
         "request": true,
         "scope": ["https://api-free.deepl.com/v2/translate", "https://*.github.com/", "http://*"]
+      },
+      "shell": {
+        "all": false,
+        "execute": true,
+        "scope": [
+          {
+            "name": "run-bat",
+            "cmd": "cmd.exe",
+            "args": ["/c", "resources\\server\\start_server.bat"]
+          }
+        ]
       }
     },
     "bundle": {
@@ -46,7 +57,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [],
+      "externalBin": ["resources/system/python/python.exe"],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
