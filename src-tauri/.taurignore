@@ -1,2 +1,2 @@
-resources/system/**/*
+resources/server/**/*
 tmp/*

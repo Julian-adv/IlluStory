@@ -33,8 +33,7 @@ app.include_router(image.router)
 app.include_router(memory.router)
 app.include_router(logging.router)
 
-app.mount("/_app", StaticFiles(directory="../build/_app"))
-
+app.mount("/_app", StaticFiles(directory="../../../build/_app"))
 
 @app.get("/")
 def index():

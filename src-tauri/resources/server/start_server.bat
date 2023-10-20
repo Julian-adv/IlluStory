@@ -1,9 +1,10 @@
 @echo off
-set DIR=%~dp0..\system
+set DIR=%~dp0system
 set CUR_DIR=%~dp0
 
 set PATH=C:\Windows\system32;C:\Windows;%DIR%\git\bin;%DIR%\python;%DIR%\python\Scripts
-set PY_LIBS=%DIR%\python\Scripts\Lib;%DIR%\python\Scripts\Lib\site-packages
+set PYTHONPATH=%DIR%\python;%DIR%\python\Scripts;%DIR%\python\Lib;%DIR%\python\Lib\site-packages
+set PY_LIBS=%DIR%\python;%DIR%\python\Lib;%DIR%\python\Lib\site-packages
 set PY_PIP=%DIR%\python\Scripts
 set SKIP_VENV=1
 set PIP_INSTALLER_LOCATION=%DIR%\python\get-pip.py
@@ -41,8 +42,10 @@ set PYTHON="%VENV_DIR%\Scripts\Python.exe"
 echo venv %PYTHON%
 
 :skip_venv
-pip install -r %CUR_DIR%requirements.txt
-rem uvicorn.exe main:app --reload
+cd %CUR_DIR%
+%PYTHON% -m pip install -r requirements.txt
+uvicorn.exe main:app --reload
+rem %PYTHON% %CUR_DIR%launch.py
 
 :show_stdout_stderr
 
