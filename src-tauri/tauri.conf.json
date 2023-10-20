@@ -48,6 +48,9 @@
             "args": ["/c", "resources\\server\\start_server.bat"]
           }
         ]
+      },
+      "window": {
+        "all": true
       }
     },
     "bundle": {

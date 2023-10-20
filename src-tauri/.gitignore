@@ -4,5 +4,6 @@
 /resources/server/__pycache__/
 /resources/server/data/
 /resources/server/system/python/Lib/
+/resources/server/system/python/Scripts/
 /resources/server/system/python/share/
 tmp/

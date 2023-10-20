@@ -1,6 +1,7 @@
 import { get } from 'svelte/store'
 import type { ImageSize, SceneType } from './interfaces'
 import { settings } from './store'
+import { tcPost } from './tauriCompat'
 
 export const helperClassVisible = 'text-stone-700'
 export const helperClassHidden = 'text-stone-400'
@@ -91,4 +92,12 @@ export function decodeBase64(base64: string) {
 
 export function normalizePath(path: string) {
   return path.replaceAll('\\', '/').replace(get(settings).dataDir + '/', '')
+}
+
+export async function killServer() {
+  try {
+    await tcPost('http://localhost:8000/api/process/kill', { dummy: 0 })
+  } catch (e) {
+    // ignore
+  }
 }

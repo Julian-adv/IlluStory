@@ -36,7 +36,7 @@
     memory
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
-  import { lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
+  import { killServer, lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
   import {
     Api,
     type Preset,
@@ -623,6 +623,17 @@
   }
 
   async function sendInput(role: string, orgContent: string) {
+    if (orgContent.startsWith('/')) {
+      const command = orgContent.slice(1)
+      switch (command) {
+        case 'kill':
+          await killServer()
+          break
+        default:
+          break
+      }
+      return
+    }
     const longPrompt = warningTokens()
     if (longPrompt) {
       await saveEarlyScenes()

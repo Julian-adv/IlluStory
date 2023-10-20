@@ -4,15 +4,20 @@
   import { command } from '$lib/store'
   import { tcExists, tcLog, tcPost, tcSetDataDir } from '$lib/tauriCompat'
   import { Command } from '@tauri-apps/api/shell'
+  import { appWindow } from '@tauri-apps/api/window'
+  import { killServer } from '$lib'
+
+  let message = ''
 
   async function checkServer() {
     if (!$command) {
       try {
+        message = 'Checking server...'
         const response = await tcPost('http://localhost:8000/api/fs/exists', {
           path: 'resources\\server\\start_server.bat'
         })
+        message = 'Server is running.'
         tcLog('INFO', 'server exists:', JSON.stringify(response))
-        console.log('server exists: ', response)
       } catch (error) {
         console.log('server error: ', error)
         $command = new Command('run-bat', ['/c', 'resources\\server\\start_server.bat'])
@@ -31,6 +36,9 @@
         })
         tcLog('INFO', 'server started')
         console.log('server started')
+        appWindow.onCloseRequested(async _ev => {
+          await killServer()
+        })
       }
     }
   }
@@ -47,3 +55,7 @@
 
   checkSettings()
 </script>
+
+<div class="p-4">
+  {message}
+</div>
