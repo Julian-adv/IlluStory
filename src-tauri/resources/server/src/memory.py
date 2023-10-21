@@ -47,7 +47,7 @@ def get_memory(query: Query):
     results = collection.query(
         query_texts=[query.text],
         n_results=query.n,
-        # where={"metadata_field": "is_equal_to_this"}, # optional filter
+        where={"role": "assistant"}, # optional filter
         # where_document={"$contains":"search_string"}  # optional filter
     )
     print(f"{results['ids'][0]}")

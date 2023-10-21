@@ -297,42 +297,39 @@ export function tcConvertFileSrc(path: string) {
 }
 
 export async function tcSaveMemory(collection: string, doc: string, meta: any, id: string) {
-  if (window.__TAURI_METADATA__) {
-    throw Error('Not implemented')
-  } else {
-    const result = await fetchPost('memory/save', {
-      collection: collection,
-      doc: doc,
-      meta: meta,
-      id: id
-    })
-    return result
-  }
+  // tcLog('INFO', 'save memory', id, doc, JSON.stringify(meta))
+  const result = await fetchPost('memory/save', {
+    collection: collection,
+    doc: doc,
+    meta: meta,
+    id: id
+  })
+  return result
 }
 
 export async function tcGetMemory(collection: string, text: string, n: number) {
-  if (window.__TAURI_METADATA__) {
-    throw Error('Not implemented')
-  } else {
-    const result = await fetchPost('memory/get', { collection: collection, text: text, n: n })
-    return result
-  }
+  const result = await fetchPost('memory/get', { collection: collection, text: text, n: n })
+  // tcLog('INFO', 'get memory', text, String(n), JSON.stringify(result))
+  return result
 }
 
-export async function tcLog(
-  level: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL',
-  ...messages: string[]
-) {
+export type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'
+export async function tcLog(level: LogLevel, ...messages: string[]) {
   const path = get(sessionPath)
-  if (path) {
-    const logPath = get(settings).dataDir + '/' + path.replace('.session', '.log')
-    if (window.__TAURI_METADATA__) {
-      await invoke('log', { path: logPath, level: level, msg: messages.join(' ') })
-    } else {
-      await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
-    }
+  const dataDir = get(settings).dataDir
+  let logPath = ''
+  if (path && dataDir) {
+    logPath = dataDir + '/' + path.replace('.session', '.log')
+  } else if (dataDir) {
+    logPath = dataDir + '/illustory.log'
   } else {
-    console.log(messages)
+    console.log(messages.join(' '))
+    return
+  }
+  if (window.__TAURI_METADATA__) {
+    await invoke('log', { path: logPath, level: level, msg: messages.join(' ') })
+  } else {
+    await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
   }
 }
 
