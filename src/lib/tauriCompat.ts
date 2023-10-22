@@ -27,7 +27,7 @@ export async function tcSetDataDir() {
     const result = await fetchGet('fs/homeDir')
     dataDirectory = result.path
   }
-  dataDirectory = dataDirectory.replace(/\\/g, '/') + 'IlluStory'
+  dataDirectory = dataDirectory.replaceAll('\\', '/') + 'IlluStory/Data'
   get(settings).dataDir = dataDirectory
 }
 

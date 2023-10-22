@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
+import os
 
 from src import fs
 from src import fonts
@@ -35,8 +36,9 @@ app.include_router(memory.router)
 app.include_router(logging.router)
 app.include_router(process.router)
 
-app.mount("/_app", StaticFiles(directory="../../../build/_app"))
+if os.path.exists("../../../build/_app"):
+    app.mount("/_app", StaticFiles(directory="../../../build/_app"))
 
 @app.get("/")
 def index():
-    return FileResponse("../build/index.html")
+    return FileResponse("../../../build/index.html")

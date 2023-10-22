@@ -6,45 +6,39 @@ set PATH=C:\Windows\system32;C:\Windows;%DIR%\git\bin;%DIR%\python;%DIR%\python\
 set PY_LIBS=%DIR%\python;%DIR%\python\Lib;%DIR%\python\Lib\site-packages
 set PY_PIP=%DIR%\python\Scripts
 set PIP_INSTALLER_LOCATION=%DIR%\python\get-pip.py
-set TRANSFORMERS_CACHE=%DIR%\transformers-cache
+set LOG_FILE=%CUR_DIR%..\..\Data\illustory.log
 
 if not defined PYTHON (set PYTHON=python)
 
-mkdir tmp 2>NUL
+mkdir %CUR_DIR%..\..\Data 2>NUL
+call :sub >%LOG_FILE% 2>&1
+exit /b
 
-%PYTHON% -mpip --help >tmp/stdout.txt 2>tmp/stderr.txt
-if %ERRORLEVEL% == 0 goto :skip_venv
-if "%PIP_INSTALLER_LOCATION%" == "" goto :show_stdout_stderr
-%PYTHON% "%PIP_INSTALLER_LOCATION%" >tmp/stdout.txt 2>tmp/stderr.txt
-if %ERRORLEVEL% == 0 goto :skip_venv
+:sub
+%PYTHON% -mpip --help
+if %ERRORLEVEL% == 0 goto :run_server
+if "%PIP_INSTALLER_LOCATION%" == "" goto :show_log
+%PYTHON% "%PIP_INSTALLER_LOCATION%"
+if %ERRORLEVEL% == 0 goto :run_server
 echo Couldn't install pip
-goto :show_stdout_stderr
+goto :show_log
 
-:skip_venv
+:run_server
 cd %CUR_DIR%
 %PYTHON% -m pip install -r requirements.txt
 uvicorn.exe main:app
 
-:show_stdout_stderr
+:show_log
 
 echo.
 echo exit code: %errorlevel%
 
-for /f %%i in ("tmp\stdout.txt") do set size=%%~zi
-if %size% equ 0 goto :show_stderr
-echo.
-echo stdout:
-type tmp\stdout.txt
-
-:show_stderr
-for /f %%i in ("tmp\stderr.txt") do set size=%%~zi
+for /f %%i in ("%LOG_FILE%") do set size=%%~zi
 if %size% equ 0 goto :endofscript
 echo.
-echo stderr:
-type tmp\stderr.txt
+type %LOG_FILE%
 
 :endofscript
 
 echo.
 echo Launch unsuccessful. Exiting.
-pause

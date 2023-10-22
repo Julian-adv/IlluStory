@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "IlluStory",
-    "version": "0.8.0"
+    "version": "0.9.0"
   },
   "tauri": {
     "allowlist": {
@@ -77,13 +77,24 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": ["resources/*"],
+      "resources": [
+        "resources/server/src/*.*",
+        "resources/server/system/git/*",
+        "resources/server/system/python/DLLs/*",
+        "resources/server/system/python/*.*",
+        "resources/server/*.*",
+        "resources/*.*"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "",
+        "nsis": {
+          "template": "illustory.nsi",
+          "installMode": "currentUser"
+        }
       }
     },
     "security": {
