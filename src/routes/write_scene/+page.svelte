@@ -61,6 +61,7 @@
 
   async function regenerateImage() {
     $curScene.image = await generateImage($settings, width, height, $curScene.scenes[0].content)
+    autoSaveFunc()
   }
 
   function updateRole(i: number) {

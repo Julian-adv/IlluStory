@@ -27,7 +27,8 @@
     curScenePath,
     chars,
     fileDialog,
-    defaultPreset
+    defaultPreset,
+    maxMemory
   } from '$lib/store'
   import { Api, type Char, type FirstScene } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
@@ -913,7 +914,7 @@
                 value={prompt.rangeStart}
                 save={onChangeRangeStart(i)}
                 min={1}
-                max={5}
+                max={maxMemory}
                 step={1} />
             </div>
             <div class="flex">

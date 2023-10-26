@@ -106,6 +106,7 @@
 
   async function regenerateImage() {
     $curChar.image = await generateImage($settings, 512, 768, $curChar.visual)
+    await autoSaveFunc()
   }
 
   $: tokenVisual = countTokens($curChar.visual)

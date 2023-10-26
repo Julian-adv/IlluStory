@@ -122,33 +122,8 @@ export const usage = writable(zeroUsage)
 export const summarySceneIndex = writable(0)
 export const summarizePrompt = writable('')
 
-const defaultMemory = [
-  {
-    id: 0,
-    role: assistantRole,
-    content: ''
-  },
-  {
-    id: 0,
-    role: assistantRole,
-    content: ''
-  },
-  {
-    id: 0,
-    role: assistantRole,
-    content: ''
-  },
-  {
-    id: 0,
-    role: assistantRole,
-    content: ''
-  },
-  {
-    id: 0,
-    role: assistantRole,
-    content: ''
-  }
-]
+export const maxMemory = 10
+const defaultMemory = new Array(maxMemory).fill({ id: 0, role: assistantRole, content: '' })
 
 export const memory = writable(defaultMemory)
 

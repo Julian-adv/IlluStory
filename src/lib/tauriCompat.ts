@@ -135,7 +135,12 @@ export async function tcWriteBinaryFile(path: string, data: string): Promise<voi
 export async function tcReadDir(path: string): Promise<FileEntry[]> {
   if (window.__TAURI_METADATA__) {
     path = get(settings).dataDir + '/' + path
-    return await readDir(path, { recursive: true })
+    try {
+      return await readDir(path, { recursive: true })
+    } catch (e) {
+      tcLog('ERROR', 'readDir', String(e))
+      return []
+    }
   } else {
     const result = await fetchPost('fs/readDir', { path: path })
     return result.entries

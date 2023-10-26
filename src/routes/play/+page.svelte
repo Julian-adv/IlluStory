@@ -33,7 +33,8 @@
     session,
     replaceDict,
     fileDialog,
-    memory
+    memory,
+    maxMemory
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { killServer, lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
@@ -366,7 +367,7 @@
     }
     let tokenCount = 0
     const [maxToken, contextSize] = maxTokenContextSize()
-    const memoryCapacity = numMemory * maxToken
+    const memoryCapacity = maxToken
     //  |------------------context size---------------------------|
     //  |------------total token-----------------------|-maxToken-|
     //  |                                              |          |
@@ -402,7 +403,7 @@
       $memory[i].role = memo.results.metadatas[0][i].role
       $memory[i].content = memo.results.documents[0][i]
     }
-    for (; i < 5; i++) {
+    for (; i < maxMemory; i++) {
       $memory[i].id = 0
       $memory[i].role = ''
       $memory[i].content = ''
@@ -447,6 +448,12 @@
     if ($dialogues.length === 0) {
       await loadRecentSession()
     } else {
+      const dataDir = await tcAppDataDir()
+      $presetCard = await cardFromPath(dataDir + $session.presetCard)
+      $userCard = await cardFromPath(dataDir + $session.userCard)
+      $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
+      $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
+      await loadVarsFromPath()
       started = true
     }
     numMemory = findNumberOfMemory($preset)
@@ -456,7 +463,7 @@
 
   function warningTokens() {
     const [maxToken, contextSize] = maxTokenContextSize()
-    const memoryCapacity = numMemory * maxToken
+    const memoryCapacity = maxToken
     return $usage.total_tokens + maxToken + memoryCapacity > contextSize
   }
 
@@ -528,12 +535,12 @@
   async function start() {
     tcLog('INFO', 'start new session')
     await loadVarsFromPath()
+    $session.nextSpeaker = 0
     await updateInitialScenes()
     $usage = calcUsage()
     $sessionPath = ''
     userInput = ''
     $summarySceneIndex = 0
-    $session.nextSpeaker = 0
     $session.startIndex = 0
     fillCharacters()
     await saveSessionNew()
