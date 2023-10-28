@@ -37,6 +37,7 @@
     bind:value
     {step}
     on:blur={() => {
+      value = Number(value)
       save(Number(value))
     }}
     class="px-2 py-1 self-center text-base" />
@@ -51,6 +52,7 @@
     {max}
     {step}
     on:change={() => {
+      value = Number(value)
       save(Number(value))
     }}
     class="self-center" />

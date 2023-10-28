@@ -11,10 +11,7 @@ set LOG_FILE=%CUR_DIR%..\..\Data\illustory.log
 if not defined PYTHON (set PYTHON=python)
 
 mkdir %CUR_DIR%..\..\Data 2>NUL
-call :sub >%LOG_FILE% 2>&1
-exit /b
 
-:sub
 %PYTHON% -mpip --help
 if %ERRORLEVEL% == 0 goto :run_server
 if "%PIP_INSTALLER_LOCATION%" == "" goto :show_log

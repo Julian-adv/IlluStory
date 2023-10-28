@@ -39,6 +39,7 @@ app.include_router(process.router)
 if os.path.exists("../../../build/_app"):
     app.mount("/_app", StaticFiles(directory="../../../build/_app"))
 
+
 @app.get("/")
 def index():
     return FileResponse("../../../build/index.html")

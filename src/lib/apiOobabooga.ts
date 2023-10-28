@@ -8,8 +8,7 @@ export async function sendChatOobabooga(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  summary: boolean,
-  sendStartIndex: number
+  summary: boolean
 ): Promise<ChatResult | null> {
   const uri = preset.oobabooga.apiUrl + '/v1/generate'
   const url = new URL(uri)
@@ -17,9 +16,9 @@ export async function sendChatOobabooga(
   if (summary) {
     prompt += preset.oobabooga.systemPrefix
     prompt += preset.summarizePrompt + '\n'
-    prompt += generatePrompt(preset, [], dialogues, sendStartIndex)
+    prompt += generatePrompt(preset, [], dialogues)
   } else {
-    prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
+    prompt += generatePrompt(preset, prologues, dialogues)
   }
   prompt += preset.oobabooga.assistantPrefix
   tcLog('INFO', 'prompt:', prompt)
@@ -96,7 +95,6 @@ export async function sendChatOobaboogaStream(
   prologues: SceneType[],
   dialogues: SceneType[],
   summary: boolean,
-  sendStartIndex: number,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
@@ -104,7 +102,7 @@ export async function sendChatOobaboogaStream(
   const userName = get(user).name
 
   let prompt = ''
-  prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex, summary)
+  prompt += generatePrompt(preset, prologues, dialogues, summary)
   tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   usage.prompt_tokens = countTokensApi(prompt)

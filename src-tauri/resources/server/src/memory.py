@@ -24,11 +24,13 @@ class Query(BaseModel):
     n: int
 
 
-def extract_name_and_dialogue(text):
-    pattern = r'(\b[A-Za-z][A-Za-z-]*(?:\s[A-Za-z][A-Za-z-]*)*:\s*"[^"]*")'
+def extract_sentences(text):
+    text = re.sub(r"\.\.\.", "<ellipsis>", text)
+    pattern = r'((".+?[.!?]"|"[^"]+"[^"]+?[.!?]|[^.!?]+?".+?[.!?]"|.+?[.!?])\s*)'
     matches = re.findall(pattern, text)
-    remaining_text = re.sub(pattern, "", text).strip()
-    return matches, remaining_text
+    results = [match[0].strip() for match in matches]
+    results = [re.sub(r"<ellipsis>", "...", result) for result in results]
+    return results
 
 
 @router.post("/save")
@@ -38,15 +40,21 @@ def save_memory(memory: Memory):
         name=memory.collection, metadata={"hnsw:space": "cosine"}
     )
 
-    dialogues, remaining_text = extract_name_and_dialogue(memory.doc)
-    sentences = re.split(r'(?<=[.!?])"?\s+', remaining_text)
-    sentences = dialogues + sentences
-    print(f"sentences: {sentences}")
-    metas = [memory.meta] * len(sentences)
-    ids = [f"{memory.id}{i:03}" for i in range(0, len(sentences))]
+    sentences = extract_sentences(memory.doc)
+    combined = [
+        sentences[i] + " " + sentences[i + 1]
+        if i + 1 < len(sentences)
+        else sentences[i]
+        for i in range(0, len(sentences), 2)
+    ]
+
+    for s in combined:
+        print(f"sentence: {s}")
+    metas = [memory.meta] * len(combined)
+    ids = [f"{memory.id}{i:03}" for i in range(0, len(combined))]
 
     collection.add(
-        documents=sentences,
+        documents=combined,
         metadatas=metas,
         ids=ids,
     )
@@ -63,6 +71,14 @@ def get_memory(query: Query):
         where={"role": "assistant"},  # optional filter
         # where_document={"$contains":"search_string"}  # optional filter
     )
+    sorted_pairs = sorted(
+        zip(results["ids"][0], results["documents"][0]), key=lambda x: int(x[0])
+    )
+    sorted_ids, sorted_documents = zip(*sorted_pairs)
+    results["ids"][0] = list(sorted_ids)
+    results["documents"][0] = list(sorted_documents)
+
     print(f"id: {results['ids'][0]}")
-    print(f"doc: {results['documents'][0]}")
+    for sentence in results["documents"][0]:
+        print(f"get: {sentence}")
     return {"results": results}

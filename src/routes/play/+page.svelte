@@ -20,7 +20,6 @@
     dialogues,
     usage,
     sessionPath,
-    summarySceneIndex,
     chars,
     user,
     presetPath,
@@ -33,8 +32,7 @@
     session,
     replaceDict,
     fileDialog,
-    memory,
-    maxMemory
+    memory
   } from '$lib/store'
   import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
   import { killServer, lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
@@ -266,6 +264,7 @@
       }
     }
     $dialogues = $dialogues
+    $usage = calcUsage()
   }
 
   async function summarize() {
@@ -284,16 +283,8 @@
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming
-      ? await sendChatStream(
-          $preset,
-          prologs,
-          $dialogues,
-          true,
-          $summarySceneIndex,
-          received,
-          closed
-        )
-      : await sendChat($preset, prologs, $dialogues, true, $summarySceneIndex)
+      ? await sendChatStream($preset, prologs, $dialogues, true, received, closed)
+      : await sendChat($preset, prologs, $dialogues, true)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
@@ -301,7 +292,6 @@
       scene.content = result.scene.content
       scene.done = result.scene.done
       scene = await extractImagePrompt($settings, scene, $replaceDict)
-      $summarySceneIndex = $dialogues.length - 1
       $dialogues = $dialogues
       await tick()
       scrollToEnd()
@@ -324,16 +314,8 @@
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming
-      ? await sendChatStream(
-          $preset,
-          prologs,
-          $dialogues.slice(0, 1),
-          true,
-          $summarySceneIndex,
-          received,
-          closed
-        )
-      : await sendChat($preset, prologs, $dialogues.slice(0, 1), true, $summarySceneIndex)
+      ? await sendChatStream($preset, prologs, $dialogues.slice(0, 1), true, received, closed)
+      : await sendChat($preset, prologs, $dialogues.slice(0, 1), true)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
@@ -341,7 +323,6 @@
       scene.content = result.scene.content
       scene.done = result.scene.done
       scene = await extractImagePrompt($settings, scene, $replaceDict)
-      $summarySceneIndex = $dialogues.length - 1
       $dialogues = $dialogues
       await tick()
       scrollToEnd()
@@ -398,15 +379,13 @@
     const collection = basenameOf($sessionPath)
     const memo = await tcGetMemory(collection, text, numMemory)
     let i = 0
+    $memory = []
     for (; i < memo.results.documents[0].length; i++) {
-      $memory[i].id = Number(memo.results.ids[0][i])
-      $memory[i].role = memo.results.metadatas[0][i].role
-      $memory[i].content = memo.results.documents[0][i]
-    }
-    for (; i < maxMemory; i++) {
-      $memory[i].id = 0
-      $memory[i].role = ''
-      $memory[i].content = ''
+      $memory.push({
+        id: Number(memo.results.ids[0][i]),
+        role: memo.results.metadatas[0][i].role,
+        content: memo.results.documents[0][i]
+      })
     }
   }
 
@@ -434,7 +413,7 @@
 
   function calcUsage() {
     const prologs = preparePrologue()
-    const prompt = generatePrompt($preset, prologs, $dialogues, 0, false)
+    const prompt = generatePrompt($preset, prologs, $dialogues, false)
     const tokens = countTokensApi(prompt)
     return {
       prompt_tokens: tokens,
@@ -540,7 +519,6 @@
     $usage = calcUsage()
     $sessionPath = ''
     userInput = ''
-    $summarySceneIndex = 0
     $session.startIndex = 0
     fillCharacters()
     await saveSessionNew()
@@ -665,7 +643,7 @@
         textContent: '',
         done: false
       }
-      if (longPrompt) {
+      if ($session.startIndex > 0) {
         await getMemory(orgContent)
       }
       $dialogues = [...$dialogues, userScene, waitingScene]
@@ -693,11 +671,10 @@
           prologs,
           $dialogues.slice($session.startIndex),
           false,
-          0,
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues.slice($session.startIndex), false, 0)
+      : await sendChat($preset, prologs, $dialogues.slice($session.startIndex), false)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)

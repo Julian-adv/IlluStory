@@ -101,7 +101,6 @@ export function generatePrompt(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  sendStartIndex: number,
   summary = false
 ) {
   let prompt = ''
@@ -115,7 +114,7 @@ export function generatePrompt(
       case startStory:
         break
       case chatHistory: {
-        const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
+        const { start, end } = getStartEndIndex(scene, dialogues)
         for (const mesg of dialogues.slice(start, end)) {
           prompt += addRolePrefix(preset, mesg) + mesg.textContent + '\n'
         }

@@ -35,13 +35,12 @@ function generateMessages(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  summary: boolean,
-  sendStartIndex: number
+  summary: boolean
 ) {
   const messages: Message[] = []
   if (summary) {
     messages.push({ role: systemRole, content: preset.summarizePrompt })
-    for (const scene of dialogues.slice(sendStartIndex)) {
+    for (const scene of dialogues) {
       messages.push({ role: scene.role, content: scene.content })
     }
   } else {
@@ -51,7 +50,7 @@ function generateMessages(
         case startStory:
           break
         case chatHistory: {
-          const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
+          const { start, end } = getStartEndIndex(scene, dialogues)
           for (const mesg of dialogues.slice(start, end)) {
             messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
           }
@@ -66,7 +65,7 @@ function generateMessages(
       }
     }
     if (!sentChatHistory) {
-      for (const scene of dialogues.slice(sendStartIndex)) {
+      for (const scene of dialogues) {
         messages.push({ role: scene.role, content: scene.content })
       }
     }
@@ -78,13 +77,12 @@ function generatePrompt(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  summary: boolean,
-  sendStartIndex: number
+  summary: boolean
 ) {
   let prompt = ''
   if (summary) {
     prompt += preset.summarizePrompt + '\n'
-    for (const scene of dialogues.slice(sendStartIndex)) {
+    for (const scene of dialogues) {
       prompt += scene.content + '\n'
     }
   } else {
@@ -94,7 +92,7 @@ function generatePrompt(
         case startStory:
           break
         case chatHistory: {
-          const { start, end } = getStartEndIndex(scene, dialogues, sendStartIndex)
+          const { start, end } = getStartEndIndex(scene, dialogues)
           for (const mesg of dialogues.slice(start, end)) {
             prompt += mesg.content + '\n'
           }
@@ -106,7 +104,7 @@ function generatePrompt(
       }
     }
     if (!sentChatHistory) {
-      for (const scene of dialogues.slice(sendStartIndex)) {
+      for (const scene of dialogues) {
         prompt += scene.content + '\n'
       }
     }
@@ -126,8 +124,7 @@ export async function sendChatOpenAi(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  summary: boolean,
-  sendStartIndex: number
+  summary: boolean
 ): Promise<ChatResult | null> {
   const instructModel = preset.openAi.model.includes('instruct')
   const uri = preset.openAi.apiUrl + apiUrl(instructModel)
@@ -144,12 +141,12 @@ export async function sendChatOpenAi(
   if (instructModel) {
     request = {
       ...commonReq,
-      prompt: generatePrompt(preset, prologues, dialogues, summary, sendStartIndex)
+      prompt: generatePrompt(preset, prologues, dialogues, summary)
     }
   } else {
     request = {
       ...commonReq,
-      messages: generateMessages(preset, prologues, dialogues, summary, sendStartIndex)
+      messages: generateMessages(preset, prologues, dialogues, summary)
     }
   }
   tcLog('INFO', 'request', JSON.stringify(request))
@@ -188,7 +185,6 @@ export async function sendChatOpenAiStream(
   prologues: SceneType[],
   dialogues: SceneType[],
   summary: boolean,
-  sendStartIndex: number,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
@@ -208,12 +204,12 @@ export async function sendChatOpenAiStream(
   if (instructModel) {
     request = {
       ...commonReq,
-      prompt: generatePrompt(preset, prologues, dialogues, summary, sendStartIndex)
+      prompt: generatePrompt(preset, prologues, dialogues, summary)
     }
   } else {
     request = {
       ...commonReq,
-      messages: generateMessages(preset, prologues, dialogues, summary, sendStartIndex)
+      messages: generateMessages(preset, prologues, dialogues, summary)
     }
     promptTokens = request.messages
       .map(mesg => countTokensApi(mesg.content))

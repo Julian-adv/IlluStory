@@ -10,7 +10,6 @@ import type {
 } from './interfaces'
 import { Api, CardType, SortOrder, SortType } from './interfaces'
 import { defaultImage } from '$lib'
-import { assistantRole } from './api'
 import type { Command } from '@tauri-apps/api/shell'
 
 const defaultScenes: SceneType[] = []
@@ -119,11 +118,10 @@ export const sessionPath = writable('')
 export const zeroUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
 export const usage = writable(zeroUsage)
 
-export const summarySceneIndex = writable(0)
 export const summarizePrompt = writable('')
 
 export const maxMemory = 10
-const defaultMemory = new Array(maxMemory).fill({ id: 0, role: assistantRole, content: '' })
+const defaultMemory: SceneType[] = []
 
 export const memory = writable(defaultMemory)
 

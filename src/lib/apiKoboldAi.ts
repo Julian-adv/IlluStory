@@ -8,8 +8,7 @@ export async function sendChatKoboldAi(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
-  summary: boolean,
-  sendStartIndex: number
+  summary: boolean
 ): Promise<ChatResult | null> {
   const uri = preset.koboldAi.apiUrl + '/v1/generate'
   const url = new URL(uri)
@@ -17,9 +16,9 @@ export async function sendChatKoboldAi(
   if (summary) {
     prompt += preset.koboldAi.systemPrefix
     prompt += preset.summarizePrompt + '\n'
-    prompt += generatePrompt(preset, [], dialogues, sendStartIndex)
+    prompt += generatePrompt(preset, [], dialogues)
   } else {
-    prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
+    prompt += generatePrompt(preset, prologues, dialogues)
   }
   prompt += preset.koboldAi.assistantPrefix
   tcLog('INFO', 'prompt:', prompt)
@@ -87,7 +86,6 @@ export async function sendChatKoboldAiStream(
   prologues: SceneType[],
   dialogues: SceneType[],
   summary: boolean,
-  sendStartIndex: number,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
@@ -95,7 +93,7 @@ export async function sendChatKoboldAiStream(
   const url = new URL(uri)
 
   let prompt = ''
-  prompt += generatePrompt(preset, prologues, dialogues, sendStartIndex)
+  prompt += generatePrompt(preset, prologues, dialogues)
   tcLog('INFO', 'prompt:', prompt)
   const promptTokens = countTokensApi(prompt)
   const userName = get(user).name
