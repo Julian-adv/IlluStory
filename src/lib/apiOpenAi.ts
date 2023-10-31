@@ -1,14 +1,17 @@
 import { get } from 'svelte/store'
-import type { Preset, SceneType, Message, ChatResult } from './interfaces'
+import type { Preset, SceneType, Message, ChatResult, Session } from './interfaces'
 import { settings, zeroUsage } from './store'
 import {
   assistantRole,
+  assocMemory,
   charSetting,
   chatHistory,
   countTokensApi,
   endTag,
+  saveMemory,
   startStory,
   systemRole,
+  tokensOver,
   userRole,
   userSetting
 } from './api'
@@ -35,6 +38,7 @@ function generateMessages(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  memories: string,
   summary: boolean
 ) {
   const messages: Message[] = []
@@ -57,6 +61,12 @@ function generateMessages(
           sentChatHistory = true
           break
         }
+        case assocMemory: {
+          if (memories) {
+            messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
+          }
+          break
+        }
         default:
           messages.push({
             role: convertRole(scene.role),
@@ -73,10 +83,42 @@ function generateMessages(
   return messages
 }
 
+async function generateMessagesCheck(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  memories: string,
+  session: Session,
+  summary: boolean
+) {
+  let messages: Message[] = []
+  let tokens = 0
+  while (session.startIndex < dialogues.length) {
+    messages = generateMessages(
+      preset,
+      prologues,
+      dialogues.slice(session.startIndex),
+      memories,
+      summary
+    )
+    for (const mesg of messages) {
+      tokens += countTokensApi(mesg.content)
+    }
+    if (tokensOver(preset, tokens)) {
+      await saveMemory(dialogues[session.startIndex])
+      session.startIndex++
+    } else {
+      break
+    }
+  }
+  return { messages, tokens }
+}
+
 function generatePrompt(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  memories: string,
   summary: boolean
 ) {
   let prompt = ''
@@ -99,6 +141,13 @@ function generatePrompt(
           sentChatHistory = true
           break
         }
+        case assocMemory: {
+          if (memories) {
+            prompt += scene.content + '\n'
+            prompt += memories
+          }
+          break
+        }
         default:
           prompt += scene.content + '\n'
       }
@@ -110,6 +159,35 @@ function generatePrompt(
     }
   }
   return prompt
+}
+
+async function generateOpenAIPromptCheck(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  memories: string,
+  session: Session,
+  summary = false
+) {
+  let prompt = ''
+  let tokens = 0
+  while (session.startIndex < dialogues.length) {
+    prompt = generatePrompt(
+      preset,
+      prologues,
+      dialogues.slice(session.startIndex),
+      memories,
+      summary
+    )
+    tokens = countTokensApi(prompt)
+    if (tokensOver(preset, tokens)) {
+      await saveMemory(dialogues[session.startIndex])
+      session.startIndex++
+    } else {
+      break
+    }
+  }
+  return { prompt, tokens }
 }
 
 function apiUrl(instructModel: boolean) {
@@ -124,6 +202,8 @@ export async function sendChatOpenAi(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  memories: string,
+  session: Session,
   summary: boolean
 ): Promise<ChatResult | null> {
   const instructModel = preset.openAi.model.includes('instruct')
@@ -139,14 +219,30 @@ export async function sendChatOpenAi(
   }
   let request
   if (instructModel) {
+    const { prompt } = await generateOpenAIPromptCheck(
+      preset,
+      prologues,
+      dialogues,
+      memories,
+      session,
+      summary
+    )
     request = {
       ...commonReq,
-      prompt: generatePrompt(preset, prologues, dialogues, summary)
+      prompt: prompt
     }
   } else {
+    const { messages } = await generateMessagesCheck(
+      preset,
+      prologues,
+      dialogues,
+      memories,
+      session,
+      summary
+    )
     request = {
       ...commonReq,
-      messages: generateMessages(preset, prologues, dialogues, summary)
+      messages: messages
     }
   }
   tcLog('INFO', 'request', JSON.stringify(request))
@@ -184,6 +280,8 @@ export async function sendChatOpenAiStream(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  memories: string,
+  session: Session,
   summary: boolean,
   received: (text: string) => void,
   closedCallback: () => void
@@ -200,20 +298,35 @@ export async function sendChatOpenAiStream(
     stream: true
   }
   let request
-  let promptTokens = 0
+  let numTokens = 0
   if (instructModel) {
+    const { prompt, tokens } = await generateOpenAIPromptCheck(
+      preset,
+      prologues,
+      dialogues,
+      memories,
+      session,
+      summary
+    )
     request = {
       ...commonReq,
-      prompt: generatePrompt(preset, prologues, dialogues, summary)
+      prompt: prompt
     }
+    numTokens = tokens
   } else {
+    const { messages, tokens } = await generateMessagesCheck(
+      preset,
+      prologues,
+      dialogues,
+      memories,
+      session,
+      summary
+    )
     request = {
       ...commonReq,
-      messages: generateMessages(preset, prologues, dialogues, summary)
+      messages: messages
     }
-    promptTokens = request.messages
-      .map(mesg => countTokensApi(mesg.content))
-      .reduce((a, b) => a + b, 0)
+    numTokens = tokens
   }
   tcLog('INFO', 'request', JSON.stringify(request))
   const respFromGPT = await fetch(url, {
@@ -254,7 +367,7 @@ export async function sendChatOpenAiStream(
     }
     return {
       scene,
-      usage: { prompt_tokens: promptTokens, completion_tokens: 0, total_tokens: promptTokens }
+      usage: { prompt_tokens: numTokens, completion_tokens: 0, total_tokens: numTokens }
     }
   } else {
     return null

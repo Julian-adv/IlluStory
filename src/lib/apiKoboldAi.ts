@@ -1,29 +1,29 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, Usage, ChatResult } from './interfaces'
+import type { SceneType, Preset, Usage, ChatResult, Session } from './interfaces'
 import { user } from './store'
-import { assistantRole, countTokensApi, generatePrompt } from './api'
+import { assistantRole, countTokensApi, generatePromptCheck } from './api'
 import { tcLog } from './tauriCompat'
 
 export async function sendChatKoboldAi(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  memories: string,
+  session: Session,
   summary: boolean
 ): Promise<ChatResult | null> {
   const uri = preset.koboldAi.apiUrl + '/v1/generate'
   const url = new URL(uri)
-  let prompt = ''
-  if (summary) {
-    prompt += preset.koboldAi.systemPrefix
-    prompt += preset.summarizePrompt + '\n'
-    prompt += generatePrompt(preset, [], dialogues)
-  } else {
-    prompt += generatePrompt(preset, prologues, dialogues)
-  }
-  prompt += preset.koboldAi.assistantPrefix
+  const { prompt, tokens } = await generatePromptCheck(
+    preset,
+    prologues,
+    dialogues,
+    memories,
+    session,
+    summary
+  )
   tcLog('INFO', 'prompt:', prompt)
-  const usage: Usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
-  usage.prompt_tokens = countTokensApi(prompt)
+  const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
   const userName = get(user).name
 
   const respFromKobold = await fetch(url, {
@@ -85,6 +85,8 @@ export async function sendChatKoboldAiStream(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  memories: string,
+  session: Session,
   summary: boolean,
   received: (text: string) => void,
   closedCallback: () => void
@@ -92,10 +94,14 @@ export async function sendChatKoboldAiStream(
   const uri = preset.koboldAi.apiUrl + '/extra/generate/stream'
   const url = new URL(uri)
 
-  let prompt = ''
-  prompt += generatePrompt(preset, prologues, dialogues)
+  const { prompt, tokens } = await generatePromptCheck(
+    preset,
+    prologues,
+    dialogues,
+    memories,
+    session
+  )
   tcLog('INFO', 'prompt:', prompt)
-  const promptTokens = countTokensApi(prompt)
   const userName = get(user).name
 
   const respFromKobold = await fetch(url, {
@@ -165,7 +171,7 @@ export async function sendChatKoboldAiStream(
     }
     return {
       scene,
-      usage: { prompt_tokens: promptTokens, completion_tokens: 0, total_tokens: promptTokens }
+      usage: { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
     }
   } else {
     return null
