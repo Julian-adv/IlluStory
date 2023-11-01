@@ -100,7 +100,6 @@ export async function sendChatOobaboogaStream(
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
-  const conn = new WebSocket(preset.oobabooga.apiUrl + '/v1/stream')
   const userName = get(user).name
 
   const { prompt, tokens } = await generatePromptCheck(
@@ -113,6 +112,8 @@ export async function sendChatOobaboogaStream(
   )
   tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
+
+  const conn = new WebSocket(preset.oobabooga.apiUrl)
   conn.onopen = () => {
     const request = {
       max_new_tokens: preset.oobabooga.maxTokens,

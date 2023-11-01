@@ -83,22 +83,6 @@ export function changeApi(api: Api) {
   }
 }
 
-function addRolePrefix(preset: Preset, scene: SceneType) {
-  if (get(settings).oneInstruction) {
-    return ''
-  }
-  switch (scene.role) {
-    case systemRole:
-      return preset.oobabooga.systemPrefix
-    case assistantRole:
-      return preset.oobabooga.assistantPrefix
-    case userRole:
-      return preset.oobabooga.userPrefix
-    default:
-      return ''
-  }
-}
-
 function systemPrefix(preset: Preset) {
   switch (preset.api) {
     case Api.Oobabooga:
@@ -121,6 +105,37 @@ function assistantPrefix(preset: Preset) {
   }
 }
 
+function userPrefix(preset: Preset) {
+  switch (preset.api) {
+    case Api.Oobabooga:
+      return preset.oobabooga.userPrefix
+    case Api.KoboldAi:
+      return preset.koboldAi.userPrefix
+    default:
+      return ''
+  }
+}
+
+function addRolePrefix(preset: Preset, scene: SceneType, dialogues: SceneType[]) {
+  const oneInstruction = get(settings).oneInstruction
+  const last =
+    dialogues[dialogues.length - 1] === scene ||
+    (preset.streaming && dialogues[dialogues.length - 2] === scene)
+  if ((oneInstruction && last && scene.role === userRole) || !oneInstruction) {
+    switch (scene.role) {
+      case systemRole:
+        return systemPrefix(preset)
+      case assistantRole:
+        return assistantPrefix(preset)
+      case userRole:
+        return userPrefix(preset)
+      default:
+        return ''
+    }
+  }
+  return ''
+}
+
 export function generatePrompt(
   preset: Preset,
   prologues: SceneType[],
@@ -141,20 +156,20 @@ export function generatePrompt(
       case chatHistory: {
         const { start, end } = getStartEndIndex(scene, dialogues)
         for (const mesg of dialogues.slice(start, end)) {
-          prompt += addRolePrefix(preset, mesg) + mesg.textContent + '\n'
+          prompt += addRolePrefix(preset, mesg, dialogues) + mesg.textContent + '\n'
         }
         sentChatHistory = true
         break
       }
       case assocMemory: {
         if (memories) {
-          prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+          prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
           prompt += memories
         }
         break
       }
       default:
-        prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+        prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
     }
   }
   if (!sentChatHistory) {
@@ -165,7 +180,7 @@ export function generatePrompt(
       if (summary) {
         prompt += scene.textContent + '\n'
       } else {
-        prompt += addRolePrefix(preset, scene) + scene.textContent + '\n'
+        prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
       }
     }
     if (summary) {

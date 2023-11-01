@@ -225,7 +225,12 @@
       $prologues = replaceChar(result.prologues, $chars[$session.nextSpeaker], $user)
     }
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
-    $dialogues = await convertScenes(result.dialogues, $replaceDict)
+    if ($dialogues.length > result.dialogues.length) {
+      $dialogues = [...result.dialogues, ...$dialogues.slice(result.dialogues.length)]
+    } else {
+      $dialogues = [...result.dialogues]
+    }
+    $dialogues = await convertScenes($dialogues, $replaceDict)
   }
 
   async function newSession() {
@@ -465,6 +470,7 @@
     tcLog('INFO', 'start new session')
     await loadVarsFromPath()
     $session.nextSpeaker = 0
+    $dialogues = []
     await updateInitialScenes()
     $usage = calcUsage()
     $sessionPath = ''
