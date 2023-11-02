@@ -496,9 +496,9 @@
         label="Max tokens"
         help="The maximum number of tokens to generate in the completion."
         bind:value={$preset.openAi.maxTokens}
-        min={50}
-        max={1000}
-        step={1}
+        min={48}
+        max={1024}
+        step={8}
         save={autoSaveFunc} />
       <NumberField
         label="Context size"
@@ -506,13 +506,13 @@
         bind:value={$preset.openAi.contextSize}
         min={512}
         max={32768}
-        step={1}
+        step={8}
         save={autoSaveFunc} />
     {/if}
     {#if $preset.api === Api.Oobabooga}
       <StringField
         label="URL"
-        help="For example, http://localhost:5000/api, or ws://localhost:5005/api for streaming."
+        help="For example, http://localhost:5000/api, or ws://localhost:5005/api/v1/stream for streaming."
         placeholder=""
         bind:value={$preset.oobabooga.apiUrl}
         save={autoSaveFunc} />
@@ -702,9 +702,9 @@
         label="Max tokens"
         help="The maximum number of tokens to generate in the completion."
         bind:value={$preset.oobabooga.maxTokens}
-        min={50}
-        max={1000}
-        step={1}
+        min={48}
+        max={1024}
+        step={8}
         save={autoSaveFunc} />
       <NumberField
         label="Context size"
@@ -712,7 +712,7 @@
         bind:value={$preset.oobabooga.contextSize}
         min={512}
         max={32768}
-        step={1}
+        step={8}
         save={autoSaveFunc} />
     {/if}
     {#if $preset.api === Api.KoboldAi}
@@ -837,9 +837,9 @@
         label="Max tokens"
         help="The maximum number of tokens to generate in the completion."
         bind:value={$preset.koboldAi.maxTokens}
-        min={50}
-        max={1000}
-        step={1}
+        min={48}
+        max={1024}
+        step={8}
         save={autoSaveFunc} />
       <NumberField
         label="Context size"
@@ -847,7 +847,7 @@
         bind:value={$preset.koboldAi.contextSize}
         min={512}
         max={32768}
-        step={1}
+        step={8}
         save={autoSaveFunc} />
     {/if}
     <TextField

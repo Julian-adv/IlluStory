@@ -247,6 +247,7 @@
   async function goBack() {
     while ($dialogues.length > 1) {
       const lastS = lastScene($dialogues)
+      $session.startIndex--
       if (lastS.role === userRole) {
         const scene = $dialogues.pop()
         if (scene) {
@@ -259,6 +260,9 @@
       } else {
         $dialogues.pop()
       }
+    }
+    if ($session.startIndex < 0) {
+      $session.startIndex = 0
     }
     $dialogues = $dialogues
     $usage = calcUsage()
@@ -344,7 +348,7 @@
     let i = 0
     let memory = ''
     for (; i < memo.results.documents[0].length; i++) {
-      memory += `<Memory fragment>\n`
+      memory += '...\n'
       memory += memo.results.documents[0][i] + '\n'
     }
     return memory
@@ -394,6 +398,7 @@
       $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
       $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
       await loadVarsFromPath()
+      await updateInitialScenes()
       started = true
     }
     numMemory = findNumberOfMemory($preset)

@@ -3,6 +3,7 @@ import { presetExt } from './fs'
 import { defaultPreset } from './store'
 import {
   assistantRole,
+  assocMemory,
   authorNote,
   changeApi,
   charSetting,
@@ -72,6 +73,24 @@ function convertChat(preset: Preset, start: number, end: string) {
     rangeEnd: end
   }
   preset.prompts.push(scene)
+}
+
+function convertMemory(preset: Preset, prompt: RisuPrompt) {
+  const [beforeSlot, afterSlot] = prompt.innerFormat.split('{{slot}}')
+  const scene: SceneType = {
+    id: sceneId++,
+    content: beforeSlot,
+    role: assocMemory
+  }
+  preset.prompts.push(scene)
+  if (afterSlot) {
+    const scene2: SceneType = {
+      id: sceneId++,
+      content: afterSlot,
+      role: endTag
+    }
+    preset.prompts.push(scene2)
+  }
 }
 
 function convertNormal(preset: Preset, prompt: RisuPrompt, role?: string) {
@@ -192,6 +211,8 @@ export async function importPreset(json: string): Promise<Preset> {
         convertNormal(preset, prompt, loreBook)
       } else if (prompt.type === 'plain' && prompt.type2 === 'globalNote') {
         convertNormal(preset, prompt, globalNote)
+      } else if (prompt.type === 'memory') {
+        convertMemory(preset, prompt)
       } else {
         convertNormal(preset, prompt)
       }

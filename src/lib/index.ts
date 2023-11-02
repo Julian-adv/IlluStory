@@ -73,9 +73,16 @@ export function getRandomSize(sizes: string): ImageSize {
   return { width, height }
 }
 
-export function getStartEndIndex(scene: SceneType, dialogues: SceneType[]) {
-  const start = scene.rangeStart ?? 0
-  const end = scene.rangeEnd === 'end' ? dialogues.length : Number(scene.rangeEnd)
+export function getStartEndIndex(scene: SceneType, dialogues: SceneType[], streaming: boolean) {
+  let start = scene.rangeStart ?? 0
+  let end = scene.rangeEnd === 'end' ? length : Number(scene.rangeEnd)
+  if (streaming) {
+    if (start < 0) {
+      start--
+    }
+    end--
+  }
+
   return { start, end }
 }
 

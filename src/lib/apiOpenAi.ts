@@ -54,7 +54,7 @@ function generateMessages(
         case startStory:
           break
         case chatHistory: {
-          const { start, end } = getStartEndIndex(scene, dialogues)
+          const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
           for (const mesg of dialogues.slice(start, end)) {
             messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
           }
@@ -134,7 +134,7 @@ function generatePrompt(
         case startStory:
           break
         case chatHistory: {
-          const { start, end } = getStartEndIndex(scene, dialogues)
+          const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
           for (const mesg of dialogues.slice(start, end)) {
             prompt += mesg.content + '\n'
           }

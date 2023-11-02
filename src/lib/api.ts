@@ -154,7 +154,7 @@ export function generatePrompt(
       case startStory:
         break
       case chatHistory: {
-        const { start, end } = getStartEndIndex(scene, dialogues)
+        const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
         for (const mesg of dialogues.slice(start, end)) {
           prompt += addRolePrefix(preset, mesg, dialogues) + mesg.textContent + '\n'
         }
