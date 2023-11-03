@@ -80,7 +80,8 @@ function convertMemory(preset: Preset, prompt: RisuPrompt) {
   const scene: SceneType = {
     id: sceneId++,
     content: beforeSlot,
-    role: assocMemory
+    role: assocMemory,
+    rangeStart: 5
   }
   preset.prompts.push(scene)
   if (afterSlot) {

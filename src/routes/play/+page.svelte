@@ -392,13 +392,13 @@
     if ($dialogues.length === 0) {
       await loadRecentSession()
     } else {
-      const dataDir = await tcAppDataDir()
-      $presetCard = await cardFromPath(dataDir + $session.presetCard)
-      $userCard = await cardFromPath(dataDir + $session.userCard)
-      $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
-      $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
-      await loadVarsFromPath()
-      await updateInitialScenes()
+      // const dataDir = await tcAppDataDir()
+      // $presetCard = await cardFromPath(dataDir + $session.presetCard)
+      // $userCard = await cardFromPath(dataDir + $session.userCard)
+      // $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
+      // $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
+      // await loadVarsFromPath()
+      // await updateInitialScenes()
       started = true
     }
     numMemory = findNumberOfMemory($preset)
@@ -411,6 +411,7 @@
     if (card) {
       $presetCard = card
       await saveCardUpdate()
+      await loadSessionCommon($sessionPath)
     }
   }
 
@@ -419,6 +420,7 @@
     if (card) {
       $userCard = card
       await saveCardUpdate()
+      await loadSessionCommon($sessionPath)
     }
   }
 
@@ -427,6 +429,7 @@
     if (card) {
       $sceneCard = card
       await saveCardUpdate()
+      await loadSessionCommon($sessionPath)
     }
   }
 
@@ -439,6 +442,7 @@
       $charCards.push(card)
       $charCards = $charCards
       await saveCardUpdate()
+      await loadSessionCommon($sessionPath)
     }
   }
 
