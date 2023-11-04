@@ -6,7 +6,8 @@ import type {
   Char,
   FirstScene,
   StoryCard,
-  Session
+  Session,
+  Lorebook
 } from './interfaces'
 import { Api, CardType, SortOrder, SortType } from './interfaces'
 import { defaultImage } from '$lib'
@@ -224,3 +225,13 @@ export const sceneCard = writable(emptyCard)
 export const fileDialog = writable({ open: false, ext: '', value: '', title: '' })
 
 export const command: Writable<Command | null> = writable(null)
+
+export const defaultLorebook: Lorebook = {
+  title: '',
+  image: '',
+  rules: []
+}
+
+export const lorebook = writable(defaultLorebook)
+
+export const lorebookPath = writable('')

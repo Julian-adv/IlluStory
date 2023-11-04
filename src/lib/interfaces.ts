@@ -240,3 +240,16 @@ export interface SceneResult {
   imageFromSD: Promise<string>
   imageSize: ImageSize
 }
+
+export interface Rule {
+  id: number
+  condition: string
+  answer: string
+  content: string
+}
+
+export interface Lorebook {
+  title: string
+  image: string
+  rules: Rule[]
+}

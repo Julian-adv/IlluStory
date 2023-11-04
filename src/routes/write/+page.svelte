@@ -138,7 +138,7 @@
         prompt.id = id++
       })
       $preset.prompts = $preset.prompts
-      saveObjQuietly($presetPath, $preset)
+      await saveObjQuietly($presetPath, $preset)
       totalTokens = 0
     }
   }

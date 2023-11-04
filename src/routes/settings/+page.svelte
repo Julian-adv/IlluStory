@@ -70,7 +70,7 @@
 
 <div class="px-4">
   <h1 class="text-lg font-semibold mb-1">Settings</h1>
-  <div class="grid grid-cols-[9rem,5rem,1fr] gap-0">
+  <div class="grid grid-cols-[9rem,5rem,1fr] gap-0 items-center">
     <StringField
       label="Data directory"
       bind:value={$settings.dataDir}

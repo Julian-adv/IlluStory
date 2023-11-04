@@ -1,5 +1,5 @@
 import { writeBinaryFile } from '@tauri-apps/api/fs'
-import type { Preset, Char, FirstScene, Session } from './interfaces'
+import type { Preset, Char, FirstScene, Session, Lorebook } from './interfaces'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
 import {
@@ -86,14 +86,18 @@ export async function savePreset(preset: Preset) {
   return savePath(fileName, presetExt, preset)
 }
 
-export async function saveObjQuietly(filePath: string, obj: Preset | Char | FirstScene | Session) {
-  tcWriteTextFile(filePath, JSON.stringify(obj, null, 2))
+export async function saveObjQuietly(
+  filePath: string,
+  obj: Preset | Char | FirstScene | Session | Lorebook
+) {
+  await tcWriteTextFile(filePath, JSON.stringify(obj, null, 2))
 }
 
 export const presetExt = 'preset'
 export const sessionExt = 'session'
 export const charExt = 'char'
 export const sceneExt = 'scene'
+export const lorebookExt = 'lorebook'
 export const jsonExt = 'json'
 export const allExts = [presetExt, sessionExt, charExt, sceneExt]
 
