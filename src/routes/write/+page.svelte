@@ -2,7 +2,6 @@
   import { Button, Checkbox, Toast } from 'flowbite-svelte'
   import { onMount, tick } from 'svelte'
   import { savePreset, saveObjQuietly } from '$lib/fs'
-  import DragnDropList from '$lib/DragnDropList.svelte'
   import {
     changeApi,
     roles,
@@ -22,7 +21,6 @@
     curCharPath,
     user,
     userPath,
-    prologues,
     curScene,
     curScenePath,
     chars,
@@ -30,7 +28,7 @@
     defaultPreset,
     maxMemory
   } from '$lib/store'
-  import { Api, type Char, type FirstScene } from '$lib/interfaces'
+  import { Api, type Char, type FirstScene, type SceneType } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
   import SelectField from '../common/SelectField.svelte'
   import NumberField from '../common/NumberField.svelte'
@@ -50,6 +48,7 @@
   import { loadSceneDialog } from '$lib/scene'
   import type { PageData } from './$types'
   import FileDialog from '$lib/FileDialog.svelte'
+  import DragAndDropList from '../common/DragAndDropList.svelte'
 
   export let data: PageData
   const apis = [
@@ -143,23 +142,16 @@
     }
   }
 
-  function update(i: number, value: string) {
-    if ($preset.prompts[i].content !== value) {
-      $preset.prompts[i].content = value
-      if ($prologues[i]) {
-        // invalidate oldScenes[i]
-        $prologues[i].content = ''
-      }
-    }
-    autoSaveFunc()
-  }
-
-  function updateRole(i: number) {
-    return (value: string) => {
-      $preset.prompts[i].role = value
-      autoSaveFunc()
-    }
-  }
+  // function update(i: number, value: string) {
+  //   if ($preset.prompts[i].content !== value) {
+  //     $preset.prompts[i].content = value
+  //     if ($prologues[i]) {
+  //       // invalidate oldScenes[i]
+  //       $prologues[i].content = ''
+  //     }
+  //   }
+  //   autoSaveFunc()
+  // }
 
   function apiChange(value: string) {
     changeApi(value as Api)
@@ -175,37 +167,37 @@
     return 0
   }
 
-  async function loadCharTo(charIndex: number): Promise<[Char | null, string]> {
+  async function loadCharTo(prompt: SceneType): Promise<[Char | null, string]> {
     const [tempChar, tempFilePath] = await loadCharDialog()
     if (tempChar) {
       const relativePath = removeCommonPrefix($presetPath, tempFilePath)
-      $preset.prompts[charIndex].content = relativePath
+      prompt.content = relativePath
       autoSaveFunc()
     }
     return [tempChar, tempFilePath]
   }
 
-  async function loadSceneTo(sceneIndex: number): Promise<[FirstScene | null, string]> {
+  async function loadSceneTo(prompt: SceneType): Promise<[FirstScene | null, string]> {
     const [tempChar, tempFilePath] = await loadSceneDialog()
     if (tempChar) {
       const relativePath = removeCommonPrefix($presetPath, tempFilePath)
-      $preset.prompts[sceneIndex].content = relativePath
+      prompt.content = relativePath
       autoSaveFunc()
     }
     return [tempChar, tempFilePath]
   }
 
-  function onCharClick(charIndex: number) {
+  function onCharClick(prompt: SceneType) {
     return async (ev: Event) => {
       ev.stopPropagation()
-      const [_tempChar, _tempFilePath] = await loadCharTo(charIndex)
+      await loadCharTo(prompt)
     }
   }
 
-  function onUserClick(charIndex: number) {
+  function onUserClick(prompt: SceneType) {
     return async (ev: Event) => {
       ev.stopPropagation()
-      const [tempChar, tempFilePath] = await loadCharTo(charIndex)
+      const [tempChar, tempFilePath] = await loadCharTo(prompt)
       if (tempChar) {
         $user = tempChar
         $userPath = tempFilePath
@@ -213,10 +205,10 @@
     }
   }
 
-  function onSceneClick(sceneIndex: number) {
+  function onSceneClick(prompt: SceneType) {
     return async (ev: Event) => {
       ev.stopPropagation()
-      const [tempScene, tempFilePath] = await loadSceneTo(sceneIndex)
+      const [tempScene, tempFilePath] = await loadSceneTo(prompt)
       if (tempScene) {
         $curScene = tempScene
         $curScenePath = tempFilePath
@@ -240,19 +232,19 @@
     goto('/write_scene')
   }
 
-  function onChangeRangeStart(i: number) {
-    return (value: string | number) => {
-      $preset.prompts[i].rangeStart = Number(value)
-      autoSaveFunc()
-    }
-  }
+  // function onChangeRangeStart(i: number) {
+  //   return (value: string | number) => {
+  //     $preset.prompts[i].rangeStart = Number(value)
+  //     autoSaveFunc()
+  //   }
+  // }
 
-  function onChangeRangeEnd(i: number) {
-    return (value: string | number) => {
-      $preset.prompts[i].rangeEnd = String(value)
-      autoSaveFunc()
-    }
-  }
+  // function onChangeRangeEnd(i: number) {
+  //   return (value: string | number) => {
+  //     $preset.prompts[i].rangeEnd = String(value)
+  //     autoSaveFunc()
+  //   }
+  // }
 
   const miroStatPreset = {
     temperature: 1.0,
@@ -858,84 +850,82 @@
   </div>
 
   <h1 class="text-lg font-semibold mb-1 mt-3">Prompts</h1>
-  <DragnDropList
+  <DragAndDropList
     bind:items={$preset.prompts}
-    onChange={autoSaveFunc}
-    removesItems
+    itemClass="grid grid-cols-[9rem,1fr] gap-2"
     let:item={prompt}
     let:i>
-    <div class="grid grid-cols-[9rem,1fr] gap-2">
-      <div class=" w-36 flex">
-        <DropSelect
-          items={roles}
-          size="sm"
-          classStr="text-sm self-start text-center w-full"
-          value={prompt.role}
-          save={updateRole(i)} />
-      </div>
-      <div class="flex items-center w-full text-center">
-        {#if prompt.role === startStory}
-          <hr class="flex-grow border-t border-dashed border-stone-400" />
-          <em class="px-2 text-sm text-stone-500">The story begins from below.</em>
-          <hr class="flex-grow border-t border-dashed border-stone-400" />
-        {:else if prompt.role === charSetting}
-          <CharCard char={$chars[0]} onCharClick={onCharClick(i)} {onEditChar} />
-        {:else if prompt.role === userSetting}
-          <CharCard char={$user} onCharClick={onUserClick(i)} onEditChar={onEditUser} />
-        {:else if prompt.role === chatHistory}
-          <div class="flex flex-col">
-            <div class="flex">
-              <StringField
-                label="Start index"
-                value={prompt.rangeStart}
-                onBlur={onChangeRangeStart(i)} />
-              <StringField label="End index" value={prompt.rangeEnd} onBlur={onChangeRangeEnd(i)} />
-            </div>
-            <div class="flex">
-              <em class="text-xs text-stone-400 pl-2">
-                If you put a negative number, it will count from the back. If you put 'end', it will
-                output to the end.</em>
-            </div>
-          </div>
-        {:else if prompt.role === firstScene}
-          <SceneCard scene={$curScene} onSceneClick={onSceneClick(i)} {onEditScene} />
-        {:else if prompt.role === assocMemory}
-          <div class="flex flex-col w-full text-left">
-            <FlexibleTextarea
-              id={getUniqueId()}
-              placeholder="Write your prompt"
-              value={prompt.content}
-              onUpdate={text => update(i, text)}
-              on:blur={autoSaveFunc} />
-            <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(prompt.content)}</span>
-            <div class="flex w-full gap-4">
-              <NumberField
-                label="Number of scenes"
-                value={prompt.rangeStart}
-                save={onChangeRangeStart(i)}
-                min={1}
-                max={maxMemory}
-                step={1} />
-            </div>
-            <div class="flex">
-              <em class="text-xs text-stone-400 pl-2">
-                Max number of scenes to recall from memory.</em>
-            </div>
-          </div>
-        {:else}
-          <div class="flex flex-col w-full text-left">
-            <FlexibleTextarea
-              id={getUniqueId()}
-              placeholder="Write your prompt"
-              value={prompt.content}
-              onUpdate={text => update(i, text)}
-              on:blur={autoSaveFunc} />
-            <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(prompt.content)}</span>
-          </div>
-        {/if}
-      </div>
+    <div class=" w-36 flex">
+      <DropSelect
+        items={roles}
+        size="sm"
+        classStr="text-sm self-start text-center w-full"
+        bind:value={$preset.prompts[i].role}
+        save={autoSaveFunc} />
     </div>
-  </DragnDropList>
+    <div class="flex items-center w-full text-center">
+      {#if prompt.role === startStory}
+        <hr class="flex-grow border-t border-dashed border-stone-400" />
+        <em class="px-2 text-sm text-stone-500">The story begins from below.</em>
+        <hr class="flex-grow border-t border-dashed border-stone-400" />
+      {:else if prompt.role === charSetting}
+        <CharCard char={$chars[0]} onCharClick={onCharClick(prompt)} {onEditChar} />
+      {:else if prompt.role === userSetting}
+        <CharCard char={$user} onCharClick={onUserClick(prompt)} onEditChar={onEditUser} />
+      {:else if prompt.role === chatHistory}
+        <div class="flex flex-col">
+          <div class="flex">
+            <StringField
+              label="Start index"
+              bind:value={$preset.prompts[i].rangeStart}
+              onBlur={autoSaveFunc} />
+            <StringField
+              label="End index"
+              bind:value={$preset.prompts[i].rangeEnd}
+              onBlur={autoSaveFunc} />
+          </div>
+          <div class="flex">
+            <em class="text-xs text-stone-400 pl-2">
+              If you put a negative number, it will count from the back. If you put 'end', it will
+              output to the end.</em>
+          </div>
+        </div>
+      {:else if prompt.role === firstScene}
+        <SceneCard scene={$curScene} onSceneClick={onSceneClick(prompt)} {onEditScene} />
+      {:else if prompt.role === assocMemory}
+        <div class="flex flex-col w-full text-left">
+          <FlexibleTextarea
+            id={getUniqueId()}
+            placeholder="Write your prompt"
+            bind:value={$preset.prompts[i].content}
+            on:blur={autoSaveFunc} />
+          <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(prompt.content)}</span>
+          <div class="flex w-full gap-4">
+            <NumberField
+              label="Number of scenes"
+              bind:value={$preset.prompts[i].rangeStart}
+              save={autoSaveFunc}
+              min={1}
+              max={maxMemory}
+              step={1} />
+          </div>
+          <div class="flex">
+            <em class="text-xs text-stone-400 pl-2">
+              Max number of scenes to recall from memory.</em>
+          </div>
+        </div>
+      {:else}
+        <div class="flex flex-col w-full text-left">
+          <FlexibleTextarea
+            id={getUniqueId()}
+            placeholder="Write your prompt"
+            bind:value={$preset.prompts[i].content}
+            on:blur={autoSaveFunc} />
+          <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(prompt.content)}</span>
+        </div>
+      {/if}
+    </div>
+  </DragAndDropList>
   <div class="text-base text-stone-500 p-3">Total tokens: {totalTokens}</div>
   <Button size="xs" color="alternative" on:click={addPrompt}>
     <svg

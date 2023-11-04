@@ -38,7 +38,7 @@
     {step}
     on:blur={() => {
       value = Number(value)
-      save(Number(value))
+      save(value)
     }}
     class="px-2 py-1 self-center text-base" />
 </div>
@@ -53,7 +53,7 @@
     {step}
     on:change={() => {
       value = Number(value)
-      save(Number(value))
+      save(value)
     }}
     class="self-center" />
 </div>

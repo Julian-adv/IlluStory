@@ -6,7 +6,7 @@
   import StringField from '../common/StringField.svelte'
   import ImageField from '../common/ImageField.svelte'
   import TextField from '../common/TextField.svelte'
-  import { flip } from 'svelte/animate'
+  import DragAndDropList from '../common/DragAndDropList.svelte'
 
   let autoSave = true
 
@@ -41,71 +41,6 @@
     if (tempFilePath) {
       $lorebookPath = tempFilePath
     }
-  }
-
-  function inRect(x: number, y: number, rect: DOMRect) {
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
-  }
-
-  let animating = false
-  const animationDuration = 300
-
-  function onDragOver(ev: DragEvent) {
-    ev.preventDefault()
-    if (animating) return
-    const dragList = document.querySelector('.drag-list')
-    if (!dragList) return
-    const draggingItem = document.querySelector('.dragging')
-    if (!draggingItem) return
-    let siblings = [...dragList.querySelectorAll('.drag-item')]
-    let origin = -1
-    let target = -1
-    for (let i = 0; i < siblings.length; i++) {
-      const sibling = siblings[i]
-      if (sibling === draggingItem) {
-        origin = i
-      }
-      const sib = sibling as HTMLElement
-      if (inRect(ev.clientX, ev.clientY, sib.getBoundingClientRect())) {
-        target = i
-      }
-    }
-    if (origin > -1 && target > -1 && origin !== target) {
-      const rule = $lorebook.rules[origin]
-      if (target > origin) {
-        target++
-        $lorebook.rules = [
-          ...$lorebook.rules.slice(0, origin),
-          ...$lorebook.rules.slice(origin + 1, target),
-          rule,
-          ...$lorebook.rules.slice(target)
-        ]
-      } else {
-        $lorebook.rules = [
-          ...$lorebook.rules.slice(0, target),
-          rule,
-          ...$lorebook.rules.slice(target, origin),
-          ...$lorebook.rules.slice(origin + 1)
-        ]
-      }
-      // dragList.insertBefore(draggingItem, siblings[target])
-      animating = true
-      setTimeout(() => (animating = false), animationDuration)
-    }
-  }
-
-  function onDragEnter(ev: DragEvent) {
-    ev.preventDefault()
-  }
-
-  function onDragStart(ev: DragEvent) {
-    const item = ev.currentTarget as HTMLElement
-    setTimeout(() => item.classList.add('dragging'), 0)
-  }
-
-  function onDragEnd(ev: DragEvent) {
-    const item = ev.currentTarget as HTMLElement
-    item.classList.remove('dragging')
   }
 </script>
 
@@ -171,21 +106,11 @@
     <StringField bind:value={$lorebook.title} label="Title" />
   </div>
   <h1 class="text-lg font-semibold mb-1 mt-3">Rules</h1>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="drag-list" on:dragover={onDragOver} on:dragenter={onDragEnter}>
-    {#each $lorebook.rules as rule (rule.id)}
-      <div
-        class="drag-item grid grid-cols-[9rem,5rem,1fr]"
-        draggable="true"
-        on:dragstart={onDragStart}
-        on:dragend={onDragEnd}
-        animate:flip={{ duration: animationDuration }}>
-        <TextField label="Condition" bind:value={rule.condition} save={autoSaveFunc} />
-        <TextField label="Answer" bind:value={rule.answer} save={autoSaveFunc} />
-        <TextField label="Content" bind:value={rule.content} save={autoSaveFunc} />
-      </div>
-    {/each}
-  </div>
+  <DragAndDropList bind:items={$lorebook.rules} itemClass="grid grid-cols-[9rem,5rem,1fr]" let:i>
+    <TextField label="Condition" bind:value={$lorebook.rules[i].condition} save={autoSaveFunc} />
+    <TextField label="Answer" bind:value={$lorebook.rules[i].answer} save={autoSaveFunc} />
+    <TextField label="Content" bind:value={$lorebook.rules[i].content} save={autoSaveFunc} />
+  </DragAndDropList>
   <div class="h-2"></div>
   <Button size="xs" color="alternative" on:click={addRule}>
     <svg
@@ -199,20 +124,3 @@
     </svg>
   </Button>
 </div>
-
-<style>
-  .drag-item {
-    cursor: grab;
-    border-top: 1px dashed rgb(190, 190, 190);
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-
-  .drag-item:last-child {
-    border-bottom: 1px dashed rgb(190, 190, 190);
-  }
-
-  :global(.drag-item.dragging) {
-    opacity: 0;
-  }
-</style>
