@@ -853,6 +853,7 @@
   <DragAndDropList
     bind:items={$preset.prompts}
     itemClass="grid grid-cols-[9rem,1fr] gap-2"
+    removesItems
     let:item={prompt}
     let:i>
     <div class=" w-36 flex">

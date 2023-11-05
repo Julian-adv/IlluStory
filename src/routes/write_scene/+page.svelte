@@ -4,7 +4,6 @@
   import ImageField from '../common/ImageField.svelte'
   import DropSelect from '../common/DropSelect.svelte'
   import { curScene, curScenePath, settings, fileDialog } from '$lib/store'
-  import DragnDropList from '$lib/DragnDropList.svelte'
   import { assistantRole, chatRoles, countTokensApi, systemRole } from '$lib/api'
   import FlexibleTextarea from '../common/FlexibleTextarea.svelte'
   import { decodeBase64, getUniqueId } from '$lib'
@@ -14,6 +13,7 @@
   import { loadSceneDialog, saveScene } from '$lib/scene'
   import { loadMetaDataDialog } from '$lib/charSettings'
   import FileDialog from '$lib/FileDialog.svelte'
+  import DragAndDropList from '../common/DragAndDropList.svelte'
 
   let autoSave = true
   let totalTokens = 0
@@ -61,20 +61,6 @@
 
   async function regenerateImage() {
     $curScene.image = await generateImage($settings, width, height, $curScene.scenes[0].content)
-    autoSaveFunc()
-  }
-
-  function updateRole(i: number) {
-    return (value: string) => {
-      $curScene.scenes[i].role = value
-      autoSaveFunc()
-    }
-  }
-
-  function update(i: number, value: string) {
-    if ($curScene.scenes[i].content !== value) {
-      $curScene.scenes[i].content = value
-    }
     autoSaveFunc()
   }
 
@@ -177,34 +163,32 @@
   </div>
 
   <h1 class="text-lg font-semibold mb-1 mt-3">Prompts</h1>
-  <DragnDropList
+  <DragAndDropList
     bind:items={$curScene.scenes}
+    itemClass="grid grid-cols-[9rem,1fr] gap-2"
     onChange={autoSaveFunc}
     removesItems
     let:item={scene}
     let:i>
-    <div class="grid grid-cols-[9rem,1fr] gap-2">
-      <div class=" w-36 flex">
-        <DropSelect
-          items={chatRoles}
-          size="sm"
-          classStr="text-sm self-start text-center w-full"
-          value={scene.role}
-          save={updateRole(i)} />
-      </div>
-      <div class="flex items-center w-full text-center">
-        <div class="flex flex-col w-full text-left">
-          <FlexibleTextarea
-            id={getUniqueId()}
-            placeholder="Write your prompt"
-            value={scene.content}
-            onUpdate={text => update(i, text)}
-            on:blur={autoSaveFunc} />
-          <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(scene.content)}</span>
-        </div>
+    <div class=" w-36 flex">
+      <DropSelect
+        items={chatRoles}
+        size="sm"
+        classStr="text-sm self-start text-center w-full"
+        bind:value={$curScene.scenes[i].role}
+        save={autoSaveFunc} />
+    </div>
+    <div class="flex items-center w-full text-center">
+      <div class="flex flex-col w-full text-left">
+        <FlexibleTextarea
+          id={getUniqueId()}
+          placeholder="Write your prompt"
+          bind:value={$curScene.scenes[i].content}
+          on:blur={autoSaveFunc} />
+        <span class="text-sm text-stone-400 px-2">Tokens: {countTokens(scene.content)}</span>
       </div>
     </div>
-  </DragnDropList>
+  </DragAndDropList>
   <div class="text-base text-stone-500 p-3">Total tokens: {totalTokens}</div>
   <Button size="xs" color="alternative" on:click={addScene}>
     <svg
