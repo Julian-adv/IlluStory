@@ -1,11 +1,10 @@
 import { saveImageToFile, savePath, sceneExt } from './fs'
 import type { FirstScene, SceneResult, SceneType, Settings } from './interfaces'
-import { open } from '@tauri-apps/api/dialog'
 import { assistantRole, systemRole } from './api'
 import { getRandomSize, scrollToEnd } from '$lib'
 import { tick } from 'svelte'
 import { generateImage } from './imageApi'
-import { tcConvertImageSrc, tcReadTextFile } from './tauriCompat'
+import { tcConvertImageSrc, tcOpen, tcReadTextFile } from './tauriCompat'
 
 export async function loadScene(path: string) {
   const json = await tcReadTextFile(path)
@@ -14,8 +13,8 @@ export async function loadScene(path: string) {
 }
 
 export async function loadSceneDialog(): Promise<[FirstScene | null, string]> {
-  const selected = await open({ filters: [{ name: '*', extensions: [sceneExt] }] })
-  if (typeof selected === 'string') {
+  const selected = await tcOpen({ filters: [{ name: '*', extensions: [sceneExt] }] })
+  if (selected) {
     return [await loadScene(selected), selected]
   }
   return [null, '']

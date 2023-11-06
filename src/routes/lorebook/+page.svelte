@@ -7,17 +7,41 @@
   import ImageField from '../common/ImageField.svelte'
   import TextField from '../common/TextField.svelte'
   import DragAndDropList from '../common/DragAndDropList.svelte'
+  import { tcOpen } from '$lib/tauriCompat'
+  import { loadLorebook } from '$lib/lorebook'
 
   let autoSave = true
 
   function addRule() {
     $lorebook.rules = [
       ...$lorebook.rules,
-      { id: $lorebook.rules.length, condition: '', answer: '', content: '' }
+      {
+        id: $lorebook.rules.length,
+        triggered: false,
+        condition: '',
+        answer: '',
+        content: '',
+        textContent: ''
+      }
     ]
   }
 
-  function load() {}
+  async function loadLorebookDialog(): Promise<[Lorebook | null, string]> {
+    const selected = await tcOpen({ filters: [{ name: '*', extensions: [lorebookExt] }] })
+    if (selected) {
+      const lorebook = await loadLorebook(selected)
+      return [lorebook, selected]
+    }
+    return [null, '']
+  }
+
+  async function load() {
+    const [tempLorebook, path] = await loadLorebookDialog()
+    if (tempLorebook) {
+      $lorebook = tempLorebook
+      $lorebookPath = path
+    }
+  }
 
   function importLoreBook() {}
 
@@ -106,8 +130,12 @@
     <StringField bind:value={$lorebook.title} label="Title" />
   </div>
   <h1 class="text-lg font-semibold mb-1 mt-3">Rules</h1>
-  <DragAndDropList bind:items={$lorebook.rules} itemClass="grid grid-cols-[9rem,5rem,1fr]" let:i>
-    <TextField label="Condition" bind:value={$lorebook.rules[i].condition} save={autoSaveFunc} />
+  <DragAndDropList
+    bind:items={$lorebook.rules}
+    itemClass="grid grid-cols-[9rem,5rem,1fr]"
+    removesItems
+    let:i>
+    <TextField label="Question" bind:value={$lorebook.rules[i].condition} save={autoSaveFunc} />
     <TextField label="Answer" bind:value={$lorebook.rules[i].answer} save={autoSaveFunc} />
     <TextField label="Content" bind:value={$lorebook.rules[i].content} save={autoSaveFunc} />
   </DragAndDropList>

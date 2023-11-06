@@ -99,7 +99,7 @@ export const charExt = 'char'
 export const sceneExt = 'scene'
 export const lorebookExt = 'lorebook'
 export const jsonExt = 'json'
-export const allExts = [presetExt, sessionExt, charExt, sceneExt]
+export const allExts = [presetExt, sessionExt, charExt, sceneExt, lorebookExt]
 
 export const settingsFile = 'settings.json'
 

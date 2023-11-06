@@ -1,4 +1,14 @@
-import { allExts, basenameOf, charExt, extOf, jsonExt, presetExt, sceneExt, sessionExt } from './fs'
+import {
+  allExts,
+  basenameOf,
+  charExt,
+  extOf,
+  jsonExt,
+  lorebookExt,
+  presetExt,
+  sceneExt,
+  sessionExt
+} from './fs'
 import { CardType, type StoryCard } from './interfaces'
 import { defaultImage } from '$lib'
 import { tcMetadata, tcOpen, tcReadTextFile } from './tauriCompat'
@@ -15,6 +25,8 @@ function cardTypeFromExt(ext: string) {
       return CardType.Scene
     case sessionExt:
       return CardType.Session
+    case lorebookExt:
+      return CardType.Lorebook
     case jsonExt:
       return CardType.Json
     default:
@@ -84,7 +96,7 @@ export async function loadCardDialog(exts: string[]): Promise<StoryCard | null> 
     defaultPath: get(settings).dataDir,
     filters: [{ name: '*', extensions: exts }]
   })
-  if (typeof selected === 'string') {
+  if (selected) {
     const ext = extOf(selected)
     if (allExts.includes(ext)) {
       return await cardFromPath(selected)

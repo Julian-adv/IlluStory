@@ -6,7 +6,7 @@ import llamaTokenizer from 'llama-tokenizer-js'
 import { sendChatKoboldAi, sendChatKoboldAiStream } from './apiKoboldAi'
 import { getStartEndIndex } from '$lib'
 import { get } from 'svelte/store'
-import { sessionPath, settings } from './store'
+import { sessionPath, settings, lorebook } from './store'
 import { basenameOf } from './fs'
 import { tcSaveMemory } from './tauriCompat'
 
@@ -20,7 +20,7 @@ export const startStory = 'start_story'
 export const chatHistory = 'chat_history'
 export const authorNote = 'author_note'
 export const globalNote = 'global_note'
-export const loreBook = 'lore_book'
+export const lorebookRole = 'lorebook'
 export const firstScene = 'first_scene'
 export const assocMemory = 'assoc_memory'
 
@@ -35,7 +35,7 @@ export const roles = [
   { value: chatHistory, name: 'Chat history' },
   { value: authorNote, name: 'Author note' },
   { value: globalNote, name: 'Global note' },
-  { value: loreBook, name: 'Lore book' },
+  { value: lorebookRole, name: 'Lorebook' },
   { value: firstScene, name: 'First scene' },
   { value: assocMemory, name: 'Assoc Memory' }
 ]
@@ -168,6 +168,12 @@ export function generatePrompt(
         }
         break
       }
+      case lorebookRole:
+        if (get(lorebook).rules[0].triggered) {
+          prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+          prompt += get(lorebook).rules[0].textContent
+        }
+        break
       default:
         prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
     }

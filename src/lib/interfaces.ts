@@ -123,7 +123,8 @@ export enum CardType {
   Scene,
   Session,
   Json,
-  Dir
+  Dir,
+  Lorebook
 }
 
 export interface StoryCard {
@@ -226,6 +227,7 @@ export interface Session {
   charCards: string[]
   nextSpeaker: number
   sceneCard: string
+  lorebookCard: string
   startIndex: number
   scenes: SceneType[]
 }
@@ -243,9 +245,11 @@ export interface SceneResult {
 
 export interface Rule {
   id: number
+  triggered: boolean
   condition: string
   answer: string
   content: string
+  textContent: string
 }
 
 export interface Lorebook {

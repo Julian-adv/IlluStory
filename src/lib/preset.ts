@@ -10,7 +10,7 @@ import {
   chatHistory,
   endTag,
   globalNote,
-  loreBook,
+  lorebookRole,
   systemRole,
   userRole,
   userSetting
@@ -209,7 +209,7 @@ export async function importPreset(json: string): Promise<Preset> {
       } else if (prompt.type === 'authornote') {
         convertNormal(preset, prompt, authorNote)
       } else if (prompt.type === 'lorebook') {
-        convertNormal(preset, prompt, loreBook)
+        convertNormal(preset, prompt, lorebookRole)
       } else if (prompt.type === 'plain' && prompt.type2 === 'globalNote') {
         convertNormal(preset, prompt, globalNote)
       } else if (prompt.type === 'memory') {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getUniqueId } from '$lib'
-  import { charExt, extOf, presetExt, sceneExt, sessionExt } from '$lib/fs'
+  import { charExt, extOf, lorebookExt, presetExt, sceneExt, sessionExt } from '$lib/fs'
   import { CardType, type StoryCard } from '$lib/interfaces'
   import { emptyCard } from '$lib/store'
   import { Card, Popover } from 'flowbite-svelte'
@@ -31,6 +31,8 @@
       return 'border-zinc-300'
     } else if (ext === sceneExt) {
       return 'border-gray-500'
+    } else if (ext === lorebookExt) {
+      return 'border-gray-500'
     }
     return 'linear-gradient(to bottom, gray 60%, black 100%)'
   }
@@ -45,6 +47,8 @@
       return 'linear-gradient(to bottom, #955858 60%, #3d1923 100%)' // rose
     } else if (ext === sceneExt) {
       return 'linear-gradient(to bottom, #9ca3af 60%, #374151 100%)' // gray 400 ~ 700
+    } else if (ext === lorebookExt) {
+      return 'linear-gradient(to bottom, #9ca3af 60%, #374151 100%)' // gray 400 ~ 700
     }
     return 'linear-gradient(to bottom, gray 60%, black 100%)'
   }
@@ -57,6 +61,8 @@
         return 'Character'
       case CardType.Scene:
         return 'Scene'
+      case CardType.Lorebook:
+        return 'Lorebook'
       case CardType.Session:
         return 'Session'
       case CardType.Json:

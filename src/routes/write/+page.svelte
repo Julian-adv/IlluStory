@@ -856,7 +856,7 @@
     removesItems
     let:item={prompt}
     let:i>
-    <div class=" w-36 flex">
+    <div class="w-36 flex">
       <DropSelect
         items={roles}
         size="sm"

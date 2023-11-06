@@ -31,9 +31,20 @@
     settings,
     session,
     replaceDict,
-    fileDialog
+    fileDialog,
+    lorebookCard,
+    lorebookPath,
+    lorebook
   } from '$lib/store'
-  import { basenameOf, charExt, presetExt, savePath, sceneExt, sessionExt } from '$lib/fs'
+  import {
+    basenameOf,
+    charExt,
+    lorebookExt,
+    presetExt,
+    savePath,
+    sceneExt,
+    sessionExt
+  } from '$lib/fs'
   import { killServer, lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
   import type { SceneType, Preset, StoryCard, StringDictionary } from '$lib/interfaces'
   import {
@@ -43,6 +54,7 @@
     prepareForSave,
     replaceChar,
     replaceChars,
+    replaceName,
     replaceNames,
     saveSessionAuto
   } from '$lib/session'
@@ -67,6 +79,7 @@
     tcReadDir
   } from '$lib/tauriCompat'
   import FileDialog from '$lib/FileDialog.svelte'
+  import { loadLorebook } from '$lib/lorebook'
 
   let userInput = ''
   let started = false
@@ -144,6 +157,7 @@
       $session.userCard = relativePath(dataDir, $userCard.path)
       $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
       $session.sceneCard = relativePath(dataDir, $sceneCard.path)
+      $session.lorebookCard = relativePath(dataDir, $lorebookCard.path)
       saveSessionAuto($sessionPath, $session, $dialogues)
     }
   }
@@ -190,6 +204,7 @@
     $userCard = await cardFromPath(dataDir + $session.userCard)
     $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
     $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
+    $lorebookCard = await cardFromPath(dataDir + $session.lorebookCard)
     await loadVarsFromPath()
     const result = splitPreset($preset.prompts)
     if ($settings.allChars) {
@@ -433,6 +448,15 @@
     }
   }
 
+  async function addLorebookCard() {
+    const card = await loadCardDialog([lorebookExt])
+    if (card) {
+      $lorebookCard = card
+      await saveCardUpdate()
+      await loadSessionCommon($sessionPath)
+    }
+  }
+
   async function addCharCard() {
     const card = await loadCardDialog([charExt])
     if (card) {
@@ -471,6 +495,8 @@
     $charPaths = $charCards.map(card => card.path)
     $curScene = await loadScene($sceneCard.path)
     $curScenePath = $sceneCard.path
+    $lorebook = await loadLorebook($lorebookCard.path)
+    $lorebookPath = $lorebookCard.path
     numMemory = findNumberOfMemory($preset)
     started = true
   }
@@ -527,10 +553,90 @@
     goto('/write_scene')
   }
 
+  async function onClickLorebookCard(card: StoryCard) {
+    if (card.path) {
+      const tempLorebook = await loadLorebook(card.path)
+      if (tempLorebook) {
+        $lorebookPath = card.path
+        $lorebook = tempLorebook
+      }
+    }
+    goto('/lorebook')
+  }
+
   function saveSession() {
     if ($sessionPath !== '') {
       saveSessionAuto($sessionPath, $session, $dialogues)
     }
+  }
+
+  async function checkLorebook() {
+    if (!$lorebookPath) return
+    const instructions = [
+      {
+        id: 1,
+        role: systemRole,
+        content: 'Read the following story and answer the question below in yes or no.\n<Story>\n'
+      },
+      ...$dialogues.slice(-1),
+      {
+        id: 2,
+        role: systemRole,
+        content: '\n</Story>\n<Question>\n' + $lorebook.rules[0].condition
+      }
+    ]
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    const inst = replaceNames(instructions, $replaceDict)
+    const resp = await sendChat($preset, [], inst, '', $session, false)
+    console.log(resp)
+  }
+
+  let lorebookAnswer = ''
+
+  function receivedLorebook(text: string) {
+    lorebookAnswer += text
+  }
+
+  function closedLorebook() {
+    tcLog('INFO', 'lorebook answer:', lorebookAnswer)
+    if (lorebookAnswer.trim().toLowerCase().includes($lorebook.rules[0].answer.toLowerCase())) {
+      tcLog('INFO', 'lorebook triggered:', $lorebook.rules[0].condition)
+      $lorebook.rules[0].triggered = true
+      $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+      $lorebook.rules[0].textContent = replaceName($lorebook.rules[0].content, $replaceDict)
+    }
+  }
+
+  async function checkLorebookStream() {
+    if (!$lorebookPath) return
+    if ($lorebook.rules[0].triggered) return
+    const instructions = [
+      {
+        id: 1,
+        role: systemRole,
+        content: 'Read the following story and answer the question below in yes or no.\n<Story>\n'
+      },
+      ...$dialogues.slice(-1),
+      {
+        id: 2,
+        role: systemRole,
+        content: '\n</Story>\n<Question>\n' + $lorebook.rules[0].condition
+      }
+    ]
+    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    const inst = replaceNames(instructions, $replaceDict)
+    lorebookAnswer = ''
+    const resp = await sendChatStream(
+      $preset,
+      [],
+      inst,
+      '',
+      $session,
+      false,
+      receivedLorebook,
+      closedLorebook
+    )
+    console.log(resp)
   }
 
   async function received(text: string) {
@@ -562,6 +668,7 @@
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
     scene.done = true
     $dialogues = $dialogues
+    await checkLorebookStream()
     if (nextChar !== 'random') {
       $session.nextSpeaker++
       if ($session.nextSpeaker >= $chars.length) {
@@ -643,9 +750,12 @@
       scene.done = result.scene.done
       scene = await extractImagePrompt($settings, scene, $replaceDict)
       $dialogues = $dialogues
+      if (!$preset.streaming) {
+        await checkLorebook()
+      }
       await tick()
       scrollToEnd()
-      if (nextChar !== 'random') {
+      if (nextChar !== 'random' && !$preset.streaming) {
         $session.nextSpeaker++
         if ($session.nextSpeaker >= $chars.length) {
           $session.nextSpeaker = 0
@@ -771,6 +881,26 @@
       <CommonCard card={$sceneCard} onClick={onClickSceneCard} showTrash />
 
       <Button size="xs" color="alternative" class="focus:ring-0 w-10 h-10" on:click={addSceneCard}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </Button>
+    </div>
+    <div class="flex flex-none gap-2 items-end">
+      <div class="w-20 text-right self-center">Lorebook</div>
+      <CommonCard card={$lorebookCard} onClick={onClickLorebookCard} showTrash />
+
+      <Button
+        size="xs"
+        color="alternative"
+        class="focus:ring-0 w-10 h-10"
+        on:click={addLorebookCard}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

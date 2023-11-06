@@ -16,7 +16,7 @@ export async function sendChatOobabooga(
   const url = new URL(uri)
   const { prompt, tokens } = await generatePromptCheck(
     preset,
-    [],
+    prologues,
     dialogues,
     memories,
     session,
@@ -74,7 +74,7 @@ export async function sendChatOobabooga(
     signal: null
   })
   const dataFromOoga = await respFromOoga.json()
-  tcLog('INFO', 'dataFromOoga', dataFromOoga)
+  tcLog('INFO', 'dataFromOoga', dataFromOoga.results[0].text)
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
     const scene: SceneType = {
       id: 0,
