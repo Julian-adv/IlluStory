@@ -61,11 +61,17 @@
   })
 
   function generateNewImage() {
+    let imageSource = ''
+    if ($settings.imageSource === 'full_desc') {
+      imageSource = scene.textContent ?? ''
+    } else if ($settings.imageSource === 'visual_tag') {
+      imageSource = scene.visualContent ?? ''
+    }
     info.imageFromSD = generateImage(
       $settings,
       info.imageSize.width,
       info.imageSize.height,
-      scene.textContent ?? ''
+      imageSource
     ).then(result => {
       scene.image = saveImage(sessionDir, result)
       scene.imageSize = info.imageSize
