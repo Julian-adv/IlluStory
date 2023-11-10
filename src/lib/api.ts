@@ -169,9 +169,11 @@ export function generatePrompt(
         break
       }
       case lorebookRole:
-        if (get(lorebook).rules[0].triggered) {
-          prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
-          prompt += get(lorebook).rules[0].textContent
+        for (const rule of get(lorebook).rules) {
+          if (rule.triggered) {
+            prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+            prompt += rule.textContent
+          }
         }
         break
       default:
@@ -227,7 +229,7 @@ export async function generatePromptCheck(
 ) {
   let prompt = ''
   let tokens = 0
-  while (session.startIndex < dialogues.length) {
+  while (session.startIndex < dialogues.length || dialogues.length === 0) {
     prompt = generatePrompt(
       preset,
       prologues,

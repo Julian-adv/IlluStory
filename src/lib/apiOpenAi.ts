@@ -1,6 +1,6 @@
 import { get } from 'svelte/store'
 import type { Preset, SceneType, Message, ChatResult, Session } from './interfaces'
-import { settings, zeroUsage } from './store'
+import { lorebook, settings, zeroUsage } from './store'
 import {
   assistantRole,
   assocMemory,
@@ -8,6 +8,7 @@ import {
   chatHistory,
   countTokensApi,
   endTag,
+  lorebookRole,
   saveMemory,
   startStory,
   systemRole,
@@ -49,7 +50,8 @@ function generateMessages(
     }
   } else {
     let sentChatHistory = false
-    for (const scene of prologues) {
+    for (let i = 0; i < prologues.length; i++) {
+      const scene = prologues[i]
       switch (scene.role) {
         case startStory:
           break
@@ -64,6 +66,26 @@ function generateMessages(
         case assocMemory: {
           if (memories) {
             messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
+            const nextScene = prologues[i + 1]
+            if (nextScene.role === endTag) {
+              messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
+              i++
+            }
+          } else {
+            if (prologues[i + 1].role === endTag) {
+              i++
+            }
+          }
+          break
+        }
+        case lorebookRole: {
+          for (const rule of get(lorebook).rules) {
+            if (rule.triggered) {
+              if (scene.textContent) {
+                messages.push({ role: systemRole, content: scene.textContent })
+              }
+              messages.push({ role: systemRole, content: rule.textContent })
+            }
           }
           break
         }
@@ -93,7 +115,7 @@ async function generateMessagesCheck(
 ) {
   let messages: Message[] = []
   let tokens = 0
-  while (session.startIndex < dialogues.length) {
+  while (session.startIndex < dialogues.length || dialogues.length === 0) {
     messages = generateMessages(
       preset,
       prologues,
@@ -101,6 +123,7 @@ async function generateMessagesCheck(
       memories,
       summary
     )
+    tokens = 0
     for (const mesg of messages) {
       tokens += countTokensApi(mesg.content)
     }
@@ -148,6 +171,14 @@ function generatePrompt(
           }
           break
         }
+        case lorebookRole:
+          for (const rule of get(lorebook).rules) {
+            if (rule.triggered) {
+              prompt += scene.content + '\n'
+              prompt += rule.textContent
+            }
+          }
+          break
         default:
           prompt += scene.content + '\n'
       }
@@ -171,7 +202,7 @@ async function generateOpenAIPromptCheck(
 ) {
   let prompt = ''
   let tokens = 0
-  while (session.startIndex < dialogues.length) {
+  while (session.startIndex < dialogues.length || dialogues.length === 0) {
     prompt = generatePrompt(
       preset,
       prologues,
@@ -328,7 +359,7 @@ export async function sendChatOpenAiStream(
     }
     numTokens = tokens
   }
-  tcLog('INFO', 'request', JSON.stringify(request))
+  tcLog('INFO', 'request', JSON.stringify(request, null, 2))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {

@@ -221,6 +221,11 @@ export interface FirstScene {
   scenes: SceneType[]
 }
 
+export interface Trigger {
+  id: string
+  triggered: boolean
+}
+
 export interface Session {
   presetCard: string
   userCard: string
@@ -230,6 +235,7 @@ export interface Session {
   lorebookCard: string
   startIndex: number
   scenes: SceneType[]
+  lorebookTriggers: Trigger[]
 }
 
 export interface ChatResult {
@@ -244,7 +250,7 @@ export interface SceneResult {
 }
 
 export interface Rule {
-  id: number
+  id: string
   triggered: boolean
   condition: string
   answer: string

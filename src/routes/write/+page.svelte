@@ -415,7 +415,7 @@
     </Button>
     <Checkbox class="inline self-center" bind:checked={autoSave}>Auto save</Checkbox>
   </div>
-  <div class="grid grid-cols-[9rem,5rem,1fr] gap-0">
+  <div class="grid grid-cols-[9rem,6rem,1fr] gap-0">
     <StringField label="File path" size="sm" disabled bind:value={$presetPath} />
     <ImageField
       label="Image"
@@ -497,7 +497,7 @@
         help="Represents the model's context size. If story tokens near this, the chat history will be summarized."
         bind:value={$preset.openAi.contextSize}
         min={512}
-        max={32768}
+        max={128000}
         step={8}
         save={autoSaveFunc} />
     {/if}
@@ -854,6 +854,7 @@
     bind:items={$preset.prompts}
     itemClass="grid grid-cols-[9rem,1fr] gap-2"
     removesItems
+    onChange={autoSaveFunc}
     let:item={prompt}
     let:i>
     <div class="w-36 flex">

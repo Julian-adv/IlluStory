@@ -2,7 +2,7 @@
   import type { SceneType, SceneResult } from '$lib/interfaces'
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
-  import { dialogues, replaceDict, session, sessionPath, settings } from '$lib/store'
+  import { dialogues, lorebook, replaceDict, session, sessionPath, settings } from '$lib/store'
   import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
@@ -56,7 +56,7 @@
     }
     translated = !!scene.translatedContent
     info.imageFromSD.then(() => {
-      saveSessionAuto($sessionPath, $session, $dialogues)
+      saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
     })
   })
 
@@ -69,7 +69,7 @@
     ).then(result => {
       scene.image = saveImage(sessionDir, result)
       scene.imageSize = info.imageSize
-      saveSessionAuto($sessionPath, $session, $dialogues)
+      saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
       waitingImage = false
       return result
     })

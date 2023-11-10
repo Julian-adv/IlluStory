@@ -1,5 +1,5 @@
 import { saveObjQuietly, sessionExt } from './fs'
-import type { Char, SceneType, Session, StringDictionary } from './interfaces'
+import type { Char, Lorebook, SceneType, Session, StringDictionary } from './interfaces'
 import { open } from '@tauri-apps/api/dialog'
 import { charSetting, userSetting } from './api'
 import { tcConvertImageSrc, tcReadTextFile } from './tauriCompat'
@@ -9,6 +9,9 @@ export async function loadSession(path: string) {
   const session = JSON.parse(json) as Session
   if (!session.nextSpeaker) {
     session.nextSpeaker = 0
+  }
+  if (!session.lorebookTriggers) {
+    session.lorebookTriggers = []
   }
   session.scenes.forEach(scene => {
     scene.done = true
@@ -34,15 +37,23 @@ export async function loadSessionDialog(): Promise<[Session | null, string]> {
   return [null, '']
 }
 
-export function prepareForSave(session: Session, dialogues: SceneType[]) {
+export function prepareForSave(session: Session, dialogues: SceneType[], lorebook: Lorebook) {
   session.scenes = dialogues.map(scene => {
     return { id: scene.id, role: scene.role, content: scene.content, image: scene.image }
+  })
+  session.lorebookTriggers = lorebook.rules.map(rule => {
+    return { id: rule.id, triggered: rule.triggered }
   })
   return session
 }
 
-export async function saveSessionAuto(path: string, session: Session, dialogues: SceneType[]) {
-  await saveObjQuietly(path, prepareForSave(session, dialogues))
+export async function saveSessionAuto(
+  path: string,
+  session: Session,
+  dialogues: SceneType[],
+  lorebook: Lorebook
+) {
+  await saveObjQuietly(path, prepareForSave(session, dialogues, lorebook))
 }
 
 export function replaceName(content: string, dict: StringDictionary): string {

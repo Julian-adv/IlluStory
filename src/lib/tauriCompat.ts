@@ -302,7 +302,7 @@ export function tcConvertFileSrc(path: string) {
 }
 
 export async function tcSaveMemory(collection: string, doc: string, meta: any, id: string) {
-  // tcLog('INFO', 'save memory', id, doc, JSON.stringify(meta))
+  tcLog('INFO', 'save memory', id, doc, JSON.stringify(meta))
   const result = await fetchPost('memory/save', {
     collection: collection,
     doc: doc,

@@ -9,6 +9,7 @@
   import DragAndDropList from '../common/DragAndDropList.svelte'
   import { tcOpen } from '$lib/tauriCompat'
   import { loadLorebook } from '$lib/lorebook'
+  import { nanoid } from 'nanoid'
 
   let autoSave = true
 
@@ -16,7 +17,7 @@
     $lorebook.rules = [
       ...$lorebook.rules,
       {
-        id: $lorebook.rules.length,
+        id: nanoid(),
         triggered: false,
         condition: '',
         answer: '',
@@ -133,6 +134,7 @@
   <DragAndDropList
     bind:items={$lorebook.rules}
     itemClass="grid grid-cols-[9rem,5rem,1fr]"
+    onChange={autoSaveFunc}
     removesItems
     let:i>
     <TextField label="Question" bind:value={$lorebook.rules[i].condition} save={autoSaveFunc} />

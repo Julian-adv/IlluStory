@@ -111,7 +111,8 @@ export const defaultSession: Session = {
   sceneCard: '',
   lorebookCard: '',
   startIndex: 0,
-  scenes: []
+  scenes: [],
+  lorebookTriggers: []
 }
 
 export const session = writable(defaultSession)
