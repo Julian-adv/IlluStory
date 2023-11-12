@@ -1,30 +1,42 @@
-import type { Settings } from "./interfaces"
+import { tcReadTextFile, tcWriteTextFile } from './tauriCompat'
 
-export function pushHistory(settings: Settings, str: string) {
-  settings.history.push(str)
-  while (settings.history.length > settings.maxHistory) {
-    settings.history.shift()
+const maxHistory = 1000
+
+export async function loadHistory() {
+  try {
+    const text = await tcReadTextFile('history.json')
+    return JSON.parse(text)
+  } catch (e) {
+    return []
   }
 }
 
-export function getHistory(settings: Settings, index: number) {
-  return settings.history[index]
+export function pushHistory(history: string[], str: string) {
+  history.push(str)
+  while (history.length > maxHistory) {
+    history.shift()
+  }
+  tcWriteTextFile('history.json', JSON.stringify(history, null, 2))
 }
 
-export function getPrevHistory(settings: Settings, index: number): [string, number] {
+export function getHistory(history: string[], index: number) {
+  return history[index]
+}
+
+export function getPrevHistory(history: string[], index: number): [string, number] {
   if (index > 0) {
     --index
   }
-  return [settings.history[index], index]
+  return [history[index], index]
 }
 
-export function getNextHistory(settings: Settings, index: number): [string, number] {
-  if (index < settings.history.length) {
+export function getNextHistory(history: string[], index: number): [string, number] {
+  if (index < history.length) {
     ++index
   }
-  if (index >= settings.history.length) {
-    return ['', settings.history.length]
+  if (index >= history.length) {
+    return ['', history.length]
   } else {
-    return [settings.history[index], index]
+    return [history[index], index]
   }
 }

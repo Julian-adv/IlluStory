@@ -1,9 +1,10 @@
-import { preset, settings, defaultSettings } from './store'
+import { preset, settings, defaultSettings, inputHistory } from './store'
 import { Api, type Settings, type Preset } from './interfaces'
 import OpenAI from 'openai'
 import { get } from 'svelte/store'
 import { settingsFile } from './fs'
 import { tcCreateDir, tcExists, tcReadTextFile, tcSetDataDir, tcWriteTextFile } from './tauriCompat'
+import { loadHistory } from './history'
 
 let currentPreset: Preset
 let currentSettings: Settings
@@ -84,12 +85,6 @@ function fixSettings(settings: Settings) {
   if (!settings.userLang) {
     settings.userLang = defaultSettings.userLang
   }
-  if (!settings.history) {
-    settings.history = []
-  }
-  if (!settings.maxHistory) {
-    settings.maxHistory = defaultSettings.maxHistory
-  }
 }
 
 export async function loadSettings() {
@@ -100,6 +95,8 @@ export async function loadSettings() {
   }
   settings.set(JSON.parse(text))
   fixSettings(get(settings))
+
+  inputHistory.set(await loadHistory())
 
   if (
     currentPreset.api === Api.OpenAi &&

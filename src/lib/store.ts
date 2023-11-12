@@ -175,8 +175,6 @@ export const defaultSettings: Settings = {
   userLang: '',
   translateOutput: false,
   translateInput: false,
-  history: [],
-  maxHistory: 500,
   oneInstruction: true,
   allChars: true
 }
@@ -238,3 +236,7 @@ export const defaultLorebook: Lorebook = {
 export const lorebook = writable(defaultLorebook)
 
 export const lorebookPath = writable('')
+
+const defaultHistory: string[] = []
+
+export const inputHistory = writable(defaultHistory)

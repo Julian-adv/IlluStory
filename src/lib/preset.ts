@@ -54,7 +54,7 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
     role: role
   }
   preset.prompts.push(scene2)
-  if (afterSlot) {
+  if (afterSlot.trim() !== '') {
     const scene3: SceneType = {
       id: sceneId++,
       content: afterSlot,
@@ -76,21 +76,25 @@ function convertChat(preset: Preset, start: number, end: string) {
 }
 
 function convertMemory(preset: Preset, prompt: RisuPrompt) {
-  const [beforeSlot, afterSlot] = prompt.innerFormat.split('{{slot}}')
-  const scene: SceneType = {
-    id: sceneId++,
-    content: beforeSlot,
-    role: assocMemory,
-    rangeStart: 5
-  }
-  preset.prompts.push(scene)
-  if (afterSlot) {
-    const scene2: SceneType = {
+  if (prompt.innerFormat) {
+    const [beforeSlot, afterSlot] = prompt.innerFormat.split('{{slot}}')
+    const scene: SceneType = {
       id: sceneId++,
-      content: afterSlot,
-      role: endTag
+      content: beforeSlot,
+      role: assocMemory,
+      rangeStart: 5
     }
-    preset.prompts.push(scene2)
+    preset.prompts.push(scene)
+    if (afterSlot.trim() !== '') {
+      const scene2: SceneType = {
+        id: sceneId++,
+        content: afterSlot,
+        role: endTag
+      }
+      preset.prompts.push(scene2)
+    }
+  } else {
+    preset.prompts.push({ id: sceneId++, content: '', role: assocMemory, rangeStart: 5 })
   }
 }
 

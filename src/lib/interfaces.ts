@@ -177,8 +177,6 @@ export interface Settings {
   userLang: string
   translateOutput: boolean
   translateInput: boolean
-  history: string[]
-  maxHistory: number
   oneInstruction: boolean
   allChars: boolean
 }

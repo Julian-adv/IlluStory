@@ -592,6 +592,15 @@
     }
   }
 
+  function chooseNextChar() {
+    if (nextChar !== 'random') {
+      $session.nextSpeaker++
+      if ($session.nextSpeaker >= $chars.length) {
+        $session.nextSpeaker = 0
+      }
+      nextChar = $chars[$session.nextSpeaker].name
+    }
+  }
   let visualDescription = ''
 
   function receivedVisual(text: string) {
@@ -604,6 +613,7 @@
     scene.visualContent = visualDescription
     scene.done = true
     $dialogues = $dialogues
+    chooseNextChar()
     saveSession()
   }
 
@@ -616,6 +626,11 @@
         break
       }
     }
+    if (prevVisualPrompt === '') {
+      prevVisualPrompt = $chars[$session.nextSpeaker].visual
+    } else {
+      prevVisualPrompt = `<Visual>${prevVisualPrompt}</Visual>`
+    }
     const instructions = [
       {
         id: 1,
@@ -625,19 +640,18 @@
       {
         id: 2,
         role: assistantRole,
-        content: `<Visual>${prevVisualPrompt}</Visual>`
+        content: prevVisualPrompt
       },
       {
         id: 3,
         role: systemRole,
         content:
-          "Read the following story and update the above visual description. Output should be a list of short phrases separated by comma. Include descriptions of character's hair style, hair color, eye color, body shape, environment.\n<Story>\n"
+          "Read the following story, which takes place in the scene described above, and create an updated visual description for it. The output should be in English and formatted for the Stable Diffusion web UI image generation prompt. The format should be a list of short phrases separated by commas, with important phrases enclosed in parentheses. The degree of importance can be indicated by a number following a colon. For example: 1girl, long blonde hair, blue eyes, standing, (shirt), (skirt:1.2). Include details about the character's hairstyle, hair color, eye color, body shape, pose, clothing, and the surrounding environment. If no visual updates are found, use the visual description provided above.\n"
       },
-      ...$dialogues.slice(-1),
       {
         id: 4,
-        role: systemRole,
-        content: '\n</Story>\n'
+        role: assistantRole,
+        content: `<Story>\n${$dialogues[$dialogues.length - 1].content}\n</Story>\n`
       }
     ]
     if ($preset.streaming) {
@@ -682,12 +696,14 @@
       const scene = lastScene($dialogues)
       scene.done = true
       $dialogues = $dialogues
+      chooseNextChar()
       saveSession()
     }
   }
 
   async function checkLorebook() {
     if (!$lorebookPath) return
+    let lorebookSent = false
     for (const rule of $lorebook.rules) {
       if (rule.triggered) continue
       const instructions = [
@@ -726,7 +742,11 @@
           closedLorebook()
         }
       }
+      lorebookSent = true
       break
+    }
+    if (!lorebookSent) {
+      closedLorebook()
     }
   }
 
@@ -758,13 +778,6 @@
     $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
     await checkLorebook()
-    if (nextChar !== 'random') {
-      $session.nextSpeaker++
-      if ($session.nextSpeaker >= $chars.length) {
-        $session.nextSpeaker = 0
-      }
-      nextChar = $chars[$session.nextSpeaker].name
-    }
   }
 
   async function sendInput(role: string, orgContent: string) {
@@ -843,12 +856,8 @@
       }
       await tick()
       scrollToEnd()
-      if (nextChar !== 'random' && !$preset.streaming) {
-        $session.nextSpeaker++
-        if ($session.nextSpeaker >= $chars.length) {
-          $session.nextSpeaker = 0
-        }
-        nextChar = $chars[$session.nextSpeaker].name
+      if (!$preset.streaming) {
+        chooseNextChar()
       }
     }
     saveSession()

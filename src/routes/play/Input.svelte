@@ -2,7 +2,7 @@
   import Markdown from '../common/Markdown.svelte'
   import DropSelect from '../common/DropSelect.svelte'
   import { chatRoles } from '$lib/api'
-  import { dialogues, settings } from '$lib/store'
+  import { settings, inputHistory } from '$lib/store'
   import { translateButtonClass } from '$lib'
   import { onMount } from 'svelte'
   import { Button } from 'flowbite-svelte'
@@ -37,15 +37,6 @@
 
   let currentIndex = 0
 
-  function _received(text: string) {
-    $dialogues[$dialogues.length - 1].content += text
-    $dialogues[$dialogues.length - 1].done = false
-  }
-
-  function _closedCb() {
-    $dialogues[$dialogues.length - 1].done = true
-  }
-
   async function nextState(state: ValueState, transition: Transition): Promise<ValueState> {
     const func = transition[state.state]
     if (!func) {
@@ -61,7 +52,7 @@
       },
       modified: async () => {
         const trimmed = markdown.trim()
-        pushHistory($settings, trimmed)
+        pushHistory($inputHistory, trimmed)
         currentIndex = history.length
         if ($settings.translateInput) {
           const translated = await translateText($settings, $settings.aiLang, trimmed)
@@ -104,14 +95,22 @@
   }
 
   async function onArrowUp() {
-    ;[state.value, currentIndex] = getPrevHistory($settings, currentIndex)
+    if (currentIndex === $inputHistory.length && state.value) {
+      const trimmed = state.value.trim()
+      pushHistory($inputHistory, trimmed)
+    }
+    ;[state.value, currentIndex] = getPrevHistory($inputHistory, currentIndex)
     state.state = 'modified'
     state.entered = state.value
     state.translated = ''
   }
 
   async function onArrowDown() {
-    ;[state.value, currentIndex] = getNextHistory($settings, currentIndex)
+    if (currentIndex === $inputHistory.length && state.value) {
+      const trimmed = state.value.trim()
+      pushHistory($inputHistory, trimmed)
+    }
+    ;[state.value, currentIndex] = getNextHistory($inputHistory, currentIndex)
     state.state = 'modified'
     state.entered = state.value
     state.translated = ''
@@ -141,7 +140,7 @@
   }
 
   onMount(() => {
-    currentIndex = $settings.history.length
+    currentIndex = $inputHistory.length
   })
 
   $: transButtonClass = `px-[0.5rem] ${translateButtonClass(state.state === 'translated')}`
