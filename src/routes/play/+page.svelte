@@ -646,7 +646,7 @@
         id: 3,
         role: systemRole,
         content:
-          "Read the following story, which takes place in the scene described above, and create an updated visual description for it. The output should be in English and formatted for the Stable Diffusion web UI image generation prompt. The format should be a list of short phrases separated by commas, with important phrases enclosed in parentheses. The degree of importance can be indicated by a number following a colon. For example: 1girl, long blonde hair, blue eyes, standing, (shirt), (skirt:1.2). Include details about the character's hairstyle, hair color, eye color, body shape, pose, clothing, and the surrounding environment. If no visual updates are found, use the visual description provided above.\n"
+          "Read the following story, which takes place in the scene described above, and create an updated visual description for it. The output should be in English and formatted for the Stable Diffusion web UI image generation prompt. The format should be a list of short phrases separated by commas, with important phrases enclosed in parentheses. The degree of importance can be indicated by a number following a colon. For example: 1girl, long blonde hair, blue eyes, standing, (shirt), (skirt:1.2). Focus on specific descriptions that can be visualized in a picture, such as the character's hairstyle, hair color, eye color, body shape, pose, clothing, and objects in the surrounding environment. Do not exceed 75 words. Replace proper nouns, such as people's names, with common nouns. Ex. Tom -> boy, Jane -> girl.\n"
       },
       {
         id: 4,
