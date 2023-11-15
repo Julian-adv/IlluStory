@@ -17,6 +17,8 @@ export interface SceneType {
   rangeStart?: number
   rangeEnd?: string
   done?: boolean
+  tag?: string
+  allChars?: boolean
 }
 
 export interface Message {
@@ -178,7 +180,6 @@ export interface Settings {
   translateOutput: boolean
   translateInput: boolean
   oneInstruction: boolean
-  allChars: boolean
 }
 
 export enum SortType {

@@ -53,11 +53,15 @@ def save_memory(memory: Memory):
     metas = [memory.meta] * len(combined)
     ids = [f"{memory.id}{i:03}" for i in range(0, len(combined))]
 
-    collection.add(
-        documents=combined,
-        metadatas=metas,
-        ids=ids,
-    )
+    try:
+        collection.add(
+            documents=combined,
+            metadatas=metas,
+            ids=ids,
+        )
+    except Exception as e:
+        print(f"collection.add error: {e}\n{combined}\n{metas}\n{ids}")
+
     return {"ok": True}
 
 

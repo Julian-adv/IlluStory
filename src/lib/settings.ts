@@ -115,12 +115,21 @@ export async function loadSettings() {
     return models
   } else {
     // Open AI compatible API
-    return [
-      { value: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo' },
-      { value: 'gpt-3.5-turbo-16k', name: 'gpt-3.5-turbo-16k' },
-      { value: 'gpt-4', name: 'gpt-4' },
-      { value: 'gpt-4-32k', name: 'gpt-4-32k' }
-    ]
+    try {
+      const response = await fetch(currentPreset.openAi.apiUrl + '/models', { method: 'GET' })
+      const json = await response.json()
+      return json.data.map((model: { id: string }) => {
+        return { value: model.id, name: model.id }
+      })
+    } catch (e) {
+      console.log('ERROR', e)
+      return [
+        { value: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo' },
+        { value: 'gpt-3.5-turbo-16k', name: 'gpt-3.5-turbo-16k' },
+        { value: 'gpt-4', name: 'gpt-4' },
+        { value: 'gpt-4-32k', name: 'gpt-4-32k' }
+      ]
+    }
   }
 }
 

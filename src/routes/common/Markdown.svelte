@@ -107,9 +107,9 @@
 
   function edit() {
     readOnly = false
-    if (visualValue) {
-      value = value + `\n${visualStart}${visualValue}${visualEnd}`
-    }
+    // if (visualValue) {
+    //   value = value + `\n${visualStart}${visualValue}${visualEnd}`
+    // }
     const textarea = document.getElementById(id) as HTMLTextAreaElement
     if (textarea) {
       textarea.style.height = 'auto'

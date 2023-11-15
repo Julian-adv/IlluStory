@@ -12,23 +12,19 @@
     systemRole,
     chatHistory,
     firstScene,
-    assocMemory
+    assocMemory,
+    lorebookRole
   } from '$lib/api'
   import {
     preset,
     presetPath,
-    curChar,
-    curCharPath,
-    user,
-    userPath,
     curScene,
     curScenePath,
-    chars,
     fileDialog,
     defaultPreset,
     maxMemory
   } from '$lib/store'
-  import { Api, type Char, type FirstScene, type SceneType } from '$lib/interfaces'
+  import { Api, type FirstScene, type SceneType } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
   import SelectField from '../common/SelectField.svelte'
   import NumberField from '../common/NumberField.svelte'
@@ -37,9 +33,8 @@
   import FlexibleTextarea from '../common/FlexibleTextarea.svelte'
   import DropSelect from '../common/DropSelect.svelte'
   import { getUniqueId, removeCommonPrefix } from '$lib'
-  import { loadCharDialog, cardFromPreset } from '$lib/charSettings'
+  import { cardFromPreset } from '$lib/charSettings'
   import { goto } from '$app/navigation'
-  import CharCard from '../common/CharCard.svelte'
   import CheckField from '../common/CheckField.svelte'
   import { slide } from 'svelte/transition'
   import { InfoCircleSolid } from 'flowbite-svelte-icons'
@@ -167,16 +162,6 @@
     return 0
   }
 
-  async function loadCharTo(prompt: SceneType): Promise<[Char | null, string]> {
-    const [tempChar, tempFilePath] = await loadCharDialog()
-    if (tempChar) {
-      const relativePath = removeCommonPrefix($presetPath, tempFilePath)
-      prompt.content = relativePath
-      autoSaveFunc()
-    }
-    return [tempChar, tempFilePath]
-  }
-
   async function loadSceneTo(prompt: SceneType): Promise<[FirstScene | null, string]> {
     const [tempChar, tempFilePath] = await loadSceneDialog()
     if (tempChar) {
@@ -185,24 +170,6 @@
       autoSaveFunc()
     }
     return [tempChar, tempFilePath]
-  }
-
-  function onCharClick(prompt: SceneType) {
-    return async (ev: Event) => {
-      ev.stopPropagation()
-      await loadCharTo(prompt)
-    }
-  }
-
-  function onUserClick(prompt: SceneType) {
-    return async (ev: Event) => {
-      ev.stopPropagation()
-      const [tempChar, tempFilePath] = await loadCharTo(prompt)
-      if (tempChar) {
-        $user = tempChar
-        $userPath = tempFilePath
-      }
-    }
   }
 
   function onSceneClick(prompt: SceneType) {
@@ -214,17 +181,6 @@
         $curScenePath = tempFilePath
       }
     }
-  }
-
-  function onEditChar(ev: Event) {
-    ev.stopPropagation()
-  }
-
-  function onEditUser(ev: Event) {
-    ev.stopPropagation()
-    $curChar = $user
-    $curCharPath = $userPath
-    goto('/write_char')
   }
 
   function onEditScene(ev: Event) {
@@ -871,9 +827,34 @@
         <em class="px-2 text-sm text-stone-500">The story begins from below.</em>
         <hr class="flex-grow border-t border-dashed border-stone-400" />
       {:else if prompt.role === charSetting}
-        <CharCard char={$chars[0]} onCharClick={onCharClick(prompt)} {onEditChar} />
+        <div class="flex flex-col">
+          <div class="flex">
+            <StringField label="Tag" bind:value={$preset.prompts[i].tag} onBlur={autoSaveFunc} />
+            <CheckField
+              label="Include all characters"
+              bind:value={$preset.prompts[i].allChars}
+              save={autoSaveFunc} />
+          </div>
+          <div class="flex">
+            <em class="text-xs text-stone-400 pl-2">
+              A placeholder for a character description. If tag is not empty, the description is
+              enclosed in &lt;tag&gt;. If <strong>Include all characters</strong> is checked, the prompt
+              will include the descriptions of all characters registered in the session.
+            </em>
+          </div>
+        </div>
       {:else if prompt.role === userSetting}
-        <CharCard char={$user} onCharClick={onUserClick(prompt)} onEditChar={onEditUser} />
+        <div class="flex flex-col">
+          <div class="flex">
+            <StringField label="Tag" bind:value={$preset.prompts[i].tag} onBlur={autoSaveFunc} />
+          </div>
+          <div class="flex">
+            <em class="text-xs text-stone-400 pl-2">
+              A placeholder for the user description. If tag is not empty, the description is
+              enclosed in &lt;tag&gt;.
+            </em>
+          </div>
+        </div>
       {:else if prompt.role === chatHistory}
         <div class="flex flex-col">
           <div class="flex">
@@ -915,6 +896,10 @@
             <em class="text-xs text-stone-400 pl-2">
               Max number of scenes to recall from memory.</em>
           </div>
+        </div>
+      {:else if prompt.role === lorebookRole}
+        <div class="flex">
+          <em class="text-xs text-stone-400 pl-2">A placeholder for a lorebook.</em>
         </div>
       {:else}
         <div class="flex flex-col w-full text-left">

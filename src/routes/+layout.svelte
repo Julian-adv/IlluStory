@@ -27,7 +27,7 @@
   let toastMessage = ''
   let logLevel: LogLevel = 'INFO'
 
-  function message(level: LogLevel, str: any, timeout: number = 60) {
+  function message(level: LogLevel, str: any, timeout: number = 10) {
     logLevel = level
     let msg = String(str)
     toastMessage = msg

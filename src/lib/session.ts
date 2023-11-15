@@ -72,14 +72,18 @@ export function replaceNames(prompts: SceneType[], dict: StringDictionary) {
   })
 }
 
-function replaceCharSetting(tag: string, char: Char) {
-  return `<${tag}>\nName: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n</${tag}>\n`
+function replaceCharSetting(tag: string | undefined, char: Char) {
+  if (tag) {
+    return `<${tag}>\nName: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n</${tag}>\n`
+  } else {
+    return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
+  }
 }
 
-function replaceCharSettings(chars: Char[], user: Char) {
+function replaceCharSettings(tag: string | undefined, chars: Char[], user: Char) {
   let str = ''
   for (const char of chars) {
-    let charDesc = replaceCharSetting('Character', char)
+    let charDesc = replaceCharSetting(tag, char)
     const dict = makeReplaceDict(char, user)
     charDesc = replaceName(charDesc, dict)
     str += charDesc
@@ -87,25 +91,17 @@ function replaceCharSettings(chars: Char[], user: Char) {
   return str
 }
 
-export function replaceChar(prompts: SceneType[], char: Char, user: Char) {
+export function replaceChars(prompts: SceneType[], chars: Char[], speaker: number, user: Char) {
   return prompts.map(prompt => {
     let content = prompt.content
     if (prompt.role === charSetting) {
-      content = replaceCharSetting('Character', char)
+      if (prompt.allChars) {
+        content = replaceCharSettings(prompt.tag, chars, user)
+      } else {
+        content = replaceCharSettings(prompt.tag, [chars[speaker]], user)
+      }
     } else if (prompt.role === userSetting) {
-      content = replaceCharSetting('User', user)
-    }
-    return { ...prompt, content }
-  })
-}
-
-export function replaceChars(prompts: SceneType[], chars: Char[], user: Char) {
-  return prompts.map(prompt => {
-    let content = prompt.content
-    if (prompt.role === charSetting) {
-      content = replaceCharSettings(chars, user)
-    } else if (prompt.role === userSetting) {
-      content = replaceCharSetting('User', user)
+      content = replaceCharSetting(prompt.tag, user)
     }
     return { ...prompt, content }
   })

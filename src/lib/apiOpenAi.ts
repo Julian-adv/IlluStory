@@ -373,6 +373,10 @@ export async function sendChatOpenAiStream(
     const reader = respFromGPT.body?.getReader()
     const decoder = new TextDecoder()
     reader?.read().then(async function processText({ value }): Promise<void> {
+      if (value === undefined) {
+        closedCallback()
+        return
+      }
       const str = decoder.decode(value)
       const strs = str.split('\n')
       for (const str of strs) {
