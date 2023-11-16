@@ -40,9 +40,6 @@ function fixSettings(settings: Settings) {
   if (!settings.fontSize) {
     settings.fontSize = defaultSettings.fontSize
   }
-  if (!settings.imageSource) {
-    settings.imageSource = defaultSettings.imageSource
-  }
   if (!settings.sdURL) {
     settings.sdURL = defaultSettings.sdURL
   }
@@ -98,39 +95,37 @@ export async function loadSettings() {
 
   inputHistory.set(await loadHistory())
 
-  if (
-    currentPreset.api === Api.OpenAi &&
-    currentPreset.openAi.apiUrl &&
-    currentPreset.openAi.apiUrl.startsWith('https://api.openai.com')
-  ) {
-    const openai = new OpenAI({
-      apiKey: get(settings).openAiApiKey,
-      dangerouslyAllowBrowser: true
-    })
-    const response = await openai.models.list()
-    const models = response.data.map(model => {
-      return { value: model.id, name: model.id }
-    })
-
-    return models
-  } else {
-    // Open AI compatible API
-    try {
-      const response = await fetch(currentPreset.openAi.apiUrl + '/models', { method: 'GET' })
-      const json = await response.json()
-      return json.data.map((model: { id: string }) => {
+  if (currentPreset.api === Api.OpenAi && currentPreset.openAi.apiUrl) {
+    if (currentPreset.openAi.apiUrl.startsWith('https://api.openai.com')) {
+      const openai = new OpenAI({
+        apiKey: get(settings).openAiApiKey,
+        dangerouslyAllowBrowser: true
+      })
+      const response = await openai.models.list()
+      const models = response.data.map(model => {
         return { value: model.id, name: model.id }
       })
-    } catch (e) {
-      console.log('ERROR', e)
-      return [
-        { value: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo' },
-        { value: 'gpt-3.5-turbo-16k', name: 'gpt-3.5-turbo-16k' },
-        { value: 'gpt-4', name: 'gpt-4' },
-        { value: 'gpt-4-32k', name: 'gpt-4-32k' }
-      ]
+
+      return models
+    } else {
+      // Open AI compatible API
+      try {
+        const response = await fetch(currentPreset.openAi.apiUrl + '/models', { method: 'GET' })
+        const json = await response.json()
+        return json.data.map((model: { id: string }) => {
+          return { value: model.id, name: model.id }
+        })
+      } catch (e) {
+        console.log('ERROR', e)
+      }
     }
   }
+  return [
+    { value: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo' },
+    { value: 'gpt-3.5-turbo-16k', name: 'gpt-3.5-turbo-16k' },
+    { value: 'gpt-4', name: 'gpt-4' },
+    { value: 'gpt-4-32k', name: 'gpt-4-32k' }
+  ]
 }
 
 export async function saveSettings() {

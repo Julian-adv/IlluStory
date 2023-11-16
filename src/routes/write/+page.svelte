@@ -44,6 +44,7 @@
   import type { PageData } from './$types'
   import FileDialog from '$lib/FileDialog.svelte'
   import DragAndDropList from '../common/DragAndDropList.svelte'
+  import VisualizeMode from '../common/VisualizeMode.svelte'
 
   export let data: PageData
   const apis = [
@@ -59,9 +60,13 @@
   let autoSave = true
   let totalTokens = 0
 
+  interface Model {
+    name: string
+  }
+
   onMount(async () => {
     totalTokens = 0
-    data.models = data.models.sort((modelA, modelB) =>
+    data.models = data.models.sort((modelA: Model, modelB: Model) =>
       modelA.name < modelB.name ? -1 : modelA.name > modelB.name ? 1 : 0
     )
   })
@@ -450,7 +455,7 @@
         save={autoSaveFunc} />
       <NumberField
         label="Context size"
-        help="Represents the model's context size. If story tokens near this, the chat history will be summarized."
+        help="Represents the model's context size. If story tokens near this, the old chats will be stored and removed."
         bind:value={$preset.openAi.contextSize}
         min={512}
         max={128000}
@@ -656,7 +661,7 @@
         save={autoSaveFunc} />
       <NumberField
         label="Context size"
-        help="Represents the model's context size. If story tokens near this, the chat history will be summarized."
+        help="Represents the model's context size. If story tokens near this, the old chats will be stored and removed."
         bind:value={$preset.oobabooga.contextSize}
         min={512}
         max={32768}
@@ -791,7 +796,7 @@
         save={autoSaveFunc} />
       <NumberField
         label="Context size"
-        help="Represents the model's context size. If story tokens near this, the chat history will be summarized."
+        help="Represents the model's context size. If story tokens near this, the old chats will be stored and removed."
         bind:value={$preset.koboldAi.contextSize}
         min={512}
         max={32768}
@@ -803,6 +808,7 @@
       help="The prompt to use for summarizing the conversation."
       bind:value={$preset.summarizePrompt}
       save={autoSaveFunc} />
+    <VisualizeMode bind:mode={$preset.visualizeMode} save={autoSaveFunc} />
   </div>
 
   <h1 class="text-lg font-semibold mb-1 mt-3">Prompts</h1>

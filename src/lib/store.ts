@@ -23,6 +23,8 @@ export const defaultPreset: Preset = {
   image: '',
   api: Api.OpenAi,
   streaming: false,
+  visualizeMode: 'text',
+  visualizeRegexp: '\\[.*?Location: *(.*?)\\]',
   visualizePrompt:
     "Add a visual summary at the end of the output. It's crucial to include details about <char>'s look, clothing, stance, and nearby setting. The description should be short phrases inside <Visual> and </Visual>. For example: <Visual>blonde hair, shirt, pants, sitting on a chair</Visual>",
   // This prompt is copied from https://arca.live/b/characterai/81890153
@@ -156,7 +158,6 @@ export const defaultSettings: Settings = {
   },
   fontFamily: 'Geogia',
   fontSize: 12,
-  imageSource: 'full_desc',
   sdURL: 'http://localhost:7860',
   imageSizes: '512x768, 768x512, 1024x512',
   steps: 30,
@@ -175,8 +176,7 @@ export const defaultSettings: Settings = {
   userLang: '',
   translateOutput: false,
   translateInput: false,
-  oneInstruction: true,
-  allChars: true
+  oneInstruction: true
 }
 
 export const settings = writable(defaultSettings)

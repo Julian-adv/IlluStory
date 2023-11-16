@@ -2,11 +2,19 @@
   import type { SceneType, SceneResult } from '$lib/interfaces'
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
-  import { dialogues, lorebook, replaceDict, session, sessionPath, settings } from '$lib/store'
+  import {
+    dialogues,
+    lorebook,
+    preset,
+    replaceDict,
+    session,
+    sessionPath,
+    settings
+  } from '$lib/store'
   import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
-  import { extractImagePrompt } from '$lib/image'
+  import { extractImagePrompt, imageDescription } from '$lib/image'
   import ImageWithControl from './ImageWithControl.svelte'
   import { generateImageIfNeeded, saveImage } from '$lib/scene'
   import { saveSessionAuto } from '$lib/session'
@@ -52,7 +60,7 @@
   onMount(async () => {
     sessionDir = dirnameOf($sessionPath)
     if (scene.done) {
-      info = await generateImageIfNeeded($settings, scene, sessionDir, last)
+      info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
     }
     translated = !!scene.translatedContent
     info.imageFromSD.then(() => {
@@ -61,12 +69,7 @@
   })
 
   function generateNewImage() {
-    let imageSource = ''
-    if ($settings.imageSource === 'full_desc') {
-      imageSource = scene.textContent ?? ''
-    } else if ($settings.imageSource === 'visual_tag') {
-      imageSource = scene.visualContent ?? ''
-    }
+    let imageSource = imageDescription($preset, scene)
     info.imageFromSD = generateImage(
       $settings,
       info.imageSize.width,
@@ -95,7 +98,7 @@
     scene.content = content
     scene.translatedContent = ''
     scene = await extractImagePrompt($settings, scene, $replaceDict)
-    info = await generateImageIfNeeded($settings, scene, sessionDir, last)
+    info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
   }
 </script>
 

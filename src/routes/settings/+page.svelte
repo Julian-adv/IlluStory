@@ -48,12 +48,6 @@
     { value: 'ZH', name: 'Chinese (simplified)' }
   ]
 
-  const imageSources = [
-    { value: 'none', name: 'None' },
-    { value: 'full_desc', name: 'Full description' },
-    { value: 'visual_tag', name: 'Visual tag' }
-  ]
-
   onMount(async () => {
     await installDefaults()
     await loadSettings()
@@ -83,110 +77,86 @@
       bind:value={$settings.openAiApiKey}
       {save} />
     <h1 class="text-lg font-semibold mt-4 col-span-3">Stable Diffusion</h1>
-    <SelectField
-      label="Image source"
-      items={imageSources}
-      bind:value={$settings.imageSource}
-      {save}>
-      <em slot="helper">
-        {#if $settings.imageSource === 'none'}
-          Don't generate an image.
-        {:else if $settings.imageSource === 'visual_tag'}
-          Generate an image from visual description. You need to instruct AI to generate visual
-          description by adding a prompt like this:<br />
-          <p class="plain">
-            "Add a visual summary at the end of the output. It's crucial to include details about
-            &lt;char>'s look, clothing, stance, and nearby setting. The description should be short
-            phrases inside &lt;Visual> and &lt;/Visual>. For example: &lt;Visual>brown hair, shirt,
-            pants, sitting on a living room &lt;/Visual>"
-          </p>
-        {:else if $settings.imageSource === 'full_desc'}
-          Use the AI's full scene description to generate the image.
-        {/if}
-      </em>
-    </SelectField>
-    {#if $settings.imageSource !== 'none'}
-      <StringField
-        label="URL"
-        placeholder=""
-        help="Automatic1111's Stable Diffusion web UI server URL. Usually http://localhost:7860"
-        bind:value={$settings.sdURL}
-        {save} />
-      <StringField
-        label="Image sizes"
-        help="A comma-separated list of image sizes. Example: 512x768, 768x512. One of which is chosen at random."
-        bind:value={$settings.imageSizes}
+    <StringField
+      label="URL"
+      placeholder=""
+      help="Automatic1111's Stable Diffusion web UI server URL. Usually http://localhost:7860"
+      bind:value={$settings.sdURL}
+      {save} />
+    <StringField
+      label="Image sizes"
+      help="A comma-separated list of image sizes. Example: 512x768, 768x512. One of which is chosen at random."
+      bind:value={$settings.imageSizes}
+      {save} />
+    <NumberField
+      label="Steps"
+      help="Sampling steps"
+      bind:value={$settings.steps}
+      min={20}
+      max={150}
+      step={1}
+      {save} />
+    <NumberField
+      label="CFG Scale"
+      help="The CFG scale adjusts how much the image looks closer to the prompt."
+      bind:value={$settings.cfgScale}
+      min={1}
+      max={30}
+      step={0.5}
+      {save} />
+    <TextField
+      label="Prompt"
+      help="Prompts that should always be included."
+      bind:value={$settings.prompt}
+      {save} />
+    <TextField
+      label="Negative prompt"
+      help="What shouldn't be in the image."
+      bind:value={$settings.negativePrompt}
+      {save} />
+    <StringField
+      label="Sampler"
+      help="Example: Euler a, DPM++ SDE Karras, DPM++ 2M SDE Karras"
+      bind:value={$settings.sampler}
+      {save} />
+    <CheckField
+      label="Enable Hires"
+      help="Whether to enable Hires.fix. It will upscale the image."
+      bind:value={$settings.enableHires}
+      {save} />
+    {#if $settings.enableHires}
+      <NumberField
+        label="Denoising strength"
+        help="Lower value retains the likeness of the input image, while higher strength reduces its influence and introduces more variations."
+        bind:value={$settings.denoisingStrength}
+        min={0}
+        max={1}
+        step={0.01}
         {save} />
       <NumberField
-        label="Steps"
-        help="Sampling steps"
-        bind:value={$settings.steps}
-        min={20}
-        max={150}
-        step={1}
-        {save} />
-      <NumberField
-        label="CFG Scale"
-        help="The CFG scale adjusts how much the image looks closer to the prompt."
-        bind:value={$settings.cfgScale}
+        label="Upscale by"
+        help="How much to upscale the image."
+        bind:value={$settings.hiresScale}
         min={1}
-        max={30}
-        step={0.5}
-        {save} />
-      <TextField
-        label="Prompt"
-        help="Prompts that should always be included."
-        bind:value={$settings.prompt}
-        {save} />
-      <TextField
-        label="Negative prompt"
-        help="What shouldn't be in the image."
-        bind:value={$settings.negativePrompt}
+        max={4}
+        step={0.05}
         {save} />
       <StringField
-        label="Sampler"
-        help="Example: Euler a, DPM++ SDE Karras, DPM++ 2M SDE Karras"
-        bind:value={$settings.sampler}
-        {save} />
-      <CheckField
-        label="Enable Hires"
-        help="Whether to enable Hires.fix. It will upscale the image."
-        bind:value={$settings.enableHires}
-        {save} />
-      {#if $settings.enableHires}
-        <NumberField
-          label="Denoising strength"
-          help="Lower value retains the likeness of the input image, while higher strength reduces its influence and introduces more variations."
-          bind:value={$settings.denoisingStrength}
-          min={0}
-          max={1}
-          step={0.01}
-          {save} />
-        <NumberField
-          label="Upscale by"
-          help="How much to upscale the image."
-          bind:value={$settings.hiresScale}
-          min={1}
-          max={4}
-          step={0.05}
-          {save} />
-        <StringField
-          label="Upscaler"
-          help="Example: Latent, R-ESRGAN 4x+, 4x-UltraSharp"
-          bind:value={$settings.hiresUpscaler}
-          {save} />
-      {/if}
-      <CheckField
-        label="Use ADetailer"
-        help="Whether to use ADetailer. You need to install adetailer in web UI extensions. It will enhace faces in the image."
-        bind:value={$settings.enableADetailer}
-        {save} />
-      <CheckField
-        label="Blur background"
-        help="Blur background of the image."
-        bind:value={$settings.blurBackground}
+        label="Upscaler"
+        help="Example: Latent, R-ESRGAN 4x+, 4x-UltraSharp"
+        bind:value={$settings.hiresUpscaler}
         {save} />
     {/if}
+    <CheckField
+      label="Use ADetailer"
+      help="Whether to use ADetailer. You need to install adetailer in web UI extensions. It will enhace faces in the image."
+      bind:value={$settings.enableADetailer}
+      {save} />
+    <CheckField
+      label="Blur background"
+      help="Blur the edges of the image when it is placed in a story."
+      bind:value={$settings.blurBackground}
+      {save} />
     <h1 class="text-lg font-semibold mt-4 col-span-3">Translation</h1>
     <StringField
       label="DeepL API Key"
@@ -279,11 +249,6 @@
       label="One instruction"
       help="When generating prompts for the llama model, the entire content is generated as a single instruction."
       bind:value={$settings.oneInstruction}
-      {save} />
-    <CheckField
-      label="Include all characters"
-      help="Include information for all characters, regardless of the current speaker."
-      bind:value={$settings.allChars}
       {save} />
   </div>
 </div>

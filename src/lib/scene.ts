@@ -1,10 +1,11 @@
 import { saveImageToFile, savePath, sceneExt } from './fs'
-import type { FirstScene, SceneResult, SceneType, Settings } from './interfaces'
+import type { FirstScene, Preset, SceneResult, SceneType, Settings } from './interfaces'
 import { assistantRole, systemRole } from './api'
 import { getRandomSize, scrollToEnd } from '$lib'
 import { tick } from 'svelte'
 import { generateImage } from './imageApi'
 import { tcConvertImageSrc, tcOpen, tcReadTextFile } from './tauriCompat'
+import { imageDescription } from './image'
 
 export async function loadScene(path: string) {
   const json = await tcReadTextFile(path)
@@ -40,6 +41,7 @@ export function saveImage(sessionPath: string, result: string) {
 
 export async function generateImageIfNeeded(
   settings: Settings,
+  preset: Preset,
   scene: SceneType,
   sessionPath: string,
   lastScene: boolean
@@ -64,12 +66,7 @@ export async function generateImageIfNeeded(
   } else {
     if (scene.role === systemRole || scene.role === assistantRole) {
       showImage = !!scene.visualContent
-      let imageSource = ''
-      if (settings.imageSource === 'full_desc') {
-        imageSource = scene.textContent ?? ''
-      } else if (settings.imageSource === 'visual_tag') {
-        imageSource = scene.visualContent ?? ''
-      }
+      const imageSource = imageDescription(preset, scene)
       if (imageSource) {
         showImage = true
         imageSize = getRandomSize(settings.imageSizes)

@@ -1,5 +1,5 @@
 import { translateText } from './deepLApi'
-import type { SceneType, Settings, StringDictionary } from './interfaces'
+import type { Preset, SceneType, Settings, StringDictionary } from './interfaces'
 import { replaceName } from './session'
 
 export const visualStart = '<Visual>'
@@ -25,4 +25,13 @@ export async function extractImagePrompt(
     scene.translatedContent = await translateText(settings, settings.userLang, scene.textContent)
   }
   return scene
+}
+
+export function imageDescription(preset: Preset, scene: SceneType) {
+  if (preset.visualizeMode === 'text') {
+    return scene.textContent ?? ''
+  } else if (preset.visualizeMode === 'regexp' || preset.visualizeMode === 'generate') {
+    return scene.visualContent ?? scene.textContent ?? ''
+  }
+  return ''
 }

@@ -589,6 +589,16 @@
       nextChar = $chars[$session.nextSpeaker].name
     }
   }
+
+  function finishVisual() {
+    const scene = lastScene($dialogues)
+    tcLog('INFO', 'visual description:', scene.visualContent ?? '')
+    scene.done = true
+    $dialogues = $dialogues
+    chooseNextChar()
+    saveSession()
+  }
+
   let visualDescription = ''
 
   function receivedVisual(text: string) {
@@ -596,16 +606,12 @@
   }
 
   function closedVisual() {
-    tcLog('INFO', 'visual description:', visualDescription)
     const scene = lastScene($dialogues)
     scene.visualContent = visualDescription
-    scene.done = true
-    $dialogues = $dialogues
-    chooseNextChar()
-    saveSession()
+    finishVisual()
   }
 
-  async function _generateVisual() {
+  async function generateVisual() {
     let prevVisualPrompt = ''
     for (let i = $dialogues.length - 1; i >= 0; i--) {
       const scene = $dialogues[i]
@@ -660,12 +666,19 @@
 
   function extractVisual() {
     const scene = lastScene($dialogues)
-    scene.visualContent = scene.content.match(/\[Date:.+?Location:(.+?)\]/)?.[1] ?? ''
-    tcLog('INFO', 'visual description:', scene.visualContent)
-    scene.done = true
-    $dialogues = $dialogues
-    chooseNextChar()
-    saveSession()
+    const regexp = new RegExp($preset.visualizeRegexp)
+    scene.visualContent = scene.content.match(regexp)?.[1] ?? ''
+    finishVisual()
+  }
+
+  function generateImage() {
+    if ($preset.visualizeMode === 'regexp') {
+      extractVisual()
+    } else if ($preset.visualizeMode === 'generate') {
+      generateVisual()
+    } else {
+      finishVisual()
+    }
   }
 
   let lorebookAnswer = ''
@@ -685,16 +698,7 @@
       }
       break
     }
-    if ($settings.imageSource === 'visual_tag') {
-      // generateVisual()
-      extractVisual()
-    } else {
-      const scene = lastScene($dialogues)
-      scene.done = true
-      $dialogues = $dialogues
-      chooseNextChar()
-      saveSession()
-    }
+    generateImage()
   }
 
   async function checkLorebook() {

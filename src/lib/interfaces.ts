@@ -104,6 +104,8 @@ export interface Preset {
   image: string
   api: Api
   streaming: boolean
+  visualizeMode: 'none' | 'regexp' | 'text' | 'generate'
+  visualizeRegexp: string
   visualizePrompt: string
   summarizePrompt: string
   openAi: OpenAiParam
@@ -160,7 +162,6 @@ export interface Settings {
   charNameSettings: TextSettings
   fontFamily: string
   fontSize: number
-  imageSource: string
   sdURL: string
   enableADetailer: boolean
   imageSizes: string
