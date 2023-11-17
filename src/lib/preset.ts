@@ -54,7 +54,7 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
     role: role
   }
   preset.prompts.push(scene2)
-  if (afterSlot.trim() !== '') {
+  if (afterSlot && afterSlot.trim() !== '') {
     const scene3: SceneType = {
       id: sceneId++,
       content: afterSlot,

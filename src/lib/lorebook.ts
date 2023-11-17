@@ -1,5 +1,5 @@
-import type { Lorebook } from './interfaces'
-import { tcReadTextFile } from './tauriCompat'
+import type { Lorebook, Session } from './interfaces'
+import { tcLog, tcReadTextFile } from './tauriCompat'
 
 export async function loadLorebook(path: string): Promise<Lorebook> {
   const json = await tcReadTextFile(path)
@@ -7,8 +7,12 @@ export async function loadLorebook(path: string): Promise<Lorebook> {
   return lorebook
 }
 
-export function initLorebook(lorebook: Lorebook) {
+export function initLorebook(lorebook: Lorebook, session: Session) {
   lorebook.rules.forEach(rule => {
     rule.triggered = false
   })
+  session.lorebookTriggers.forEach(trigger => {
+    trigger.triggered = false
+  })
+  tcLog('INFO', 'Lorebook initialized')
 }

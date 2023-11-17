@@ -10,11 +10,21 @@
   export let onInput = (_str: string) => {}
 
   let textarea: HTMLElement | null
+  let scrollY = 0
 
   function onInputHandler(this: HTMLElement) {
     this.style.height = 'auto'
     this.style.height = this.scrollHeight + 'px'
     onInput(value)
+
+    if (scrollY > 0) {
+      window.scrollTo(0, scrollY)
+    }
+  }
+
+  function onKeydown(_event: KeyboardEvent) {
+    const html = document.body.parentElement
+    scrollY = html ? html.scrollTop : 0
   }
 
   onMount(() => {
@@ -24,6 +34,7 @@
   afterUpdate(() => {
     if (textarea) {
       onInputHandler.call(textarea)
+      textarea.addEventListener('keydown', onKeydown)
     }
   })
 </script>

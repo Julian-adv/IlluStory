@@ -516,7 +516,7 @@
     $session.nextSpeaker = 0
     $dialogues = []
     await updateInitialScenes()
-    initLorebook($lorebook)
+    initLorebook($lorebook, $session)
     $usage = calcUsage()
     $sessionPath = ''
     userInput = ''
@@ -666,8 +666,17 @@
 
   function extractVisual() {
     const scene = lastScene($dialogues)
-    const regexp = new RegExp($preset.visualizeRegexp)
-    scene.visualContent = scene.content.match(regexp)?.[1] ?? ''
+    const regexp = new RegExp($preset.visualizeRegexp, 'g')
+    let matches = []
+    let match
+    while ((match = regexp.exec(scene.content))) {
+      if (match[1]) {
+        matches.push(match[1])
+      }
+    }
+    if (matches.length > 0) {
+      scene.visualContent = matches.join(',')
+    }
     finishVisual()
   }
 
@@ -780,16 +789,23 @@
     await checkLorebook()
   }
 
+  async function processCommands(input: string) {
+    const command = input.slice(1)
+    switch (command) {
+      case 'kill':
+        await killServer()
+        break
+      case 'reset_lorebook':
+        initLorebook($lorebook, $session)
+        break
+      default:
+        break
+    }
+  }
+
   async function sendInput(role: string, orgContent: string) {
     if (orgContent.startsWith('/')) {
-      const command = orgContent.slice(1)
-      switch (command) {
-        case 'kill':
-          await killServer()
-          break
-        default:
-          break
-      }
+      processCommands(orgContent)
       return
     }
     let content = orgContent
