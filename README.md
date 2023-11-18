@@ -10,31 +10,35 @@ or [Koboldcpp](https://github.com/LostRuins/koboldcpp).
 
 #### 1. Install [Automatic1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for image generation.
 
-#### 1-1. After installation, edit `webui-user.bat` to run Automatic1111's Web UI with --api option.
+#### 1-1. After installation, edit `webui-user.bat` to run with --api option.
 
 _webui-user.bat_
 
 ```bat
+...
 set COMMANDLINE_ARGS=--xformers --api --autolaunch
+...
 ```
 
-#### 1-2. Run `run.bat`, choose **Extensions** tab, install ADetailer extension for better image quality.
+#### 1-2. Execute `run.bat`, then select the **Extensions** tab and install the `ADetailer` extension to enhance image quality.
 
 ![Stable Diffusion](screenshots/stable-diffusion.png)
 
-#### 1-3. Download some image model(eg. from [civitai](https://civitai.com/models/201673/kakarot-28d-color)), place it under `webui/models/Stable-diffusion` foler and choose it.
+#### 1-3. Download an image model (e.g., from [civitai](https://civitai.com/models/201673/kakarot-28d-color)), place it in the `webui/models/Stable-diffusion` foler, and then select it.
 
 ![SD model](screenshots/sd-model.png)
 
-#### 2. For text generation, IlluStory supports the following backends.
+#### 2. IlluStory offers support for the following backends for text generation.
 
 - [Open AI api](https://platform.openai.com/docs/overview)
 - [Oobabooga's Text generation web UI](https://github.com/oobabooga/text-generation-webui)
 - [Koboldcpp](https://github.com/LostRuins/koboldcpp)
 
-Open AI api requieres payments, refer to their [pricing](https://openai.com/pricing) page.
-If you have a decent hardware you can run LLM on your own machine using oobabooga or koboldcpp.
-Koboldcpp is a single exe, easy to install.
+Please note that OpenAI api requires payments; for details, refer to their
+[pricing](https://openai.com/pricing) page.
+If you possess adequate hardware, you have the option to run a LLM on your own machine using
+either oobabooga or koboldcpp.
+Koboldcpp is a single executable file and easy to install.
 
 #### 2-1. For Open AI api
 
@@ -58,7 +62,7 @@ _CMD_FLAGS.txt_
 
 ![Model tab](screenshots/text-generation-model-tab.png)
 
-- Choose the downloaded model, set **max_seq_len** and **alpha**, and load it.
+- Choose the model, set **max_seq_len** and **alpha**, and load it.
 
 ![Load model](screenshots/load-model.png)
 
@@ -108,8 +112,9 @@ You can get DeepL api key [here](https://www.deepl.com/pro-api). It's free for 5
 
 ![Choose cards](screenshots/choose-cards.png)
 
-I included examples of a preset card, an user card, a character card, and a scene card.
-Press `+` button and choose card. After choosing all cards, press **Start**.
+I have included examples of a preset card, a user card, a character card, and a scene card.
+To proceed, press the `+` button and select your desired card.
+Once you have chosen all the cards, press **Start** to begin.
 
 ![Write tab description 2](screenshots/chatting.png)
 
