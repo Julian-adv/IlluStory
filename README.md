@@ -118,26 +118,28 @@ Once you have chosen all the cards, press **Start** to begin.
 
 ![Write tab description 2](screenshots/chatting.png)
 
-- If you have installed Automatic1111's Web UI, it will generate and show an image from the
+- With Automatic1111's Web UI installed, an image will be generated and displayed based on the
   scene description.
-- If you don't like the image, press ![regenerate](screenshots/regenerate.png) or ![generate](screenshots/generate-image.png). It will regenerate a image.
-- To translate message, press ![translate](screenshots/translate.png)
-- If you want to edit parts of AI's output, press ![edit](screenshots/edit-output.png)
-- If you want to regenerate AI's output completely, press **Back**. You can go back up to the first message.
+- If the image isn't to your liking, click ![regenerate](screenshots/regenerate.png) or
+  <img src='screenshots/generate-image.png' height='24'> to produce a new one.
+- To translate a message, simply press <img src='screenshots/translate.png' alt='translate' width='24'>.
+- For editing portions of the AI's output, use the <img src='screenshots/edit-output.png' height='28'> button.
+- To completely regenerate the AI's output, select **Back**. This allows you to go back as far as
+  the first message.
 
 ### Multiple characters
 
-- If you put multiple character cards into the character slot, there will be drop down menu to select
-  next speaker.
+- If multiple character cards are placed in the character slot, a drop-down menu will appear, allowing
+  you to select the next speaker.
   ![Char slots](screenshots/char-slots.png)
   ![Select next char](screenshots/select-next-speaker.png)
-- If you select **Random**, next character is selected by random. If you select a specific char,
-  `{{char}}` will be replaced by that character.
-- Next character is changed automatically as you enter your prompt.
+- If you choose **Random**, the next character will be selected randomly. If you select a specific
+  character, `{{char}}` will be replaced with that character's name.
+- The next character will automatically change as you input your prompt.
 
 ## How to write prompts
 
-Select write tab to write a system prompt.
+Choose the _Write_ tab to compose a system prompt.
 ![Write tab](screenshots/write-tab-icon.png)
 
 ### Visualization mode
@@ -152,8 +154,8 @@ There are 3 visualization modes.
 
 - RegExp
 
-  - It extracts an image description from the output of AI. The first matching group of the regexp are
-    used as a prompt for Stable Diffusion image generation.
+  - The system extracts an image description from the AI's output. The first matching group identified
+    by the regular expression is used as a prompt for Stable Diffusion image generation.
   - For example, if regexp is `\[.*?Location: *(.*?)\]` and AI output is like this:
     ![Ai output example](screenshots/ai-output-regexp-example.png)
     It will pass the following to Stable Diffusion. (the first matching group of regexp)
@@ -163,32 +165,35 @@ There are 3 visualization modes.
     > arranged, her blouse is a crisp white paired with a charcoal skirt and matching stockings.
     > She stands just inside the door, a hint of nervousness in her posture.
 
-  - You need to instruct the AI to generate formatted outputs exactly for this method to work correctly.
-    Some low intelligent AI models can't follow these instructions and fail to generate messages
-    formatted properly. In that case use **Whole Text** method.
+  - For this method to function correctly, you must direct the AI to produce outputs in a specific
+    format. Some less advanced AI models may struggle to adhere to these instructions, resulting in
+    improperly formatted messages. If this occurs, opt for the **Whole Text** method instead.
   - Here is an example prompt for the above generation
     ![global note example](screenshots/example-global-note.png)
 
 - Whole Text
-  - It uses whole output of AI as a prompt for image generation.
+
+  - This method utilizes the entire output from the AI as a prompt for image generation.
+
 - Generate
-  - It prompts AI to generate a visual description of the current scene and uses the output of AI
-    for the prompt to generate image. So it will take more time, and costs more tokens.
+  - This method prompts the AI to generate a visual description of the current scene. The AI's output
+    is then used as the prompt for image generation. As a result, this process may take more time and
+    consume more tokens.
 
 ### Prompt roles
 
-- Basically there are 3 roles (system, assistant, and user) you can choose for each prompt.
-  It will be passed to the backend model as is.
+- Essentially, there are three roles (system, assistant, and user) that can be selected for each
+  prompt. These will be passed directly to the backend model as chosen.
   ![prompt roles](screenshots/prompt-roles.png)
-- There are some other pseudo roles(char setting, user setting, etc.) which are processed and replaced
-  before passing to the backend model.
+- In addition to the main roles, there are other pseudo roles (such as character settings, user
+  settings, etc.) that are processed and replaced before being passed to the backend model.
 
 ### Char setting role
 
 ![Char setting role](screenshots/char-setting-role.png)
 
-- If you put something in _Tag_ field, each character description will be enclosed by `<tag>`
-  before sending to AI. So above case will be:
+- If you enter something in the _Tag_ field, each character description will be enclosed within `<tag>`
+  before being sent to the AI. Therefore, in the above case, it will appear as follows:
 
 ```
 <Character Profile>
@@ -204,43 +209,42 @@ Blah blah
 
 - Content of lorebook will be placed here.
   ![Lorebook role](screenshots/lorebook-slot.png)
-- Whenever AI generates outputs, the first non triggered lorebook rule will be asked to AI.
+- Whenever the AI generates outputs, the first non-triggered lorebook rule will be presented to the AI
+  for response.
   ![Lorebook rules](screenshots/lorebook-rules.png)
-- If the answer of AI is matching the _Answer_ field, content of that rule will be inserted in the prompt
-  in the place of lorebook role.
-- So it consumes more tokens and time, you need to be careful.
-- To save time and tokens, the client asks only one question(the first one not triggered yet.).
-  After triggering, it do not ask the question again.
-- Purpose of this scheme is not to inform AI before the actual event. Because AI is not good at
-  keeping the secrets from the user.
-- I will add more conventional keyword matching based lorebook rules later.
+- If the AI's response matches the content in the _Answer_ field, the _content_ of that rule will be inserted into the prompt at the location designated for the lorebook role.
+- Be aware that this approach consumes more tokens and time, so caution is advised.
+- To conserve time and tokens, the client will only pose one question (the first one that hasn't
+  been triggered yet). Once triggered, the question will not be asked again.
+- The intention behind this scheme is to avoid informing the AI before the actual event occurs,
+  as AI is not adept at keeping secrets from the user.
+- More conventional keyword-matching based lorebook rules will be added later.
 
 ### Assoc Memory role
 
-- As your chatting gets longer than your model's context size, old chats are removed from
-  chat history, splitted into sentences and saved into vector db.
-- When you enter new prompt, most relevant old chat is searched and inserted in this place.
+- As your conversation exceeds the context size of your model, older chats will be removed from
+  the chat history. These chats are split into sentences and saved in a vector database.
+  When you input a new prompt, the most relevant old chat is retrieved and inserted at this point.
   ![Assoc memory slot](screenshots/assoc-memory-slot.png)
-- You can control how many old sentences are retrieved and inserted here by changing
-  _Number of scenes_ field.
-- It currently uses `chromadb` for embedding and vector db, I have a plan to add Open AI's embedding model.
+- You can adjust the number of old sentences that are retrieved and inserted by modifying the
+  _Number of scenes_ field. Currently, `chromadb` is used for embedding and as a vector database.
+- Plans are in place to incorporate OpenAI's embedding model in the future.
 
 ### Chat history role
 
 ![Chat history](screenshots/chat-history-role.png)
 
-- Chat history is inserted here.
-- You can specify the range of history, 0 means beginning of history(old chat), `end` means end
-  of history(your last input).
-- -1 means counted from end. So example above will insert your last input.
+- The chat history will be inserted at this point. You have the option to specify the range of the
+  history: `0` represents the beginning of the history (older chats), while `end` refers to the conclusion of the history (your most recent input).
+- The value `-1` indicates a count from the end, meaning the example above will insert your last input.
 
 ### Special placeholders
 
-- The following placeholders are replaced with a correspondng value before sending to AI.
+- Before sending to the AI, the following placeholders are replaced with their corresponding values:
 
   | placeholder     | value                             |
   | --------------- | --------------------------------- |
-  | {{char}}        | character name                    |
-  | {{user}}        | user name                         |
-  | {{char_gender}} | character's gender (male, female) |
-  | {{user_gender}} | user's gender (male, female)      |
+  | {{char}}        | Character Name                    |
+  | {{user}}        | User Name                         |
+  | {{char_gender}} | Character's Gender (male, female) |
+  | {{user_gender}} | User's Gender (male, female)      |
