@@ -156,6 +156,9 @@ export async function loadPreset(path: string): Promise<Preset> {
   if (!preset.koboldAi) {
     preset.koboldAi = defaultPreset.koboldAi
   }
+  if (!preset.koboldAi.samplerOrder) {
+    preset.koboldAi.samplerOrder = []
+  }
   changeApi(preset.api)
   return preset
 }

@@ -45,6 +45,7 @@
   import FileDialog from '$lib/FileDialog.svelte'
   import DragAndDropList from '../common/DragAndDropList.svelte'
   import VisualizeMode from '../common/VisualizeMode.svelte'
+  import NumberListField from '../common/NumberListField.svelte'
 
   export let data: PageData
   const apis = [
@@ -726,6 +727,13 @@
         max={1.0}
         save={autoSaveFunc} />
       <NumberField
+        label="Min p"
+        help=""
+        bind:value={$preset.koboldAi.minP}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
         label="Repetition penalty"
         help="Exponential penalty factor for repeating prior tokens. 1 means no penalty, higher value = less repetition, lower value = more repetition."
         bind:value={$preset.koboldAi.repetitionPenalty}
@@ -740,15 +748,12 @@
         max={4096}
         step={1}
         save={autoSaveFunc} />
-      <NumberField
-        label="Repetition penalty slope"
-        help="If both this and Repetition Penalty Range are above 0, then repetition penalty will have more effect closer to the end of the prompt."
-        bind:value={$preset.koboldAi.repetitionPenaltySlope}
-        min={0}
-        max={4096}
-        step={1}
-        save={autoSaveFunc} />
       <StringField label="Seed" bind:value={$preset.koboldAi.seed} save={autoSaveFunc} />
+      <NumberListField
+        label="Sampler order"
+        help="The order of the sampler, e.g. 6,0,1,3,4,2,5"
+        bind:value={$preset.koboldAi.samplerOrder}
+        save={autoSaveFunc} />
       <NumberField
         label="Mirostat mode"
         help="Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text."

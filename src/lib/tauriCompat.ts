@@ -301,21 +301,86 @@ export function tcConvertFileSrc(path: string) {
   }
 }
 
+function splitText(text: string) {
+  const textEllipsis = text.replaceAll('...', '<ellipsis>')
+  const pattern = /(".+?[.!?]"|"[^"]+"[^"]+?[.!?]|[^.!?]+?".+?[.!?]"|.+?[.!?])\s*/g
+  let match
+  const sentences = []
+
+  while ((match = pattern.exec(textEllipsis)) !== null) {
+    sentences.push(match[1])
+  }
+
+  if (sentences.length === 0) {
+    return [text]
+  }
+
+  return sentences.map(sentence => sentence.replaceAll('<ellipsis>', '...'))
+}
+
+function combineSentences(sentences: string[], n: number) {
+  const combined = []
+  for (let i = 0; i < sentences.length - n; i += n) {
+    combined.push(sentences.slice(i, i + n).join(' '))
+  }
+  return combined
+}
+
+async function getEmbeddings(sentences: string[]) {
+  const embeddings = []
+  for (const sentence of sentences) {
+    const response = await fetch('https://api.openai.com/v1/embeddings', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + get(settings).openAiApiKey
+      },
+      method: 'POST',
+      body: JSON.stringify({ input: sentence, model: 'text-embedding-ada-002' })
+    })
+    const json = await response.json()
+    embeddings.push(json.data[0].embedding)
+  }
+  return embeddings
+}
+
 export async function tcSaveMemory(collection: string, doc: string, meta: any, id: string) {
   tcLog('INFO', 'save memory', id, doc, JSON.stringify(meta))
-  const result = await fetchPost('memory/save', {
-    collection: collection,
-    doc: doc,
-    meta: meta,
-    id: id
-  })
-  return result
+  if (get(settings).embeddings === 'ada-002') {
+    const sentences = splitText(doc)
+    const combined = combineSentences(sentences, 2)
+    const embeddings = await getEmbeddings(combined)
+    const result = await fetchPost('memory/save_embeddings', {
+      collection: collection,
+      embeddings: embeddings,
+      docs: combined,
+      meta: meta,
+      id: id
+    })
+    return result
+  } else {
+    const result = await fetchPost('memory/save', {
+      collection: collection,
+      doc: doc,
+      meta: meta,
+      id: id
+    })
+    return result
+  }
 }
 
 export async function tcGetMemory(collection: string, text: string, n: number) {
-  const result = await fetchPost('memory/get', { collection: collection, text: text, n: n })
-  // tcLog('INFO', 'get memory', text, String(n), JSON.stringify(result))
-  return result
+  if (get(settings).embeddings === 'ada-002') {
+    const embeddings = await getEmbeddings([text])
+    const result = await fetchPost('memory/get_embeddings', {
+      collection: collection,
+      embeddings: embeddings,
+      n: n
+    })
+    return result
+  } else {
+    const result = await fetchPost('memory/get', { collection: collection, text: text, n: n })
+    return result
+  }
 }
 
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'

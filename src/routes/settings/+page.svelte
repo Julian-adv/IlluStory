@@ -48,6 +48,11 @@
     { value: 'ZH', name: 'Chinese (simplified)' }
   ]
 
+  const embeddings = [
+    { value: 'chromadb', name: 'chromadb' },
+    { value: 'ada-002', name: 'text-embedding-ada-002' }
+  ]
+
   onMount(async () => {
     await installDefaults()
     await loadSettings()
@@ -75,6 +80,13 @@
       placeholder="sk-xxxxx"
       help="Open AI API key."
       bind:value={$settings.openAiApiKey}
+      {save} />
+    <h1 class="text-lg font-semibold mt-4 col-span-3">Embeddings</h1>
+    <SelectField
+      label="Embedding"
+      items={embeddings}
+      help="Embeddings to use for the long term memory."
+      bind:value={$settings.embeddings}
       {save} />
     <h1 class="text-lg font-semibold mt-4 col-span-3">Stable Diffusion</h1>
     <StringField

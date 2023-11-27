@@ -389,7 +389,11 @@
     for (const char of $chars) {
       characters.push({ value: char.name, name: char.name })
     }
-    nextChar = characters[characters.length - 1].value
+    nextChar = characters[$session.nextSpeaker + 1].value
+  }
+
+  function onChangeNextChar(value: string) {
+    $session.nextSpeaker = $chars.findIndex(char => char.name === value)
   }
 
   function preparePrologue() {
@@ -1092,7 +1096,8 @@
           items={characters}
           size="sm"
           classStr="text-sm self-start text-center"
-          bind:value={nextChar} />
+          bind:value={nextChar}
+          save={onChangeNextChar} />
       </div>
       <Input bind:role bind:value={userInput} {sendInput} />
     </div>

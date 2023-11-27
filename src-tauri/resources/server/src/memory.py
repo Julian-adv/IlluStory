@@ -18,9 +18,23 @@ class Memory(BaseModel):
     id: str
 
 
+class MemoryEmbeddings(BaseModel):
+    collection: str
+    embeddings: list
+    docs: list
+    meta: dict
+    id: str
+
+
 class Query(BaseModel):
     collection: str
     text: str
+    n: int
+
+
+class QueryEmbeddings(BaseModel):
+    collection: str
+    embeddings: list
     n: int
 
 
@@ -65,12 +79,58 @@ def save_memory(memory: Memory):
     return {"ok": True}
 
 
+@router.post("/save_embeddings")
+def save_embeddings(memory: MemoryEmbeddings):
+    print(f"id: {memory.id} docs: {memory.docs}")
+    collection = client.get_or_create_collection(
+        name=memory.collection, metadata={"hnsw:space": "l2"}
+    )
+
+    metas = [memory.meta] * len(memory.embeddings)
+    ids = [f"{memory.id}{i:03}" for i in range(0, len(memory.embeddings))]
+
+    try:
+        collection.add(
+            embeddings=memory.embeddings,
+            documents=memory.docs,
+            metadatas=metas,
+            ids=ids,
+        )
+    except Exception as e:
+        print(f"collection.add error: {e}\n{memory.embeddings}\n{metas}\n{ids}")
+
+    return {"ok": True}
+
+
 @router.post("/get")
 def get_memory(query: Query):
     print(f"query {query.n}: {query.text}")
     collection = client.get_collection(name=query.collection)
     results = collection.query(
         query_texts=[query.text],
+        n_results=query.n,
+        where={"role": "assistant"},  # optional filter
+        # where_document={"$contains":"search_string"}  # optional filter
+    )
+    sorted_pairs = sorted(
+        zip(results["ids"][0], results["documents"][0]), key=lambda x: int(x[0])
+    )
+    sorted_ids, sorted_documents = zip(*sorted_pairs)
+    results["ids"][0] = list(sorted_ids)
+    results["documents"][0] = list(sorted_documents)
+
+    print(f"id: {results['ids'][0]}")
+    for sentence in results["documents"][0]:
+        print(f"get: {sentence}")
+    return {"results": results}
+
+
+@router.post("/get_embeddings")
+def get_embeddings(query: QueryEmbeddings):
+    print(f"query {query.n}: {query.embeddings[:5]}...")
+    collection = client.get_collection(name=query.collection)
+    results = collection.query(
+        query_embeddings=query.embeddings,
         n_results=query.n,
         where={"role": "assistant"},  # optional filter
         # where_document={"$contains":"search_string"}  # optional filter

@@ -86,10 +86,11 @@ export const defaultPreset: Preset = {
     typicalP: 1.0,
     tfs: 0.95,
     topA: 0.2,
+    minP: 0.05,
     repetitionPenalty: 1.15,
     repetitionPenaltyRange: 0,
-    repetitionPenaltySlope: 0,
     seed: -1,
+    samplerOrder: [6, 0, 1, 3, 4, 2, 5],
     mirostatMode: 0,
     mirostatTau: 5,
     mirostatEta: 0.1,
@@ -176,7 +177,8 @@ export const defaultSettings: Settings = {
   userLang: '',
   translateOutput: false,
   translateInput: false,
-  oneInstruction: true
+  oneInstruction: true,
+  embeddings: 'chromadb'
 }
 
 export const settings = writable(defaultSettings)

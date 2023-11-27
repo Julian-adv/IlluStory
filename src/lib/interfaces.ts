@@ -86,9 +86,10 @@ export interface KoboldAiParam {
   typicalP: number
   tfs: number
   topA: number
+  minP: number
   repetitionPenalty: number
   repetitionPenaltyRange: number
-  repetitionPenaltySlope: number
+  samplerOrder: number[]
   seed: number
   mirostatMode: number
   mirostatTau: number
@@ -181,6 +182,7 @@ export interface Settings {
   translateOutput: boolean
   translateInput: boolean
   oneInstruction: boolean
+  embeddings: string
 }
 
 export enum SortType {
