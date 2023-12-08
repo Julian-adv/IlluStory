@@ -6,7 +6,8 @@ import {
   readDir,
   readTextFile,
   writeTextFile,
-  type FileEntry
+  type FileEntry,
+  readBinaryFile
 } from '@tauri-apps/api/fs'
 import { homeDir, resolveResource } from '@tauri-apps/api/path'
 import { metadata } from 'tauri-plugin-fs-extra-api'
@@ -117,6 +118,18 @@ export async function tcReadTextFile(path: string): Promise<string> {
   }
 }
 
+export async function tcReadBinaryFile(path: string): Promise<Uint8Array> {
+  if (window.__TAURI_METADATA__) {
+    if (!isAbsolute(path)) {
+      path = get(settings).dataDir + '/' + path
+    }
+    return await readBinaryFile(path)
+  } else {
+    const result = await fetchPost('fs/readBinaryFile', { path: path })
+    return result.data
+  }
+}
+
 export async function tcWriteTextFile(path: string, text: string): Promise<void> {
   if (window.__TAURI_METADATA__) {
     if (!isAbsolute(path)) {
@@ -158,7 +171,7 @@ export async function tcMetadata(path: string) {
 
 interface OpenOption {
   defaultPath?: string
-  mode?: 'text' | 'image'
+  mode?: 'text' | 'binary' | 'image'
   filters: {
     name: string
     extensions: string[]

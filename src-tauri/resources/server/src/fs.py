@@ -83,6 +83,20 @@ async def read_text_file(path: Path):
         return {"text": ""}
 
 
+@router.post("/readBinaryFile")
+async def read_binary_file(path: Path):
+    path = os.path.join(directory, path.path)
+    path = path.replace("\\", "/")
+    print(path)
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+        return {"data": data}
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return {"data": ""}
+
+
 @router.post("/writeTextFile")
 async def write_text_file(content: PathText):
     path = os.path.join(directory, content.path)

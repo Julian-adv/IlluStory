@@ -15,7 +15,9 @@ import {
   userRole,
   userSetting
 } from './api'
-import { tcOpen, tcReadTextFile } from './tauriCompat'
+import { tcOpen, tcReadBinaryFile, tcReadTextFile } from './tauriCompat'
+import { decompressSync } from 'fflate'
+import { decode } from 'msgpackr'
 
 interface RisuPrompt {
   text: string
@@ -163,50 +165,49 @@ export async function loadPreset(path: string): Promise<Preset> {
   return preset
 }
 
-export async function importPreset(json: string): Promise<Preset> {
-  const tempPreset = JSON.parse(json)
+async function importPresetObj(risuPreset: any): Promise<Preset> {
   const preset = structuredClone(defaultPreset)
   preset.prompts = []
-  preset.title = tempPreset.name
-  preset.api = tempPreset.aiModel === 'textgen_webui' ? Api.Oobabooga : Api.OpenAi
-  preset.openAi.temperature = tempPreset.temperature / 100.0
-  preset.openAi.contextSize = tempPreset.maxContext
-  preset.openAi.maxTokens = tempPreset.maxResponse
-  preset.openAi.frequencyPenalty = tempPreset.frequencyPenalty / 100.0
-  preset.openAi.presencePenalty = tempPreset.PresensePenalty / 100.0
-  if (tempPreset.aiModel.startsWith('gpt')) {
-    preset.openAi.model = tempPreset.aiModel
+  preset.title = risuPreset.name
+  preset.api = risuPreset.aiModel === 'textgen_webui' ? Api.Oobabooga : Api.OpenAi
+  preset.openAi.temperature = risuPreset.temperature / 100.0
+  preset.openAi.contextSize = risuPreset.maxContext
+  preset.openAi.maxTokens = risuPreset.maxResponse
+  preset.openAi.frequencyPenalty = risuPreset.frequencyPenalty / 100.0
+  preset.openAi.presencePenalty = risuPreset.PresensePenalty / 100.0
+  if (risuPreset.aiModel.startsWith('gpt')) {
+    preset.openAi.model = risuPreset.aiModel
   }
-  if (tempPreset.textgenWebUIStreamURL) {
-    preset.oobabooga.apiUrl = tempPreset.textgenWebUIBlockingURL
+  if (risuPreset.textgenWebUIStreamURL) {
+    preset.oobabooga.apiUrl = risuPreset.textgenWebUIBlockingURL
   }
-  preset.oobabooga.maxTokens = Number(tempPreset.ooba.max_new_tokens)
-  preset.oobabooga.doSample = tempPreset.ooba.do_sample
-  preset.oobabooga.temperature = tempPreset.ooba.temperature
-  preset.oobabooga.topP = tempPreset.ooba.top_p
-  preset.oobabooga.typicalP = tempPreset.ooba.typical_p
-  preset.oobabooga.repetitionPenalty = tempPreset.ooba.repetition_penalty
-  preset.oobabooga.encoderRepetitionPenalty = tempPreset.ooba.encoder_repetition_penalty
-  preset.oobabooga.topK = tempPreset.ooba.top_k
-  preset.oobabooga.minLength = tempPreset.ooba.min_length
-  preset.oobabooga.noRepeatNgramSize = tempPreset.ooba.no_repeat_ngram_size
-  preset.oobabooga.numBeams = tempPreset.ooba.num_beams
-  preset.oobabooga.penaltyAlpha = tempPreset.ooba.penalty_alpha
-  preset.oobabooga.lengthPenalty = tempPreset.ooba.length_penalty
-  preset.oobabooga.earlyStopping = tempPreset.ooba.early_stopping
-  preset.oobabooga.seed = tempPreset.ooba.seed
-  preset.oobabooga.addBosToken = tempPreset.ooba.add_bos_token
-  preset.oobabooga.truncationLength = tempPreset.ooba.truncation_length
-  preset.oobabooga.banEosToken = tempPreset.ooba.ban_eos_token
-  preset.oobabooga.skipSpecialTokens = tempPreset.ooba.skip_special_tokens
-  preset.oobabooga.topA = tempPreset.ooba.top_a
-  preset.oobabooga.tfs = tempPreset.ooba.tfs
-  preset.oobabooga.userPrefix = tempPreset.ooba.formating.userPrefix
-  preset.oobabooga.assistantPrefix = tempPreset.ooba.formating.assistantPrefix
-  preset.oobabooga.systemPrefix = tempPreset.ooba.formating.systemPrefix
+  preset.oobabooga.maxTokens = Number(risuPreset.ooba.max_new_tokens)
+  preset.oobabooga.doSample = risuPreset.ooba.do_sample
+  preset.oobabooga.temperature = risuPreset.ooba.temperature
+  preset.oobabooga.topP = risuPreset.ooba.top_p
+  preset.oobabooga.typicalP = risuPreset.ooba.typical_p
+  preset.oobabooga.repetitionPenalty = risuPreset.ooba.repetition_penalty
+  preset.oobabooga.encoderRepetitionPenalty = risuPreset.ooba.encoder_repetition_penalty
+  preset.oobabooga.topK = risuPreset.ooba.top_k
+  preset.oobabooga.minLength = risuPreset.ooba.min_length
+  preset.oobabooga.noRepeatNgramSize = risuPreset.ooba.no_repeat_ngram_size
+  preset.oobabooga.numBeams = risuPreset.ooba.num_beams
+  preset.oobabooga.penaltyAlpha = risuPreset.ooba.penalty_alpha
+  preset.oobabooga.lengthPenalty = risuPreset.ooba.length_penalty
+  preset.oobabooga.earlyStopping = risuPreset.ooba.early_stopping
+  preset.oobabooga.seed = risuPreset.ooba.seed
+  preset.oobabooga.addBosToken = risuPreset.ooba.add_bos_token
+  preset.oobabooga.truncationLength = risuPreset.ooba.truncation_length
+  preset.oobabooga.banEosToken = risuPreset.ooba.ban_eos_token
+  preset.oobabooga.skipSpecialTokens = risuPreset.ooba.skip_special_tokens
+  preset.oobabooga.topA = risuPreset.ooba.top_a
+  preset.oobabooga.tfs = risuPreset.ooba.tfs
+  preset.oobabooga.userPrefix = risuPreset.ooba.formating.userPrefix
+  preset.oobabooga.assistantPrefix = risuPreset.ooba.formating.assistantPrefix
+  preset.oobabooga.systemPrefix = risuPreset.ooba.formating.systemPrefix
   sceneId = 0
-  if (tempPreset.promptTemplate) {
-    for (const prompt of tempPreset.promptTemplate) {
+  if (risuPreset.promptTemplate) {
+    for (const prompt of risuPreset.promptTemplate) {
       if (prompt.type === 'description') {
         convertCharSetting(preset, prompt, charSetting)
       } else if (prompt.type === 'persona') {
@@ -226,12 +227,12 @@ export async function importPreset(json: string): Promise<Preset> {
       }
     }
   } else {
-    if (tempPreset.formatingOrder) {
-      for (const promptType of tempPreset.formatingOrder) {
+    if (risuPreset.formatingOrder) {
+      for (const promptType of risuPreset.formatingOrder) {
         switch (promptType) {
           case 'main':
-            if (tempPreset.mainPrompt) {
-              convertMainPrompt(preset, tempPreset.mainPrompt)
+            if (risuPreset.mainPrompt) {
+              convertMainPrompt(preset, risuPreset.mainPrompt)
             }
             break
           case 'personaPrompt':
@@ -241,23 +242,23 @@ export async function importPreset(json: string): Promise<Preset> {
             preset.prompts.push({ id: sceneId++, content: '', role: charSetting })
             break
           case 'jailbreak':
-            if (tempPreset.jailbreak) {
-              convertMainPrompt(preset, tempPreset.jailbreak)
+            if (risuPreset.jailbreak) {
+              convertMainPrompt(preset, risuPreset.jailbreak)
             }
             break
           case 'authorNote':
-            if (tempPreset.authorNote) {
-              convertMainPrompt(preset, tempPreset.authorNote)
+            if (risuPreset.authorNote) {
+              convertMainPrompt(preset, risuPreset.authorNote)
             }
             break
           case 'lorebook':
-            if (tempPreset.lorebook) {
-              convertMainPrompt(preset, tempPreset.lorebook)
+            if (risuPreset.lorebook) {
+              convertMainPrompt(preset, risuPreset.lorebook)
             }
             break
           case 'globalNote':
-            if (tempPreset.globalNote) {
-              convertMainPrompt(preset, tempPreset.globalNote)
+            if (risuPreset.globalNote) {
+              convertMainPrompt(preset, risuPreset.globalNote)
             }
             break
           case 'chats':
@@ -273,6 +274,47 @@ export async function importPreset(json: string): Promise<Preset> {
   return preset
 }
 
+export async function importPreset(json: string): Promise<Preset> {
+  const risuPreset = JSON.parse(json)
+  return await importPresetObj(risuPreset)
+}
+
+// Copied from https://github.com/kwaroran/RisuAI
+export async function decryptBuffer(data: Uint8Array, keys: string) {
+  // hash the key to get a fixed length key value
+  const keyArray = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(keys))
+
+  const key = await window.crypto.subtle.importKey('raw', keyArray, 'AES-GCM', false, [
+    'encrypt',
+    'decrypt'
+  ])
+
+  // use web crypto api to encrypt the data
+  const result = await window.crypto.subtle.decrypt(
+    {
+      name: 'AES-GCM',
+      iv: new Uint8Array(12)
+    },
+    key,
+    data
+  )
+
+  return result
+}
+
+async function importBinaryPreset(path: string): Promise<Preset | null> {
+  const data = await tcReadBinaryFile(path)
+  const decoded = await decode(decompressSync(data))
+  console.log(decoded)
+  if (decoded.presetVersion === 0 && decoded.type === 'preset') {
+    const decrypted = await decryptBuffer(decoded.pres, 'risupreset')
+    const decryptedArray = new Uint8Array(decrypted)
+    const json = await decode(decryptedArray)
+    return importPresetObj(json)
+  }
+  return null
+}
+
 export async function loadPresetDialog(): Promise<[Preset | null, string]> {
   const selected = await tcOpen({ filters: [{ name: '*', extensions: [presetExt] }] })
   if (selected) {
@@ -283,10 +325,14 @@ export async function loadPresetDialog(): Promise<[Preset | null, string]> {
 }
 
 export async function importPresetDialog(): Promise<Preset | null> {
-  const json = await tcOpen({ mode: 'text', filters: [{ name: '*', extensions: ['json'] }] })
-  if (json) {
-    const preset = await importPreset(json)
-    return preset
+  const path = await tcOpen({ filters: [{ name: '*', extensions: ['json', 'risupreset'] }] })
+  if (path && typeof path === 'string') {
+    if (path.endsWith('risupreset')) {
+      return await importBinaryPreset(path)
+    } else if (path.endsWith('json')) {
+      const json = await tcReadTextFile(path)
+      return await importPreset(json)
+    }
   }
   return null
 }
