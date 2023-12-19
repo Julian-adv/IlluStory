@@ -108,3 +108,10 @@ export async function killServer() {
     // ignore
   }
 }
+
+export function labelColor(
+  value: number | boolean | string,
+  defaultValue: number | boolean | string
+) {
+  return value !== defaultValue ? 'text-blue-700' : 'text-black'
+}

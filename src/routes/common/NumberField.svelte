@@ -1,10 +1,11 @@
 <script lang="ts">
   import { Label, Input, Helper, Range } from 'flowbite-svelte'
   import { onMount } from 'svelte'
-  import { helperClassHidden, helperClassVisible } from '$lib'
+  import { helperClassHidden, helperClassVisible, labelColor } from '$lib'
 
   export let label = ''
   export let value = 0.0
+  export let defaultValue = 0.0
   export let min = 0.0
   export let max = 1.0
   export let help = ''
@@ -27,7 +28,10 @@
 </script>
 
 <div class="w-36 flex p-1">
-  <Label for={label} class="text-base self-center text-right w-full">{label}</Label>
+  <Label
+    for={label}
+    class="text-base self-center text-right w-full {labelColor(value, defaultValue)}"
+    >{label}</Label>
 </div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="p-1 flex" on:mouseenter={showHelper} on:mouseleave={hideHelper}>

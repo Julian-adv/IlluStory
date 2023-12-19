@@ -44,36 +44,40 @@ export interface OpenAiParam {
 
 export interface OobaboogaParam {
   apiUrl: string
+  mode: 'chat' | 'instruct' | 'chat-instruct'
   preset: string
-  maxTokens: number
   temperature: number
-  topP: number
-  topK: number
-  typicalP: number
+  temperature_last: boolean
+  top_p: number
+  min_p: number
+  top_k: number
+  repetition_penalty: number
+  presence_penalty: number
+  frequency_penalty: number
+  repetition_penalty_range: number
+  typical_p: number
   tfs: number
-  topA: number
-  repetitionPenalty: number
-  repetitionPenaltyRange: number
-  encoderRepetitionPenalty: number
-  noRepeatNgramSize: number
-  minLength: number
+  top_a: number
+  epsilon_cutoff: number
+  eta_cutoff: number
+  guidance_scale: number
+  penalty_alpha: number
+  mirostat_mode: number
+  mirostat_tau: number
+  mirostat_eta: number
+  do_sample: boolean
+  encoder_repetition_penalty: number
+  no_repeat_ngram_size: number
+  min_length: number
+  num_beams: number
+  length_penalty: number
+  early_stopping: boolean
   seed: number
-  doSample: boolean
-  mirostatMode: number
-  mirostatTau: number
-  mirostatEta: number
-  penaltyAlpha: number
-  numBeams: number
-  lengthPenalty: number
-  earlyStopping: boolean
-  truncationLength: number
-  banEosToken: boolean
-  addBosToken: boolean
-  skipSpecialTokens: boolean
-  contextSize: number
-  systemPrefix: string
-  userPrefix: string
-  assistantPrefix: string
+  max_tokens: number
+  truncation_length: number
+  ban_eos_token: boolean
+  add_bos_token: boolean
+  skip_special_tokens: boolean
 }
 
 export interface KoboldAiParam {

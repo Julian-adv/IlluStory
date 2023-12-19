@@ -85,8 +85,6 @@ export function changeApi(api: Api) {
 
 function systemPrefix(preset: Preset) {
   switch (preset.api) {
-    case Api.Oobabooga:
-      return preset.oobabooga.systemPrefix
     case Api.KoboldAi:
       return preset.koboldAi.systemPrefix
     default:
@@ -96,8 +94,6 @@ function systemPrefix(preset: Preset) {
 
 function assistantPrefix(preset: Preset) {
   switch (preset.api) {
-    case Api.Oobabooga:
-      return preset.oobabooga.assistantPrefix
     case Api.KoboldAi:
       return preset.koboldAi.assistantPrefix
     default:
@@ -107,8 +103,6 @@ function assistantPrefix(preset: Preset) {
 
 function userPrefix(preset: Preset) {
   switch (preset.api) {
-    case Api.Oobabooga:
-      return preset.oobabooga.userPrefix
     case Api.KoboldAi:
       return preset.koboldAi.userPrefix
     default:
@@ -206,7 +200,7 @@ export function tokensOver(preset: Preset, tokens: number) {
     case Api.OpenAi:
       return tokens + preset.openAi.maxTokens > preset.openAi.contextSize
     case Api.Oobabooga:
-      return tokens + preset.oobabooga.maxTokens > preset.oobabooga.contextSize
+      return tokens + preset.oobabooga.max_tokens > preset.oobabooga.truncation_length
     case Api.KoboldAi:
       return tokens + preset.koboldAi.maxTokens > preset.koboldAi.contextSize
   }

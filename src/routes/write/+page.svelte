@@ -54,9 +54,21 @@
     { value: Api.KoboldAi, name: 'Kobold AI' }
   ]
   const parameterPresets = [
-    { value: 'tfs-with-top-a', name: 'tfs-with-top-a' },
-    { value: 'divine intellect', name: 'Divine Intellect' },
-    { value: 'mirostat', name: 'Mirostat' }
+    { value: 'Asterism', name: 'Asterism' },
+    { value: 'Big O', name: 'Big O' },
+    { value: 'Contrastive Search', name: 'Contrastive Search' },
+    { value: 'Debug-deterministic', name: 'Debug-deterministic' },
+    { value: 'Divine Intellect', name: 'Divine Intellect' },
+    { value: 'LLaMA-Precise', name: 'LLaMA-Precise' },
+    { value: 'Midnight Enigma', name: 'Midnight Enigma' },
+    { value: 'Mirostat', name: 'Mirostat' },
+    { value: 'Shortwave', name: 'Shortwave' },
+    { value: 'Space Alien', name: 'Space Alien' },
+    { value: 'StarChat', name: 'StarChat' },
+    { value: 'Titanic', name: 'Titanic' },
+    { value: 'Yara', name: 'Yara' },
+    { value: 'simple-1', name: 'simple-1' },
+    { value: 'tfs-with-top-a', name: 'tfs-with-top-a' }
   ]
   let autoSave = true
   let totalTokens = 0
@@ -143,17 +155,6 @@
     }
   }
 
-  // function update(i: number, value: string) {
-  //   if ($preset.prompts[i].content !== value) {
-  //     $preset.prompts[i].content = value
-  //     if ($prologues[i]) {
-  //       // invalidate oldScenes[i]
-  //       $prologues[i].content = ''
-  //     }
-  //   }
-  //   autoSaveFunc()
-  // }
-
   function apiChange(value: string) {
     changeApi(value as Api)
     autoSaveFunc()
@@ -194,110 +195,141 @@
     goto('/write_scene')
   }
 
-  // function onChangeRangeStart(i: number) {
-  //   return (value: string | number) => {
-  //     $preset.prompts[i].rangeStart = Number(value)
-  //     autoSaveFunc()
-  //   }
-  // }
-
-  // function onChangeRangeEnd(i: number) {
-  //   return (value: string | number) => {
-  //     $preset.prompts[i].rangeEnd = String(value)
-  //     autoSaveFunc()
-  //   }
-  // }
-
-  const miroStatPreset = {
-    temperature: 1.0,
-    topP: 1.0,
-    topK: 0,
-    typicalP: 1.0,
-    epsilonCutoff: 0.0,
-    etaCutoff: 0.0,
-    tfs: 1.0,
-    topA: 0.0,
-    repetitionPenalty: 1.0,
-    repetitionPenaltyRange: 0,
-    encoderRepetitionPenalty: 1.0,
-    noRepeatNgramSize: 0,
-    minLength: 0,
-    mirostatMode: 2,
-    mirostatTau: 8,
-    mirostatEta: 0.1,
-    penaltyAlpha: 0,
-    numBeams: 1,
-    lengthPenalty: 1.0
+  const asterismPreset = {
+    temperature: 1.68,
+    top_p: 0.17,
+    repetition_penalty: 1.02,
+    top_k: 77
   }
 
-  const tfsWithTopAPreset = {
-    temperature: 0.7,
-    topP: 1,
-    topK: 0,
-    typicalP: 1.0,
-    epsilonCutoff: 0.0,
-    etaCutoff: 0.0,
-    tfs: 0.95,
-    topA: 0.2,
-    repetitionPenalty: 1.15,
-    repetitionPenaltyRange: 0,
-    encoderRepetitionPenalty: 1.0,
-    noRepeatNgramSize: 0,
-    minLength: 0,
-    mirostatMode: 0,
-    mirostatTau: 5,
-    mirostatEta: 0.1,
-    penaltyAlpha: 0,
-    numBeams: 1,
-    lengthPenalty: 1.0
+  const bigOPreset = {
+    temperature: 0.87,
+    top_p: 0.99,
+    typical_p: 0.68,
+    tfs: 0.68,
+    repetition_penalty: 1.01,
+    top_k: 85
+  }
+
+  const contrastiveSearchPreset = {
+    do_sample: false,
+    top_k: 4,
+    penalty_alpha: 0.3
+  }
+
+  const debugDeterministicPreset = {
+    do_sample: false
   }
 
   const divineIntellectPreset = {
     temperature: 1.31,
-    topP: 0.14,
-    topK: 49,
-    typicalP: 1.0,
-    epsilonCutoff: 0.0,
-    etaCutoff: 0.0,
-    tfs: 1,
-    topA: 0,
-    repetitionPenalty: 1.17,
-    repetitionPenaltyRange: 0,
-    encoderRepetitionPenalty: 1.0,
-    noRepeatNgramSize: 0,
-    minLength: 0,
-    mirostatMode: 0,
-    mirostatTau: 5,
-    mirostatEta: 0.1,
-    penaltyAlpha: 0,
-    numBeams: 1,
-    lengthPenalty: 1.0
+    top_p: 0.14,
+    repetition_penalty: 1.17,
+    top_k: 49
+  }
+
+  const llamaPrecisePreset = {
+    temperature: 0.7,
+    top_p: 0.1,
+    repetition_penalty: 1.18,
+    top_k: 40
+  }
+
+  const midnightEnigmaPreset = {
+    temperature: 0.98,
+    top_p: 0.37,
+    repetition_penalty: 1.18,
+    top_k: 100
+  }
+
+  const mirostatPreset = {
+    mirostat_mode: 2,
+    mirostat_tau: 8
+  }
+
+  const shortwavePreset = {
+    temperature: 1.53,
+    top_p: 0.64,
+    repetition_penalty: 1.07,
+    top_k: 33
+  }
+
+  const spaceAlienPreset = {
+    temperature: 1.31,
+    top_p: 0.29,
+    repetition_penalty: 1.09,
+    top_k: 72
+  }
+
+  const starChatPreset = {
+    temperature: 0.2,
+    top_p: 0.95,
+    top_k: 50
+  }
+
+  const titanicPreset = {
+    temperature: 1.01,
+    top_p: 0.21,
+    repetition_penalty: 1.21,
+    encoder_repetition_penalty: 1.07,
+    top_k: 91
+  }
+
+  const yaraPreset = {
+    temperature: 0.82,
+    top_p: 0.21,
+    repetition_penalty: 1.19,
+    top_k: 72
+  }
+
+  const simple1Preset = {
+    temperature: 0.7,
+    top_p: 0.9,
+    repetition_penalty: 1.15,
+    top_k: 20
+  }
+
+  const tfsWithTopAPreset = {
+    temperature: 0.7,
+    tfs: 0.95,
+    top_a: 0.2,
+    repetition_penalty: 1.15
+  }
+
+  interface StringMap {
+    [key: string]: any
+  }
+
+  const nameToPreset: StringMap = {
+    Asterism: asterismPreset,
+    'Big O': bigOPreset,
+    'Contrastive Search': contrastiveSearchPreset,
+    'Debug-deterministic': debugDeterministicPreset,
+    'Divine Intellect': divineIntellectPreset,
+    'LLaMA-Precise': llamaPrecisePreset,
+    'Midnight Enigma': midnightEnigmaPreset,
+    Mirostat: mirostatPreset,
+    Shortwave: shortwavePreset,
+    'Space Alien': spaceAlienPreset,
+    StarChat: starChatPreset,
+    Titanic: titanicPreset,
+    Yara: yaraPreset,
+    'simple-1': simple1Preset,
+    'tfs-with-top-a': tfsWithTopAPreset
   }
 
   function onChangeParameterPreset(value: string) {
-    let paramPreset
-    switch (value) {
-      case 'mirostat':
-        paramPreset = miroStatPreset
-        break
-      case 'tfs-with-top-a':
-        paramPreset = tfsWithTopAPreset
-        break
-      case 'divine intellect':
-        paramPreset = divineIntellectPreset
-        break
-      default:
-        paramPreset = tfsWithTopAPreset
-        break
-    }
+    let paramPreset = nameToPreset[value]
     $preset.oobabooga = {
-      ...$preset.oobabooga,
+      ...defaultPreset.oobabooga,
       ...paramPreset
     }
+    $preset.oobabooga.preset = value
     $preset.koboldAi = {
-      ...$preset.koboldAi,
+      ...defaultPreset.koboldAi,
       ...paramPreset
     }
+    console.log('temperature', defaultPreset.oobabooga.temperature)
     autoSaveFunc()
   }
 
@@ -466,9 +498,10 @@
     {#if $preset.api === Api.Oobabooga}
       <StringField
         label="URL"
-        help="For example, http://localhost:5000/api, or ws://localhost:5005/api/v1/stream for streaming."
+        help="For example, http://localhost:5000/v1"
         placeholder=""
         bind:value={$preset.oobabooga.apiUrl}
+        defaultValue={defaultPreset.oobabooga.apiUrl}
         save={autoSaveFunc} />
       <SelectField
         label="Parameter preset"
@@ -481,192 +514,256 @@
         label="Temperature"
         help="Primary factor to control randomness of outputs. 0 = deterministic (only the most likely token is used). Higher value = more randomness."
         bind:value={$preset.oobabooga.temperature}
-        min={0.0}
-        max={1.0}
+        defaultValue={defaultPreset.oobabooga.temperature}
+        min={0.01}
+        max={1.99}
+        save={autoSaveFunc} />
+      <CheckField
+        label="Temperature last"
+        help="Makes temperature the last sampler instead of the first. With this, you can remove low probability tokens with a sampler like min_p and then use a high temperature to make the model creative without losing coherency."
+        bind:value={$preset.oobabooga.temperature_last}
+        defaultValue={defaultPreset.oobabooga.temperature_last}
         save={autoSaveFunc} />
       <NumberField
         label="Top p"
         help="If not set to 1, select tokens with probabilities adding up to less than this number. Higher value = higher range of possible random results."
-        bind:value={$preset.oobabooga.topP}
+        bind:value={$preset.oobabooga.top_p}
+        defaultValue={defaultPreset.oobabooga.top_p}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Min p"
+        help="Tokens with probability smaller than `(min_p) * (probability of the most likely token)` are discarded. This is the same as top_a but without squaring the probability."
+        bind:value={$preset.oobabooga.min_p}
+        defaultValue={defaultPreset.oobabooga.min_p}
         min={0.0}
         max={1.0}
         save={autoSaveFunc} />
       <NumberField
         label="Top k"
         help="Similar to top_p, but select instead only the top_k most likely tokens. Higher value = higher range of possible random results."
-        bind:value={$preset.oobabooga.topK}
+        bind:value={$preset.oobabooga.top_k}
+        defaultValue={defaultPreset.oobabooga.top_k}
         min={0}
         max={100}
         step={1}
         save={autoSaveFunc} />
       <NumberField
-        label="Typical p"
-        help="If not set to 1, select only tokens that are at least this much more likely to appear than random tokens, given the prior text."
-        bind:value={$preset.oobabooga.typicalP}
-        min={0.0}
-        max={1.0}
-        save={autoSaveFunc} />
-      <NumberField
-        label="TFS"
-        help="Tail Free Sampling, https://www.trentonbricken.com/Tail-Free-Sampling/"
-        bind:value={$preset.oobabooga.tfs}
-        min={0.0}
-        max={1.0}
-        save={autoSaveFunc} />
-      <NumberField
-        label="Top a"
-        help=""
-        bind:value={$preset.oobabooga.topA}
-        min={0.0}
-        max={1.0}
-        save={autoSaveFunc} />
-      <NumberField
         label="Repetition penalty"
         help="Exponential penalty factor for repeating prior tokens. 1 means no penalty, higher value = less repetition, lower value = more repetition."
-        bind:value={$preset.oobabooga.repetitionPenalty}
+        bind:value={$preset.oobabooga.repetition_penalty}
+        defaultValue={defaultPreset.oobabooga.repetition_penalty}
         min={1.0}
         max={2.0}
         save={autoSaveFunc} />
       <NumberField
+        label="Presence penalty"
+        help="Similar to repetition_penalty, but with an additive offset on the raw token scores instead of a multiplicative factor. It may generate better results. 0 means no penalty, higher value = less repetition, lower value = more repetition."
+        bind:value={$preset.oobabooga.presence_penalty}
+        defaultValue={defaultPreset.oobabooga.presence_penalty}
+        min={-2.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Frequency penalty"
+        help="Repetition penalty that scales based on how many times the token has appeared in the context. Be careful with this; there's no limit to how much a token can be penalized."
+        bind:value={$preset.oobabooga.frequency_penalty}
+        defaultValue={defaultPreset.oobabooga.frequency_penalty}
+        min={-2.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
         label="Repetition penalty range"
-        help="Higher means it reads farther back into it's memory to try to not repeat itself."
-        bind:value={$preset.oobabooga.repetitionPenaltyRange}
+        help="The number of most recent tokens to consider for repetition penalty. 0 makes all tokens be used."
+        bind:value={$preset.oobabooga.repetition_penalty_range}
+        defaultValue={defaultPreset.oobabooga.repetition_penalty_range}
         min={0}
         max={4096}
         step={1}
         save={autoSaveFunc} />
       <NumberField
-        label="Encoder repetition penalty"
-        help="Also known as the “Hallucinations filter”. Used to penalize tokens that are not in the prior text. Higher value = more likely to stay in context, lower value = more likely to diverge."
-        bind:value={$preset.oobabooga.encoderRepetitionPenalty}
-        min={0.8}
-        max={1.5}
+        label="Typical p"
+        help="If not set to 1, select only tokens that are at least this much more likely to appear than random tokens, given the prior text."
+        bind:value={$preset.oobabooga.typical_p}
+        defaultValue={defaultPreset.oobabooga.typical_p}
+        min={0.0}
+        max={1.0}
         save={autoSaveFunc} />
       <NumberField
-        label="No repeat ngram size"
-        help="If not set to 0, specifies the length of token sets that are completely blocked from repeating at all. Higher values = blocks larger phrases, lower values = blocks words or letters from repeating. Only 0 or high values are a good idea in most cases."
-        bind:value={$preset.oobabooga.noRepeatNgramSize}
-        min={0}
-        max={20}
-        step={1}
+        label="TFS"
+        help="Tries to detect a tail of low-probability tokens in the distribution and removes those tokens. See [this blog post](https://www.trentonbricken.com/Tail-Free-Sampling/) for details. The closer to 0, the more discarded tokens."
+        bind:value={$preset.oobabooga.tfs}
+        defaultValue={defaultPreset.oobabooga.tfs}
+        min={0.0}
+        max={1.0}
         save={autoSaveFunc} />
       <NumberField
-        label="Min length"
-        help="Minimum generation length in tokens."
-        bind:value={$preset.oobabooga.minLength}
-        min={0}
-        max={2000}
-        step={1}
+        label="Top a"
+        help="Tokens with probability smaller than `(top_a) * (probability of the most likely token)^2` are discarded."
+        bind:value={$preset.oobabooga.top_a}
+        defaultValue={defaultPreset.oobabooga.top_a}
+        min={0.0}
+        max={1.0}
         save={autoSaveFunc} />
-      <StringField label="Seed" bind:value={$preset.oobabooga.seed} save={autoSaveFunc} />
-      <CheckField
-        label="Do sample"
-        help="Whether or not to use sampling ; use greedy decoding otherwise."
-        bind:value={$preset.oobabooga.doSample}
+      <NumberField
+        label="Epsilon cutoff"
+        help="In units of 1e-4; a reasonable value is 3. This sets a probability floor below which tokens are excluded from being sampled."
+        bind:value={$preset.oobabooga.epsilon_cutoff}
+        defaultValue={defaultPreset.oobabooga.epsilon_cutoff}
+        min={0.0}
+        max={9.0}
+        step={0.01}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Eta cutoff"
+        help="In units of 1e-4; a reasonable value is 3. The main parameter of the special Eta Sampling technique. See [this paper](https://arxiv.org/pdf/2210.15191.pdf) for a description."
+        bind:value={$preset.oobabooga.eta_cutoff}
+        defaultValue={defaultPreset.oobabooga.eta_cutoff}
+        min={0.0}
+        max={20.0}
+        step={0.01}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Guidance scale"
+        help="The main parameter for Classifier-Free Guidance (CFG). [The paper](https://arxiv.org/pdf/2306.17806.pdf) suggests that 1.5 is a good value. It can be used in conjunction with a negative prompt or not."
+        bind:value={$preset.oobabooga.guidance_scale}
+        defaultValue={defaultPreset.oobabooga.guidance_scale}
+        min={-0.5}
+        max={2.5}
+        step={0.05}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Penalty alpha"
+        help="Contrastive Search is enabled by setting this to greater than zero and unchecking “do_sample”. It should be used with a low value of top_k, for instance, top_k = 4."
+        bind:value={$preset.oobabooga.penalty_alpha}
+        defaultValue={defaultPreset.oobabooga.penalty_alpha}
+        min={0.0}
+        max={5.0}
+        step={0.01}
         save={autoSaveFunc} />
       <NumberField
         label="Mirostat mode"
-        help="Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text."
-        bind:value={$preset.oobabooga.mirostatMode}
+        help="Activates the Mirostat sampling technique. It aims to control perplexity during sampling. See the [paper](https://arxiv.org/abs/2007.14966)."
+        bind:value={$preset.oobabooga.mirostat_mode}
+        defaultValue={defaultPreset.oobabooga.mirostat_mode}
         min={0}
         max={2}
         step={1}
         save={autoSaveFunc} />
       <NumberField
         label="Mirostat tau"
-        help="Set the Mirostat target entropy, parameter tau."
-        bind:value={$preset.oobabooga.mirostatTau}
+        help="Set the Mirostat target entropy, parameter tau. According to the Preset Arena, 8 is a good value."
+        bind:value={$preset.oobabooga.mirostat_tau}
+        defaultValue={defaultPreset.oobabooga.mirostat_tau}
         min={0}
         max={10}
         save={autoSaveFunc} />
       <NumberField
         label="Mirostat eta"
-        help="Set the Mirostat learning rate, parameter eta."
-        bind:value={$preset.oobabooga.mirostatEta}
+        help="Set the Mirostat learning rate, parameter eta. According to the Preset Arena, 0.1 is a good value."
+        bind:value={$preset.oobabooga.mirostat_eta}
+        defaultValue={defaultPreset.oobabooga.mirostat_eta}
         min={0}
         max={1}
         save={autoSaveFunc} />
+      <CheckField
+        label="Do sample"
+        help="When unchecked, sampling is entirely disabled, and greedy decoding is used instead (the most likely token is always picked)."
+        bind:value={$preset.oobabooga.do_sample}
+        defaultValue={defaultPreset.oobabooga.do_sample}
+        save={autoSaveFunc} />
       <NumberField
-        label="Penalty alpha"
-        help="Contrastive Search is enabled by setting this to greater than zero and unchecking “do_sample”. It should be used with a low value of top_k, for instance, top_k = 4."
-        bind:value={$preset.oobabooga.penaltyAlpha}
-        min={0.0}
-        max={5.0}
+        label="Encoder repetition penalty"
+        help="Also known as the “Hallucinations filter”. Used to penalize tokens that are not in the prior text. Higher value = more likely to stay in context, lower value = more likely to diverge."
+        bind:value={$preset.oobabooga.encoder_repetition_penalty}
+        defaultValue={defaultPreset.oobabooga.encoder_repetition_penalty}
+        min={0.8}
+        max={1.5}
+        save={autoSaveFunc} />
+      <NumberField
+        label="No repeat ngram size"
+        help="If not set to 0, specifies the length of token sets that are completely blocked from repeating at all. Higher values = blocks larger phrases, lower values = blocks words or letters from repeating. Only 0 or high values are a good idea in most cases."
+        bind:value={$preset.oobabooga.no_repeat_ngram_size}
+        defaultValue={defaultPreset.oobabooga.no_repeat_ngram_size}
+        min={0}
+        max={20}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Min length"
+        help="Minimum generation length in tokens. This is a built-in parameter in the transformers library that has never been very useful. Typically you want to check 'Ban the eos_token' instead."
+        bind:value={$preset.oobabooga.min_length}
+        defaultValue={defaultPreset.oobabooga.min_length}
+        min={0}
+        max={2000}
+        step={1}
         save={autoSaveFunc} />
       <NumberField
         label="Number of beams"
-        help="For Beam Search, along with length_penalty and early_stopping."
-        bind:value={$preset.oobabooga.numBeams}
+        help="Number of beams for beam search. 1 means no beam search."
+        bind:value={$preset.oobabooga.num_beams}
+        defaultValue={defaultPreset.oobabooga.num_beams}
         min={1}
         max={20}
         step={1}
         save={autoSaveFunc} />
       <NumberField
         label="Length penalty"
-        help="length_penalty > 0.0 promotes longer sequences, while length_penalty < 0.0 encourages shorter sequences."
-        bind:value={$preset.oobabooga.lengthPenalty}
+        help="Used by beam search only. `length_penalty > 0.0` promotes longer sequences, while `length_penalty < 0.0` encourages shorter sequences."
+        bind:value={$preset.oobabooga.length_penalty}
+        defaultValue={defaultPreset.oobabooga.length_penalty}
         min={-5.0}
         max={5.0}
         step={0.1}
         save={autoSaveFunc} />
       <CheckField
         label="Early stopping"
-        help="Controls the stopping condition for beam-based methods, like beam-search."
-        bind:value={$preset.oobabooga.earlyStopping}
+        help="Used by beam search only. When checked, the generation stops as soon as there are 'num_beams' complete candidates; otherwise, a heuristic is applied and the generation stops when is it very unlikely to find better candidate."
+        bind:value={$preset.oobabooga.early_stopping}
+        defaultValue={defaultPreset.oobabooga.early_stopping}
+        save={autoSaveFunc} />
+      <StringField
+        label="Seed"
+        help="Set the Pytorch seed to this number. Note that some loaders do not use Pytorch (notably llama.cpp), and others are not deterministic (notably ExLlama v1 and v2). For these loaders, the seed has no effect."
+        bind:value={$preset.oobabooga.seed}
+        defaultValue={defaultPreset.oobabooga.seed}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Max tokens"
+        help="The maximum number of tokens to generate in the completion."
+        bind:value={$preset.oobabooga.max_tokens}
+        defaultValue={defaultPreset.oobabooga.max_tokens}
+        min={48}
+        max={1024}
+        step={8}
         save={autoSaveFunc} />
       <NumberField
         label="Truncation length"
-        help="The leftmost tokens are removed if the prompt exceeds this length. Most models require this to be at most 2048."
-        bind:value={$preset.oobabooga.truncationLength}
+        help="The leftmost tokens are removed if the prompt exceeds this length. Most models require this to be at most 2048. If set 0, use oobabooga's parameter."
+        bind:value={$preset.oobabooga.truncation_length}
+        defaultValue={defaultPreset.oobabooga.truncation_length}
         min={0}
         max={16384}
         step={256}
         save={autoSaveFunc} />
       <CheckField
         label="Ban the EOS token"
-        help="Forces the model to never end the generation prematurely."
-        bind:value={$preset.oobabooga.banEosToken}
+        help="One of the possible tokens that a model can generate is the EOS (End of Sequence) token. When it is generated, the generation stops prematurely. When this parameter is checked, that token is banned from being generated, and the generation will always generate 'max_new_tokens' tokens."
+        bind:value={$preset.oobabooga.ban_eos_token}
+        defaultValue={defaultPreset.oobabooga.ban_eos_token}
         save={autoSaveFunc} />
       <CheckField
         label="Add the BOS token to the beginning of prompts"
-        help="Disabling this can make the replies more creative."
-        bind:value={$preset.oobabooga.addBosToken}
+        help="By default, the tokenizer will add a BOS (Beginning of Sequence) token to your prompt. During training, BOS tokens are used to separate different documents. If unchecked, no BOS token will be added, and the model will interpret your prompt as being in the middle of a document instead of at the start of one. This significantly changes the output and can make it more creative."
+        bind:value={$preset.oobabooga.add_bos_token}
+        defaultValue={defaultPreset.oobabooga.add_bos_token}
         save={autoSaveFunc} />
       <CheckField
         label="Skip special tokens"
-        help="Some specific models need this unset."
-        bind:value={$preset.oobabooga.skipSpecialTokens}
-        save={autoSaveFunc} />
-      <TextField
-        label="System prefix"
-        help="String to prefix system role prompt."
-        bind:value={$preset.oobabooga.systemPrefix}
-        save={autoSaveFunc} />
-      <TextField
-        label="User prefix"
-        help="String to prefix user role prompt."
-        bind:value={$preset.oobabooga.userPrefix}
-        save={autoSaveFunc} />
-      <TextField
-        label="Assistant prefix"
-        help="String to prefix assistant role prompt."
-        bind:value={$preset.oobabooga.assistantPrefix}
-        save={autoSaveFunc} />
-      <NumberField
-        label="Max tokens"
-        help="The maximum number of tokens to generate in the completion."
-        bind:value={$preset.oobabooga.maxTokens}
-        min={48}
-        max={1024}
-        step={8}
-        save={autoSaveFunc} />
-      <NumberField
-        label="Context size"
-        help="Represents the model's context size. If story tokens near this, the old chats will be stored and removed."
-        bind:value={$preset.oobabooga.contextSize}
-        min={512}
-        max={32768}
-        step={8}
+        help="When decoding the generated tokens, skip special tokens from being converted to their text representation. Otherwise, BOS appears as `<s>`, EOS as `</s>`, etc."
+        bind:value={$preset.oobabooga.skip_special_tokens}
+        defaultValue={defaultPreset.oobabooga.skip_special_tokens}
         save={autoSaveFunc} />
     {/if}
     {#if $preset.api === Api.KoboldAi}
@@ -748,7 +845,11 @@
         max={4096}
         step={1}
         save={autoSaveFunc} />
-      <StringField label="Seed" bind:value={$preset.koboldAi.seed} save={autoSaveFunc} />
+      <StringField
+        label="Seed"
+        help="Set the Pytorch seed to this number. Note that some loaders do not use Pytorch (notably llama.cpp), and others are not deterministic (notably ExLlama v1 and v2). For these loaders, the seed has no effect."
+        bind:value={$preset.koboldAi.seed}
+        save={autoSaveFunc} />
       <NumberListField
         label="Sampler order"
         help="The order of the sampler, e.g. 6,0,1,3,4,2,5"
