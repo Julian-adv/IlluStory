@@ -1,4 +1,4 @@
-import { Api, type Preset, type SceneType, type Session } from './interfaces'
+import { Api, type Message, type Preset, type SceneType, type Session } from './interfaces'
 import { sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
 import { sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
 import { isWithinTokenLimit } from 'gpt-tokenizer'
@@ -240,4 +240,130 @@ export async function generatePromptCheck(
     }
   }
   return { prompt, tokens }
+}
+
+function convertRole(role: string) {
+  switch (role) {
+    case systemRole:
+    case charSetting:
+    case endTag:
+      return systemRole
+    case assistantRole:
+      return assistantRole
+    case userRole:
+    case userSetting:
+      return userRole
+    default:
+      return systemRole
+  }
+}
+
+export function generateMessages(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  memories: string,
+  summary: boolean
+) {
+  const messages: Message[] = []
+  if (summary) {
+    messages.push({ role: systemRole, content: preset.summarizePrompt })
+    for (const scene of dialogues) {
+      messages.push({ role: scene.role, content: scene.content })
+    }
+  } else {
+    let sentChatHistory = false
+    for (let i = 0; i < prologues.length; i++) {
+      const scene = prologues[i]
+      switch (scene.role) {
+        case startStory:
+          break
+        case chatHistory: {
+          const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
+          for (const mesg of dialogues.slice(start, end)) {
+            messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
+          }
+          sentChatHistory = true
+          break
+        }
+        case assocMemory: {
+          if (memories) {
+            messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
+            const nextScene = prologues[i + 1]
+            if (nextScene.role === endTag) {
+              messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
+              i++
+            }
+          } else {
+            if (prologues[i + 1].role === endTag) {
+              i++
+            }
+          }
+          break
+        }
+        case lorebookRole: {
+          for (const rule of get(lorebook).rules) {
+            if (rule.triggered) {
+              if (scene.textContent) {
+                messages.push({ role: systemRole, content: scene.textContent })
+              }
+              messages.push({ role: systemRole, content: rule.textContent })
+            }
+          }
+          break
+        }
+        default:
+          messages.push({
+            role: convertRole(scene.role),
+            content: scene.textContent ?? scene.content
+          })
+      }
+    }
+    if (!sentChatHistory) {
+      for (const scene of dialogues) {
+        messages.push({ role: scene.role, content: scene.content })
+      }
+    }
+  }
+  return messages
+}
+
+export async function generateMessagesCheck(
+  preset: Preset,
+  prologues: SceneType[],
+  dialogues: SceneType[],
+  memories: string,
+  session: Session,
+  summary: boolean
+) {
+  let messages: Message[] = []
+  let tokens = 0
+  while (session.startIndex < dialogues.length || dialogues.length === 0) {
+    messages = generateMessages(
+      preset,
+      prologues,
+      dialogues.slice(session.startIndex),
+      memories,
+      summary
+    )
+    tokens = 0
+    for (const mesg of messages) {
+      tokens += countTokensApi(mesg.content)
+    }
+    if (tokensOver(preset, tokens)) {
+      await saveMemory(dialogues[session.startIndex])
+      session.startIndex++
+    } else {
+      break
+    }
+  }
+  return { messages, tokens }
+}
+
+export function apiUrl(instructModel: boolean) {
+  if (instructModel) {
+    return '/completions'
+  } else {
+    return '/chat/completions'
+  }
 }

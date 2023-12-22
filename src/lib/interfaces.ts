@@ -44,6 +44,7 @@ export interface OpenAiParam {
 
 export interface OobaboogaParam {
   apiUrl: string
+  model: string
   mode: 'chat' | 'instruct' | 'chat-instruct'
   preset: string
   temperature: number

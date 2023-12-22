@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, Usage, ChatResult, Session } from './interfaces'
-import { user } from './store'
-import { assistantRole, countTokensApi, generatePromptCheck } from './api'
+import type { SceneType, Preset, ChatResult, Session } from './interfaces'
+import { user, zeroUsage } from './store'
+import { apiUrl, assistantRole, generateMessagesCheck } from './api'
 import { tcLog } from './tauriCompat'
 
 export async function sendChatOobabooga(
@@ -12,9 +12,9 @@ export async function sendChatOobabooga(
   session: Session,
   summary: boolean
 ): Promise<ChatResult | null> {
-  const uri = preset.oobabooga.apiUrl + '/v1/generate'
+  const uri = preset.oobabooga.apiUrl + apiUrl(false)
   const url = new URL(uri)
-  const { prompt, tokens } = await generatePromptCheck(
+  const { messages } = await generateMessagesCheck(
     preset,
     prologues,
     dialogues,
@@ -22,48 +22,44 @@ export async function sendChatOobabooga(
     session,
     summary
   )
-  tcLog('INFO', 'prompt:', prompt)
-  const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
   const userName = get(user).name
-
+  const request = {
+    ...preset.oobabooga,
+    // continue_: false,
+    // name1: name1,
+    // name2: name2,
+    stop: [
+      '### INPUT',
+      '### Input',
+      '### User',
+      '### USER',
+      '### INSTRUCTION',
+      '### Instruction',
+      '\n```',
+      '\nUser:',
+      '\nuser:',
+      '\n<|user|>',
+      `\n${userName}:`,
+      `\n${userName} `
+    ],
+    messages: messages
+  }
+  tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
   const respFromOoga = await fetch(url, {
-    body: JSON.stringify({
-      ...preset.oobabooga,
-      // continue_: false,
-      // name1: name1,
-      // name2: name2,
-      stop: [
-        '### INPUT',
-        '### Input',
-        '### User',
-        '### USER',
-        '### INSTRUCTION',
-        '### Instruction',
-        '\n```',
-        '\nUser:',
-        '\nuser:',
-        '\n<|user|>',
-        `\n${userName}:`,
-        `\n${userName} `
-      ],
-      prompt: prompt
-    }),
-    headers: {},
+    body: JSON.stringify(request),
+    headers: {
+      'Content-Type': 'application/json'
+    },
     method: 'POST',
     signal: null
   })
   const dataFromOoga = await respFromOoga.json()
   tcLog('INFO', 'dataFromOoga', dataFromOoga.results[0].text)
   if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
-    const scene: SceneType = {
-      id: 0,
-      role: assistantRole,
-      content: dataFromOoga.results[0].text,
-      done: true
-    }
-    usage.completion_tokens = countTokensApi(dataFromOoga.results[0].text)
-    usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
-    return { scene, usage }
+    const scene: SceneType = dataFromOoga.choices[0].message
+    scene.id = 0
+    scene.done = true
+    return { scene, usage: dataFromOoga.usage ?? zeroUsage }
   } else {
     return null
   }
@@ -79,9 +75,9 @@ export async function sendChatOobaboogaStream(
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
-  const userName = get(user).name
-
-  const { prompt, tokens } = await generatePromptCheck(
+  const uri = preset.oobabooga.apiUrl + apiUrl(false)
+  const url = new URL(uri)
+  const { messages, tokens } = await generateMessagesCheck(
     preset,
     prologues,
     dialogues,
@@ -89,58 +85,72 @@ export async function sendChatOobaboogaStream(
     session,
     summary
   )
-  tcLog('INFO', 'prompt:', prompt)
-  const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
-
-  const conn = new WebSocket(preset.oobabooga.apiUrl)
-  conn.onopen = () => {
-    const request = {
-      ...preset.oobabooga,
-      stop: [
-        '### INPUT',
-        '### Input',
-        '### User',
-        '### USER',
-        '### INSTRUCTION',
-        '### Instruction',
-        '### Response',
-        '\n```',
-        '\nUser:',
-        '\nuser:',
-        '\n<|user|>',
-        `\n${userName}:`,
-        `\n${userName} `
-      ],
-      prompt: prompt
-    }
-    conn.send(JSON.stringify(request))
+  const userName = get(user).name
+  const request = {
+    ...preset.oobabooga,
+    stream: true,
+    messages: messages,
+    stop: [
+      '### INPUT',
+      '### Input',
+      '### User',
+      '### USER',
+      '### INSTRUCTION',
+      '### Instruction',
+      '### Response',
+      '\n```',
+      '\nUser:',
+      '\nuser:',
+      '\n<|user|>',
+      `\n${userName}:`,
+      `\n${userName} `
+    ]
   }
-
-  conn.onmessage = event => {
-    const resp = JSON.parse(event.data)
-    switch (resp.event) {
-      case 'text_stream':
-        received(resp.text)
-        break
-      case 'stream_end':
-        conn.close()
+  tcLog('INFO', 'prompt:', JSON.stringify(request, null, 2))
+  const respFromOoga = await fetch(url, {
+    body: JSON.stringify(request),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    signal: null
+  })
+  if (respFromOoga.ok && respFromOoga.status >= 200 && respFromOoga.status < 300) {
+    const reader = respFromOoga.body?.getReader()
+    const decoder = new TextDecoder()
+    reader?.read().then(async function processText({ value }): Promise<void> {
+      if (value === undefined) {
         closedCallback()
-        break
+        return
+      }
+      const str = decoder.decode(value)
+      const strs = str.split('\n')
+      for (const str of strs) {
+        if (str.startsWith('data: ')) {
+          const text = str.slice(6)
+          if (text === '[DONE]') {
+            closedCallback()
+            return
+          } else {
+            const json = JSON.parse(text)
+            if (json.choices[0].delta.content) {
+              received(json.choices[0].delta.content)
+            }
+          }
+        }
+      }
+      return reader?.read().then(processText)
+    })
+    const scene = {
+      id: 0,
+      role: assistantRole,
+      content: ''
     }
+    return {
+      scene,
+      usage: { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
+    }
+  } else {
+    return null
   }
-
-  conn.onerror = error => {
-    tcLog('ERROR', 'on error', String(error))
-  }
-
-  conn.onclose = () => {
-    tcLog('INFO', 'on close')
-  }
-
-  const scene: SceneType = {
-    id: 0,
-    role: assistantRole,
-    content: ''
-  }
-  return { scene, usage }
 }

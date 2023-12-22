@@ -973,10 +973,12 @@
             <StringField
               label="Start index"
               bind:value={$preset.prompts[i].rangeStart}
+              defaultValue={0}
               onBlur={autoSaveFunc} />
             <StringField
               label="End index"
               bind:value={$preset.prompts[i].rangeEnd}
+              defaultValue="end"
               onBlur={autoSaveFunc} />
           </div>
           <div class="flex">
@@ -999,6 +1001,7 @@
             <NumberField
               label="Number of scenes"
               bind:value={$preset.prompts[i].rangeStart}
+              defaultValue={5}
               save={autoSaveFunc}
               min={1}
               max={maxMemory}

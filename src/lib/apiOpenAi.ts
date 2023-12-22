@@ -1,141 +1,20 @@
 import { get } from 'svelte/store'
-import type { Preset, SceneType, Message, ChatResult, Session } from './interfaces'
+import type { Preset, SceneType, ChatResult, Session } from './interfaces'
 import { lorebook, settings, zeroUsage } from './store'
 import {
+  apiUrl,
   assistantRole,
   assocMemory,
-  charSetting,
   chatHistory,
   countTokensApi,
-  endTag,
+  generateMessagesCheck,
   lorebookRole,
   saveMemory,
   startStory,
-  systemRole,
-  tokensOver,
-  userRole,
-  userSetting
+  tokensOver
 } from './api'
 import { getStartEndIndex } from '$lib'
 import { tcLog } from './tauriCompat'
-
-function convertRole(role: string) {
-  switch (role) {
-    case systemRole:
-    case charSetting:
-    case endTag:
-      return systemRole
-    case assistantRole:
-      return assistantRole
-    case userRole:
-    case userSetting:
-      return userRole
-    default:
-      return systemRole
-  }
-}
-
-function generateMessages(
-  preset: Preset,
-  prologues: SceneType[],
-  dialogues: SceneType[],
-  memories: string,
-  summary: boolean
-) {
-  const messages: Message[] = []
-  if (summary) {
-    messages.push({ role: systemRole, content: preset.summarizePrompt })
-    for (const scene of dialogues) {
-      messages.push({ role: scene.role, content: scene.content })
-    }
-  } else {
-    let sentChatHistory = false
-    for (let i = 0; i < prologues.length; i++) {
-      const scene = prologues[i]
-      switch (scene.role) {
-        case startStory:
-          break
-        case chatHistory: {
-          const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
-          for (const mesg of dialogues.slice(start, end)) {
-            messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
-          }
-          sentChatHistory = true
-          break
-        }
-        case assocMemory: {
-          if (memories) {
-            messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
-            const nextScene = prologues[i + 1]
-            if (nextScene.role === endTag) {
-              messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
-              i++
-            }
-          } else {
-            if (prologues[i + 1].role === endTag) {
-              i++
-            }
-          }
-          break
-        }
-        case lorebookRole: {
-          for (const rule of get(lorebook).rules) {
-            if (rule.triggered) {
-              if (scene.textContent) {
-                messages.push({ role: systemRole, content: scene.textContent })
-              }
-              messages.push({ role: systemRole, content: rule.textContent })
-            }
-          }
-          break
-        }
-        default:
-          messages.push({
-            role: convertRole(scene.role),
-            content: scene.textContent ?? scene.content
-          })
-      }
-    }
-    if (!sentChatHistory) {
-      for (const scene of dialogues) {
-        messages.push({ role: scene.role, content: scene.content })
-      }
-    }
-  }
-  return messages
-}
-
-async function generateMessagesCheck(
-  preset: Preset,
-  prologues: SceneType[],
-  dialogues: SceneType[],
-  memories: string,
-  session: Session,
-  summary: boolean
-) {
-  let messages: Message[] = []
-  let tokens = 0
-  while (session.startIndex < dialogues.length || dialogues.length === 0) {
-    messages = generateMessages(
-      preset,
-      prologues,
-      dialogues.slice(session.startIndex),
-      memories,
-      summary
-    )
-    tokens = 0
-    for (const mesg of messages) {
-      tokens += countTokensApi(mesg.content)
-    }
-    if (tokensOver(preset, tokens)) {
-      await saveMemory(dialogues[session.startIndex])
-      session.startIndex++
-    } else {
-      break
-    }
-  }
-  return { messages, tokens }
-}
 
 function generatePrompt(
   preset: Preset,
@@ -221,14 +100,6 @@ async function generateOpenAIPromptCheck(
   return { prompt, tokens }
 }
 
-function apiUrl(instructModel: boolean) {
-  if (instructModel) {
-    return '/completions'
-  } else {
-    return '/chat/completions'
-  }
-}
-
 export async function sendChatOpenAi(
   preset: Preset,
   prologues: SceneType[],
@@ -276,7 +147,7 @@ export async function sendChatOpenAi(
       messages: messages
     }
   }
-  tcLog('INFO', 'request', JSON.stringify(request))
+  tcLog('INFO', 'request:', JSON.stringify(request))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {
@@ -359,7 +230,7 @@ export async function sendChatOpenAiStream(
     }
     numTokens = tokens
   }
-  tcLog('INFO', 'request', JSON.stringify(request, null, 2))
+  tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {
