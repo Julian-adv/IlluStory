@@ -179,3 +179,7 @@ export async function sendChatKoboldAiStream(
     return null
   }
 }
+
+export async function loadModelsKoboldAi(_preset: Preset) {
+  return [{ value: 'unknown', name: 'Unknown' }]
+}

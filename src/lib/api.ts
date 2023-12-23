@@ -1,9 +1,9 @@
 import { Api, type Message, type Preset, type SceneType, type Session } from './interfaces'
-import { sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
-import { sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
+import { loadModelsOobabooga, sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
+import { loadModelsOpenAi, sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
 import { isWithinTokenLimit } from 'gpt-tokenizer'
 import llamaTokenizer from 'llama-tokenizer-js'
-import { sendChatKoboldAi, sendChatKoboldAiStream } from './apiKoboldAi'
+import { loadModelsKoboldAi, sendChatKoboldAi, sendChatKoboldAiStream } from './apiKoboldAi'
 import { getStartEndIndex } from '$lib'
 import { get } from 'svelte/store'
 import { sessionPath, settings, lorebook } from './store'
@@ -365,5 +365,16 @@ export function apiUrl(instructModel: boolean) {
     return '/completions'
   } else {
     return '/chat/completions'
+  }
+}
+
+export function loadModels(preset: Preset) {
+  switch (preset.api) {
+    case Api.OpenAi:
+      return loadModelsOpenAi(preset)
+    case Api.Oobabooga:
+      return loadModelsOobabooga(preset)
+    case Api.KoboldAi:
+      return loadModelsKoboldAi(preset)
   }
 }

@@ -44,8 +44,9 @@ export const defaultPreset: Preset = {
   // oobabooga
   oobabooga: {
     apiUrl: 'http://localhost:5000/v1',
+    model: 'gpt-3.5-turbo',
     mode: 'instruct',
-    preset: 'tfs-with-top-a',
+    preset: 'simple-1',
     temperature: 1.0,
     temperature_last: false,
     top_p: 1.0,

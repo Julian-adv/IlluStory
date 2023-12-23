@@ -13,7 +13,8 @@
     chatHistory,
     firstScene,
     assocMemory,
-    lorebookRole
+    lorebookRole,
+    loadModels
   } from '$lib/api'
   import {
     preset,
@@ -24,7 +25,7 @@
     defaultPreset,
     maxMemory
   } from '$lib/store'
-  import { Api, type FirstScene, type SceneType } from '$lib/interfaces'
+  import { Api, type FirstScene, type SceneType, type SelectItem } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
   import SelectField from '../common/SelectField.svelte'
   import NumberField from '../common/NumberField.svelte'
@@ -47,7 +48,6 @@
   import VisualizeMode from '../common/VisualizeMode.svelte'
   import NumberListField from '../common/NumberListField.svelte'
 
-  export let data: PageData
   const apis = [
     { value: Api.OpenAi, name: 'Open AI' },
     { value: Api.Oobabooga, name: 'Oobabooga' },
@@ -70,6 +70,11 @@
     { value: 'simple-1', name: 'simple-1' },
     { value: 'tfs-with-top-a', name: 'tfs-with-top-a' }
   ]
+  const chatModes = [
+    { value: 'chat', name: 'Chat' },
+    { value: 'instruct', name: 'Instruct' },
+    { value: 'chat-instruct', name: 'Chat + Instruct' }
+  ]
   let autoSave = true
   let totalTokens = 0
 
@@ -79,9 +84,7 @@
 
   onMount(async () => {
     totalTokens = 0
-    data.models = data.models.sort((modelA: Model, modelB: Model) =>
-      modelA.name < modelB.name ? -1 : modelA.name > modelB.name ? 1 : 0
-    )
+    models = await getModels()
   })
 
   async function addPrompt() {
@@ -155,8 +158,21 @@
     }
   }
 
-  function apiChange(value: string) {
+  let models: SelectItem[] = []
+
+  async function getModels(): Promise<SelectItem[]> {
+    if (models.length === 0) {
+      models = await loadModels($preset)
+      models = models.sort((modelA: Model, modelB: Model) =>
+        modelA.name < modelB.name ? -1 : modelA.name > modelB.name ? 1 : 0
+      )
+    }
+    return models
+  }
+
+  async function apiChange(value: string) {
     changeApi(value as Api)
+    models = await getModels()
     autoSaveFunc()
   }
 
@@ -332,17 +348,6 @@
     console.log('temperature', defaultPreset.oobabooga.temperature)
     autoSaveFunc()
   }
-
-  function onStreamingChange() {
-    if ($preset.api === Api.Oobabooga) {
-      if ($preset.streaming) {
-        $preset.oobabooga.apiUrl = 'ws://localhost:5005/api'
-      } else {
-        $preset.oobabooga.apiUrl = defaultPreset.oobabooga.apiUrl
-      }
-    }
-    autoSaveFunc()
-  }
 </script>
 
 <div class="px-4">
@@ -431,11 +436,7 @@
       search={false}
       bind:value={$preset.api}
       save={apiChange} />
-    <CheckField
-      label="Text streaming"
-      help=""
-      bind:value={$preset.streaming}
-      save={onStreamingChange} />
+    <CheckField label="Text streaming" help="" bind:value={$preset.streaming} save={autoSaveFunc} />
     {#if $preset.api === Api.OpenAi}
       <StringField
         label="URL"
@@ -444,7 +445,7 @@
         save={autoSaveFunc} />
       <SelectField
         label="Models"
-        items={data.models}
+        items={models}
         search={true}
         bind:value={$preset.openAi.model}
         save={autoSaveFunc}>
@@ -502,6 +503,17 @@
         placeholder=""
         bind:value={$preset.oobabooga.apiUrl}
         defaultValue={defaultPreset.oobabooga.apiUrl}
+        save={autoSaveFunc} />
+      <SelectField
+        label="Model"
+        items={models}
+        search={true}
+        bind:value={$preset.oobabooga.model}
+        save={autoSaveFunc} />
+      <SelectField
+        label="Mode"
+        items={chatModes}
+        bind:value={$preset.oobabooga.mode}
         save={autoSaveFunc} />
       <SelectField
         label="Parameter preset"

@@ -154,3 +154,18 @@ export async function sendChatOobaboogaStream(
     return null
   }
 }
+
+export async function loadModelsOobabooga(preset: Preset) {
+  if (preset.oobabooga.apiUrl) {
+    try {
+      const response = await fetch(preset.oobabooga.apiUrl + '/models', { method: 'GET' })
+      const json = await response.json()
+      return json.data.map((model: { id: string }) => {
+        return { value: model.id, name: model.id }
+      })
+    } catch (e) {
+      console.log('ERROR', e)
+    }
+  }
+  return [{ value: 'unknown', name: 'Unknown' }]
+}

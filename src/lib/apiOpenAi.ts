@@ -15,6 +15,7 @@ import {
 } from './api'
 import { getStartEndIndex } from '$lib'
 import { tcLog } from './tauriCompat'
+import OpenAI from 'openai'
 
 function generatePrompt(
   preset: Preset,
@@ -278,4 +279,33 @@ export async function sendChatOpenAiStream(
   } else {
     return null
   }
+}
+
+export async function loadModelsOpenAi(preset: Preset) {
+  if (preset.openAi.apiUrl) {
+    if (preset.openAi.apiUrl.startsWith('https://api.openai.com')) {
+      const openai = new OpenAI({
+        apiKey: get(settings).openAiApiKey,
+        dangerouslyAllowBrowser: true
+      })
+      const response = await openai.models.list()
+      const models = response.data.map(model => {
+        return { value: model.id, name: model.id }
+      })
+
+      return models
+    } else {
+      // Open AI compatible API
+      try {
+        const response = await fetch(preset.openAi.apiUrl + '/models', { method: 'GET' })
+        const json = await response.json()
+        return json.data.map((model: { id: string }) => {
+          return { value: model.id, name: model.id }
+        })
+      } catch (e) {
+        console.log('ERROR', e)
+      }
+    }
+  }
+  return [{ value: 'unknown', name: 'Unknown' }]
 }
