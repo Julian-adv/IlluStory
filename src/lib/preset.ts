@@ -181,30 +181,29 @@ async function importPresetObj(risuPreset: any): Promise<Preset> {
   if (risuPreset.textgenWebUIStreamURL) {
     preset.oobabooga.apiUrl = risuPreset.textgenWebUIBlockingURL
   }
-  preset.oobabooga.maxTokens = Number(risuPreset.ooba.max_new_tokens)
-  preset.oobabooga.doSample = risuPreset.ooba.do_sample
-  preset.oobabooga.temperature = risuPreset.ooba.temperature
-  preset.oobabooga.topP = risuPreset.ooba.top_p
-  preset.oobabooga.typicalP = risuPreset.ooba.typical_p
-  preset.oobabooga.repetitionPenalty = risuPreset.ooba.repetition_penalty
-  preset.oobabooga.encoderRepetitionPenalty = risuPreset.ooba.encoder_repetition_penalty
-  preset.oobabooga.topK = risuPreset.ooba.top_k
-  preset.oobabooga.minLength = risuPreset.ooba.min_length
-  preset.oobabooga.noRepeatNgramSize = risuPreset.ooba.no_repeat_ngram_size
-  preset.oobabooga.numBeams = risuPreset.ooba.num_beams
-  preset.oobabooga.penaltyAlpha = risuPreset.ooba.penalty_alpha
-  preset.oobabooga.lengthPenalty = risuPreset.ooba.length_penalty
-  preset.oobabooga.earlyStopping = risuPreset.ooba.early_stopping
+  preset.oobabooga.add_bos_token = risuPreset.ooba.add_bos_token
+  preset.oobabooga.ban_eos_token = risuPreset.ooba.ban_eos_token
+  preset.oobabooga.do_sample = risuPreset.ooba.do_sample
+  preset.oobabooga.early_stopping = risuPreset.ooba.early_stopping
+  preset.oobabooga.encoder_repetition_penalty = risuPreset.ooba.encoder_repetition_penalty
+  preset.oobabooga.epsilon_cutoff = risuPreset.ooba.epsilon_cutoff
+  preset.oobabooga.eta_cutoff = risuPreset.ooba.eta_cutoff
+  preset.oobabooga.length_penalty = risuPreset.ooba.length_penalty
+  preset.oobabooga.max_tokens = Number(risuPreset.ooba.max_new_tokens)
+  preset.oobabooga.min_length = risuPreset.ooba.min_length
+  preset.oobabooga.no_repeat_ngram_size = risuPreset.ooba.no_repeat_ngram_size
+  preset.oobabooga.num_beams = risuPreset.ooba.num_beams
+  preset.oobabooga.penalty_alpha = risuPreset.ooba.penalty_alpha
+  preset.oobabooga.repetition_penalty = risuPreset.ooba.repetition_penalty
   preset.oobabooga.seed = risuPreset.ooba.seed
-  preset.oobabooga.addBosToken = risuPreset.ooba.add_bos_token
-  preset.oobabooga.truncationLength = risuPreset.ooba.truncation_length
-  preset.oobabooga.banEosToken = risuPreset.ooba.ban_eos_token
-  preset.oobabooga.skipSpecialTokens = risuPreset.ooba.skip_special_tokens
-  preset.oobabooga.topA = risuPreset.ooba.top_a
+  preset.oobabooga.skip_special_tokens = risuPreset.ooba.skip_special_tokens
+  preset.oobabooga.temperature = risuPreset.ooba.temperature
   preset.oobabooga.tfs = risuPreset.ooba.tfs
-  preset.oobabooga.userPrefix = risuPreset.ooba.formating.userPrefix
-  preset.oobabooga.assistantPrefix = risuPreset.ooba.formating.assistantPrefix
-  preset.oobabooga.systemPrefix = risuPreset.ooba.formating.systemPrefix
+  preset.oobabooga.top_a = risuPreset.ooba.top_a
+  preset.oobabooga.top_k = risuPreset.ooba.top_k
+  preset.oobabooga.top_p = risuPreset.ooba.top_p
+  preset.oobabooga.truncation_length = risuPreset.ooba.truncation_length
+  preset.oobabooga.typical_p = risuPreset.ooba.typical_p
   sceneId = 0
   if (risuPreset.promptTemplate) {
     for (const prompt of risuPreset.promptTemplate) {

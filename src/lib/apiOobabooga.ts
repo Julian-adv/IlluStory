@@ -1,6 +1,6 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, ChatResult, Session } from './interfaces'
-import { user, zeroUsage } from './store'
+import type { SceneType, Preset, ChatResult, Session, OobaboogaParam } from './interfaces'
+import { defaultPreset, user, zeroUsage } from './store'
 import { apiUrl, assistantRole, generateMessagesCheck } from './api'
 import { tcLog } from './tauriCompat'
 
@@ -65,6 +65,157 @@ export async function sendChatOobabooga(
   }
 }
 
+type PartialOobaboogaParam = {
+  [key: string]: string | number | boolean | undefined
+}
+
+const asterismPreset = {
+  temperature: 1.68,
+  top_p: 0.17,
+  repetition_penalty: 1.02,
+  top_k: 77
+}
+
+const bigOPreset = {
+  temperature: 0.87,
+  top_p: 0.99,
+  typical_p: 0.68,
+  tfs: 0.68,
+  repetition_penalty: 1.01,
+  top_k: 85
+}
+
+const contrastiveSearchPreset = {
+  do_sample: false,
+  top_k: 4,
+  penalty_alpha: 0.3
+}
+
+const debugDeterministicPreset = {
+  do_sample: false
+}
+
+const divineIntellectPreset = {
+  temperature: 1.31,
+  top_p: 0.14,
+  repetition_penalty: 1.17,
+  top_k: 49
+}
+
+const llamaPrecisePreset = {
+  temperature: 0.7,
+  top_p: 0.1,
+  repetition_penalty: 1.18,
+  top_k: 40
+}
+
+const midnightEnigmaPreset = {
+  temperature: 0.98,
+  top_p: 0.37,
+  repetition_penalty: 1.18,
+  top_k: 100
+}
+
+const mirostatPreset = {
+  mirostat_mode: 2,
+  mirostat_tau: 8
+}
+
+const shortwavePreset = {
+  temperature: 1.53,
+  top_p: 0.64,
+  repetition_penalty: 1.07,
+  top_k: 33
+}
+
+const spaceAlienPreset = {
+  temperature: 1.31,
+  top_p: 0.29,
+  repetition_penalty: 1.09,
+  top_k: 72
+}
+
+const starChatPreset = {
+  temperature: 0.2,
+  top_p: 0.95,
+  top_k: 50
+}
+
+const titanicPreset = {
+  temperature: 1.01,
+  top_p: 0.21,
+  repetition_penalty: 1.21,
+  encoder_repetition_penalty: 1.07,
+  top_k: 91
+}
+
+const yaraPreset = {
+  temperature: 0.82,
+  top_p: 0.21,
+  repetition_penalty: 1.19,
+  top_k: 72
+}
+
+const simple1Preset = {
+  temperature: 0.7,
+  top_p: 0.9,
+  repetition_penalty: 1.15,
+  top_k: 20
+}
+
+const tfsWithTopAPreset = {
+  temperature: 0.7,
+  tfs: 0.95,
+  top_a: 0.2,
+  repetition_penalty: 1.15
+}
+
+interface StringMap {
+  [key: string]: any
+}
+
+export const nameToPreset: StringMap = {
+  Asterism: asterismPreset,
+  'Big O': bigOPreset,
+  'Contrastive Search': contrastiveSearchPreset,
+  'Debug-deterministic': debugDeterministicPreset,
+  'Divine Intellect': divineIntellectPreset,
+  'LLaMA-Precise': llamaPrecisePreset,
+  'Midnight Enigma': midnightEnigmaPreset,
+  Mirostat: mirostatPreset,
+  Shortwave: shortwavePreset,
+  'Space Alien': spaceAlienPreset,
+  StarChat: starChatPreset,
+  Titanic: titanicPreset,
+  Yara: yaraPreset,
+  'simple-1': simple1Preset,
+  'tfs-with-top-a': tfsWithTopAPreset
+}
+
+function modifiedParameters(preset: OobaboogaParam): Partial<OobaboogaParam> {
+  const modified: PartialOobaboogaParam = {}
+  const paramPreset = nameToPreset[preset.preset]
+  const original = {
+    ...defaultPreset.oobabooga,
+    ...paramPreset
+  }
+
+  for (const key in preset) {
+    if (Object.prototype.hasOwnProperty.call(preset, key)) {
+      const skey = key as keyof OobaboogaParam
+      if (Object.prototype.hasOwnProperty.call(original, key)) {
+        if (preset[skey] !== original[skey]) {
+          modified[skey] = preset[skey]
+        }
+      }
+    }
+  }
+  modified.truncation_length = preset.truncation_length
+  modified.max_tokens = preset.max_tokens
+  modified.preset = preset.preset
+  return modified
+}
+
 export async function sendChatOobaboogaStream(
   preset: Preset,
   prologues: SceneType[],
@@ -87,7 +238,7 @@ export async function sendChatOobaboogaStream(
   )
   const userName = get(user).name
   const request = {
-    ...preset.oobabooga,
+    ...modifiedParameters(preset.oobabooga),
     stream: true,
     messages: messages,
     stop: [

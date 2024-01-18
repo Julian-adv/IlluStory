@@ -42,11 +42,11 @@
   import { importPresetDialog, loadPresetDialog } from '$lib/preset'
   import SceneCard from '../common/SceneCard.svelte'
   import { loadSceneDialog } from '$lib/scene'
-  import type { PageData } from './$types'
   import FileDialog from '$lib/FileDialog.svelte'
   import DragAndDropList from '../common/DragAndDropList.svelte'
   import VisualizeMode from '../common/VisualizeMode.svelte'
   import NumberListField from '../common/NumberListField.svelte'
+  import { nameToPreset } from '$lib/apiOobabooga'
 
   const apis = [
     { value: Api.OpenAi, name: 'Open AI' },
@@ -211,129 +211,6 @@
     goto('/write_scene')
   }
 
-  const asterismPreset = {
-    temperature: 1.68,
-    top_p: 0.17,
-    repetition_penalty: 1.02,
-    top_k: 77
-  }
-
-  const bigOPreset = {
-    temperature: 0.87,
-    top_p: 0.99,
-    typical_p: 0.68,
-    tfs: 0.68,
-    repetition_penalty: 1.01,
-    top_k: 85
-  }
-
-  const contrastiveSearchPreset = {
-    do_sample: false,
-    top_k: 4,
-    penalty_alpha: 0.3
-  }
-
-  const debugDeterministicPreset = {
-    do_sample: false
-  }
-
-  const divineIntellectPreset = {
-    temperature: 1.31,
-    top_p: 0.14,
-    repetition_penalty: 1.17,
-    top_k: 49
-  }
-
-  const llamaPrecisePreset = {
-    temperature: 0.7,
-    top_p: 0.1,
-    repetition_penalty: 1.18,
-    top_k: 40
-  }
-
-  const midnightEnigmaPreset = {
-    temperature: 0.98,
-    top_p: 0.37,
-    repetition_penalty: 1.18,
-    top_k: 100
-  }
-
-  const mirostatPreset = {
-    mirostat_mode: 2,
-    mirostat_tau: 8
-  }
-
-  const shortwavePreset = {
-    temperature: 1.53,
-    top_p: 0.64,
-    repetition_penalty: 1.07,
-    top_k: 33
-  }
-
-  const spaceAlienPreset = {
-    temperature: 1.31,
-    top_p: 0.29,
-    repetition_penalty: 1.09,
-    top_k: 72
-  }
-
-  const starChatPreset = {
-    temperature: 0.2,
-    top_p: 0.95,
-    top_k: 50
-  }
-
-  const titanicPreset = {
-    temperature: 1.01,
-    top_p: 0.21,
-    repetition_penalty: 1.21,
-    encoder_repetition_penalty: 1.07,
-    top_k: 91
-  }
-
-  const yaraPreset = {
-    temperature: 0.82,
-    top_p: 0.21,
-    repetition_penalty: 1.19,
-    top_k: 72
-  }
-
-  const simple1Preset = {
-    temperature: 0.7,
-    top_p: 0.9,
-    repetition_penalty: 1.15,
-    top_k: 20
-  }
-
-  const tfsWithTopAPreset = {
-    temperature: 0.7,
-    tfs: 0.95,
-    top_a: 0.2,
-    repetition_penalty: 1.15
-  }
-
-  interface StringMap {
-    [key: string]: any
-  }
-
-  const nameToPreset: StringMap = {
-    Asterism: asterismPreset,
-    'Big O': bigOPreset,
-    'Contrastive Search': contrastiveSearchPreset,
-    'Debug-deterministic': debugDeterministicPreset,
-    'Divine Intellect': divineIntellectPreset,
-    'LLaMA-Precise': llamaPrecisePreset,
-    'Midnight Enigma': midnightEnigmaPreset,
-    Mirostat: mirostatPreset,
-    Shortwave: shortwavePreset,
-    'Space Alien': spaceAlienPreset,
-    StarChat: starChatPreset,
-    Titanic: titanicPreset,
-    Yara: yaraPreset,
-    'simple-1': simple1Preset,
-    'tfs-with-top-a': tfsWithTopAPreset
-  }
-
   function onChangeParameterPreset(value: string) {
     let paramPreset = nameToPreset[value]
     $preset.oobabooga = {
@@ -345,7 +222,6 @@
       ...defaultPreset.koboldAi,
       ...paramPreset
     }
-    console.log('temperature', defaultPreset.oobabooga.temperature)
     autoSaveFunc()
   }
 </script>
