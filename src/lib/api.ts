@@ -246,12 +246,12 @@ function convertRole(role: string) {
   switch (role) {
     case systemRole:
     case charSetting:
+    case userSetting:
     case endTag:
       return systemRole
     case assistantRole:
       return assistantRole
     case userRole:
-    case userSetting:
       return userRole
     default:
       return systemRole

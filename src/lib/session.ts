@@ -1,6 +1,6 @@
 import { saveObjQuietly, sessionExt } from './fs'
 import type { Char, Lorebook, SceneType, Session, StringDictionary } from './interfaces'
-import { charSetting, userSetting } from './api'
+import { charSetting, systemRole, userSetting } from './api'
 import { tcConvertImageSrc, tcOpen, tcReadTextFile } from './tauriCompat'
 
 export async function loadSession(path: string) {
@@ -80,31 +80,34 @@ function replaceCharSetting(tag: string | undefined, char: Char) {
   }
 }
 
-function replaceCharSettings(tag: string | undefined, chars: Char[], user: Char) {
-  let str = ''
-  for (const char of chars) {
-    let charDesc = replaceCharSetting(tag, char)
-    const dict = makeReplaceDict(char, user)
-    charDesc = replaceName(charDesc, dict)
-    str += charDesc
-  }
-  return str
+function generateCharSetting(tag: string | undefined, char: Char, user: Char) {
+  const charDesc = replaceCharSetting(tag, char)
+  const dict = makeReplaceDict(char, user)
+  return replaceName(charDesc, dict)
 }
 
 export function replaceChars(prompts: SceneType[], chars: Char[], speaker: number, user: Char) {
-  return prompts.map(prompt => {
-    let content = prompt.content
+  const newPrompts: SceneType[] = []
+  for (const prompt of prompts) {
     if (prompt.role === charSetting) {
       if (prompt.allChars) {
-        content = replaceCharSettings(prompt.tag, chars, user)
+        for (const char of chars) {
+          const content = generateCharSetting(prompt.tag, char, user)
+          const role = systemRole
+          newPrompts.push({ ...prompt, role, content })
+        }
       } else {
-        content = replaceCharSettings(prompt.tag, [chars[speaker]], user)
+        const content = generateCharSetting(prompt.tag, chars[speaker], user)
+        newPrompts.push({ ...prompt, content })
       }
     } else if (prompt.role === userSetting) {
-      content = replaceCharSetting(prompt.tag, user)
+      const content = replaceCharSetting(prompt.tag, user)
+      newPrompts.push({ ...prompt, content })
+    } else {
+      newPrompts.push(prompt)
     }
-    return { ...prompt, content }
-  })
+  }
+  return newPrompts
 }
 
 export function makeReplaceDict(char: Char, user: Char) {
