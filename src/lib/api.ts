@@ -21,7 +21,6 @@ export const chatHistory = 'chat_history'
 export const authorNote = 'author_note'
 export const globalNote = 'global_note'
 export const lorebookRole = 'lorebook'
-export const firstScene = 'first_scene'
 export const assocMemory = 'assoc_memory'
 
 export const roles = [
@@ -36,7 +35,6 @@ export const roles = [
   { value: authorNote, name: 'Author note' },
   { value: globalNote, name: 'Global note' },
   { value: lorebookRole, name: 'Lorebook' },
-  { value: firstScene, name: 'First scene' },
   { value: assocMemory, name: 'Assoc Memory' }
 ]
 

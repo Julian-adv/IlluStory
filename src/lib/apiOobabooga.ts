@@ -69,13 +69,6 @@ type PartialOobaboogaParam = {
   [key: string]: string | number | boolean | undefined
 }
 
-const asterismPreset = {
-  temperature: 1.68,
-  top_p: 0.17,
-  repetition_penalty: 1.02,
-  top_k: 77
-}
-
 const bigOPreset = {
   temperature: 0.87,
   top_p: 0.99,
@@ -92,7 +85,8 @@ const contrastiveSearchPreset = {
 }
 
 const debugDeterministicPreset = {
-  do_sample: false
+  do_sample: false,
+  top_k: 1
 }
 
 const divineIntellectPreset = {
@@ -116,9 +110,8 @@ const midnightEnigmaPreset = {
   top_k: 100
 }
 
-const mirostatPreset = {
-  mirostat_mode: 2,
-  mirostat_tau: 8
+const nullPreset = {
+  temperature: 1
 }
 
 const shortwavePreset = {
@@ -128,25 +121,11 @@ const shortwavePreset = {
   top_k: 33
 }
 
-const spaceAlienPreset = {
-  temperature: 1.31,
-  top_p: 0.29,
-  repetition_penalty: 1.09,
-  top_k: 72
-}
-
-const starChatPreset = {
-  temperature: 0.2,
-  top_p: 0.95,
-  top_k: 50
-}
-
-const titanicPreset = {
-  temperature: 1.01,
-  top_p: 0.21,
-  repetition_penalty: 1.21,
-  encoder_repetition_penalty: 1.07,
-  top_k: 91
+const simple1Preset = {
+  temperature: 0.7,
+  top_p: 0.9,
+  repetition_penalty: 1.15,
+  top_k: 20
 }
 
 const yaraPreset = {
@@ -156,40 +135,21 @@ const yaraPreset = {
   top_k: 72
 }
 
-const simple1Preset = {
-  temperature: 0.7,
-  top_p: 0.9,
-  repetition_penalty: 1.15,
-  top_k: 20
-}
-
-const tfsWithTopAPreset = {
-  temperature: 0.7,
-  tfs: 0.95,
-  top_a: 0.2,
-  repetition_penalty: 1.15
-}
-
 interface StringMap {
   [key: string]: any
 }
 
 export const nameToPreset: StringMap = {
-  Asterism: asterismPreset,
   'Big O': bigOPreset,
   'Contrastive Search': contrastiveSearchPreset,
   'Debug-deterministic': debugDeterministicPreset,
   'Divine Intellect': divineIntellectPreset,
   'LLaMA-Precise': llamaPrecisePreset,
   'Midnight Enigma': midnightEnigmaPreset,
-  Mirostat: mirostatPreset,
+  'Null preset': nullPreset,
   Shortwave: shortwavePreset,
-  'Space Alien': spaceAlienPreset,
-  StarChat: starChatPreset,
-  Titanic: titanicPreset,
-  Yara: yaraPreset,
   'simple-1': simple1Preset,
-  'tfs-with-top-a': tfsWithTopAPreset
+  Yara: yaraPreset
 }
 
 function modifiedParameters(preset: OobaboogaParam): Partial<OobaboogaParam> {

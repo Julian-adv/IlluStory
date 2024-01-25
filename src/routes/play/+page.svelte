@@ -5,7 +5,6 @@
     assistantRole,
     assocMemory,
     countTokensApi,
-    firstScene,
     generatePrompt,
     sendChat,
     sendChatStream,
@@ -16,7 +15,6 @@
   import { onMount, tick } from 'svelte'
   import {
     preset,
-    prologues,
     dialogues,
     usage,
     sessionPath,
@@ -93,26 +91,6 @@
   let role = userRole
   let nextChar = 'random'
   let numMemory = 1
-
-  interface ScenePairs {
-    prologues: SceneType[]
-    dialogues: SceneType[]
-  }
-
-  function splitPreset(scenes: SceneType[]): ScenePairs {
-    const index = scenes.findIndex(scene => scene.role === firstScene)
-    if (index < 0) {
-      return { prologues: scenes, dialogues: $curScene.scenes }
-    } else {
-      const copy = structuredClone(scenes)
-      copy.splice(index, 1)
-      if ($curScene.scenes.length > 0) {
-        return { prologues: copy, dialogues: structuredClone($curScene.scenes) }
-      } else {
-        return { prologues: copy, dialogues: structuredClone(scenes.slice(index, index + 1)) }
-      }
-    }
-  }
 
   async function convertScenes(newScenes: SceneType[], dict: StringDictionary) {
     let scenes = []
@@ -226,8 +204,6 @@
     $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
     $lorebookCard = await cardFromPath(dataDir + $session.lorebookCard)
     await loadVarsFromPath()
-    const result = splitPreset($preset.prompts)
-    $prologues = replaceChars(result.prologues, $chars, $session.nextSpeaker, $user)
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     $dialogues = await convertScenes($session.scenes, $replaceDict)
     setTriggers($lorebook, $session.lorebookTriggers)
@@ -250,14 +226,7 @@
   }
 
   async function updateInitialScenes() {
-    const result = splitPreset($preset.prompts)
-    $prologues = replaceChars(result.prologues, $chars, $session.nextSpeaker, $user)
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
-    if ($dialogues.length > result.dialogues.length) {
-      $dialogues = [...result.dialogues, ...$dialogues.slice(result.dialogues.length)]
-    } else {
-      $dialogues = [...result.dialogues]
-    }
     $dialogues = await convertScenes($dialogues, $replaceDict)
   }
 
@@ -437,7 +406,7 @@
 
   function preparePrologue() {
     let prologs
-    prologs = replaceChars($prologues, $chars, $session.nextSpeaker, $user)
+    prologs = replaceChars($preset.prompts, $chars, $session.nextSpeaker, $user)
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     prologs = replaceNames(prologs, $replaceDict)
     return prologs

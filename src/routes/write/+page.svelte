@@ -11,21 +11,12 @@
     userSetting,
     systemRole,
     chatHistory,
-    firstScene,
     assocMemory,
     lorebookRole,
     loadModels
   } from '$lib/api'
-  import {
-    preset,
-    presetPath,
-    curScene,
-    curScenePath,
-    fileDialog,
-    defaultPreset,
-    maxMemory
-  } from '$lib/store'
-  import { Api, type FirstScene, type SceneType, type SelectItem } from '$lib/interfaces'
+  import { preset, presetPath, fileDialog, defaultPreset, maxMemory } from '$lib/store'
+  import { Api, type SelectItem } from '$lib/interfaces'
   import StringField from '../common/StringField.svelte'
   import SelectField from '../common/SelectField.svelte'
   import NumberField from '../common/NumberField.svelte'
@@ -33,15 +24,11 @@
   import TextField from '../common/TextField.svelte'
   import FlexibleTextarea from '../common/FlexibleTextarea.svelte'
   import DropSelect from '../common/DropSelect.svelte'
-  import { getUniqueId, removeCommonPrefix } from '$lib'
-  import { cardFromPreset } from '$lib/charSettings'
-  import { goto } from '$app/navigation'
+  import { getUniqueId } from '$lib'
   import CheckField from '../common/CheckField.svelte'
   import { slide } from 'svelte/transition'
   import { InfoCircleSolid } from 'flowbite-svelte-icons'
   import { importPresetDialog, loadPresetDialog } from '$lib/preset'
-  import SceneCard from '../common/SceneCard.svelte'
-  import { loadSceneDialog } from '$lib/scene'
   import FileDialog from '$lib/FileDialog.svelte'
   import DragAndDropList from '../common/DragAndDropList.svelte'
   import VisualizeMode from '../common/VisualizeMode.svelte'
@@ -54,21 +41,16 @@
     { value: Api.KoboldAi, name: 'Kobold AI' }
   ]
   const parameterPresets = [
-    { value: 'Asterism', name: 'Asterism' },
     { value: 'Big O', name: 'Big O' },
     { value: 'Contrastive Search', name: 'Contrastive Search' },
     { value: 'Debug-deterministic', name: 'Debug-deterministic' },
     { value: 'Divine Intellect', name: 'Divine Intellect' },
     { value: 'LLaMA-Precise', name: 'LLaMA-Precise' },
     { value: 'Midnight Enigma', name: 'Midnight Enigma' },
-    { value: 'Mirostat', name: 'Mirostat' },
+    { value: 'Null preset', name: 'Null preset' },
     { value: 'Shortwave', name: 'Shortwave' },
-    { value: 'Space Alien', name: 'Space Alien' },
-    { value: 'StarChat', name: 'StarChat' },
-    { value: 'Titanic', name: 'Titanic' },
-    { value: 'Yara', name: 'Yara' },
     { value: 'simple-1', name: 'simple-1' },
-    { value: 'tfs-with-top-a', name: 'tfs-with-top-a' }
+    { value: 'Yara', name: 'Yara' }
   ]
   const chatModes = [
     { value: 'chat', name: 'Chat' },
@@ -116,9 +98,6 @@
       if (tempPreset) {
         $preset = tempPreset
         $presetPath = tempFilePath
-        if (tempFilePath) {
-          cardFromPreset($preset, $presetPath)
-        }
         totalTokens = 0
       }
     } catch (error) {
@@ -183,32 +162,6 @@
       return tokens
     }
     return 0
-  }
-
-  async function loadSceneTo(prompt: SceneType): Promise<[FirstScene | null, string]> {
-    const [tempChar, tempFilePath] = await loadSceneDialog()
-    if (tempChar) {
-      const relativePath = removeCommonPrefix($presetPath, tempFilePath)
-      prompt.content = relativePath
-      autoSaveFunc()
-    }
-    return [tempChar, tempFilePath]
-  }
-
-  function onSceneClick(prompt: SceneType) {
-    return async (ev: Event) => {
-      ev.stopPropagation()
-      const [tempScene, tempFilePath] = await loadSceneTo(prompt)
-      if (tempScene) {
-        $curScene = tempScene
-        $curScenePath = tempFilePath
-      }
-    }
-  }
-
-  function onEditScene(ev: Event) {
-    ev.stopPropagation()
-    goto('/write_scene')
   }
 
   function onChangeParameterPreset(value: string) {
@@ -412,6 +365,35 @@
         bind:value={$preset.oobabooga.temperature_last}
         defaultValue={defaultPreset.oobabooga.temperature_last}
         save={autoSaveFunc} />
+      <CheckField
+        label="Dynamic temperature"
+        help="Activates Dynamic Temperature. This modifies temperature to range between 'dynatemp_low' (minimum) and 'dynatemp_high' (maximum), with an entropy-based scaling. The steepness of the curve is controlled by 'dynatemp_exponent'"
+        bind:value={$preset.oobabooga.dynamic_temperature}
+        defaultValue={defaultPreset.oobabooga.dynamic_temperature}
+        save={autoSaveFunc} />
+      {#if $preset.oobabooga.dynamic_temperature}
+        <NumberField
+          label="Dynamic temperature low"
+          bind:value={$preset.oobabooga.dynatemp_low}
+          defaultValue={defaultPreset.oobabooga.dynatemp_low}
+          min={0.01}
+          max={5.0}
+          save={autoSaveFunc} />
+        <NumberField
+          label="Dynamic temperature high"
+          bind:value={$preset.oobabooga.dynatemp_high}
+          defaultValue={defaultPreset.oobabooga.dynatemp_high}
+          min={0.01}
+          max={5.0}
+          save={autoSaveFunc} />
+        <NumberField
+          label="Dynamic temperature exponent"
+          bind:value={$preset.oobabooga.dynamtemp_exponent}
+          defaultValue={defaultPreset.oobabooga.dynamtemp_exponent}
+          min={0.01}
+          max={5.0}
+          save={autoSaveFunc} />
+      {/if}
       <NumberField
         label="Top p"
         help="If not set to 1, select tokens with probabilities adding up to less than this number. Higher value = higher range of possible random results."
@@ -875,8 +857,6 @@
               output to the end.</em>
           </div>
         </div>
-      {:else if prompt.role === firstScene}
-        <SceneCard scene={$curScene} onSceneClick={onSceneClick(prompt)} {onEditScene} />
       {:else if prompt.role === assocMemory}
         <div class="flex flex-col w-full text-left">
           <FlexibleTextarea

@@ -49,6 +49,10 @@ export interface OobaboogaParam {
   preset: string
   temperature: number
   temperature_last: boolean
+  dynamic_temperature: boolean
+  dynatemp_low: number
+  dynatemp_high: number
+  dynamtemp_exponent: number
   top_p: number
   min_p: number
   top_k: number
