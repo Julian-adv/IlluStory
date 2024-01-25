@@ -74,9 +74,9 @@ export function replaceNames(prompts: SceneType[], dict: StringDictionary) {
 
 function replaceCharSetting(tag: string | undefined, char: Char) {
   if (tag) {
-    return `<${tag}>\nName: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n</${tag}>\n`
+    return `<${tag}>\nName: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nDescription: ${char.description}\n</${tag}>\n`
   } else {
-    return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nVisual: ${char.visual}\nDescription: ${char.description}\n`
+    return `Name: ${char.name}\nTitle: ${char.title}\nGender: ${char.gender}\nDescription: ${char.description}\n`
   }
 }
 

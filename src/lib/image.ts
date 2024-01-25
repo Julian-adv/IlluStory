@@ -1,6 +1,8 @@
+import { get } from 'svelte/store'
 import { translateText } from './deepLApi'
 import type { Preset, SceneType, Settings, StringDictionary } from './interfaces'
 import { replaceName } from './session'
+import { chars } from './store'
 
 export const visualStart = '<Visual>'
 export const visualEnd = '</Visual>'
@@ -27,9 +29,23 @@ export async function extractImagePrompt(
   return scene
 }
 
+function visualOfName(name: string | undefined) {
+  const charArray = get(chars)
+  for (const char of charArray) {
+    if (char.name === name) {
+      return char.visual
+    }
+  }
+  if (name === 'random') {
+    return charArray[Math.floor(Math.random() * charArray.length)].visual
+  }
+  return ''
+}
+
 export function imageDescription(preset: Preset, scene: SceneType) {
   if (preset.visualizeMode === 'text') {
-    return scene.textContent ?? ''
+    const charVisual = visualOfName(scene.name)
+    return charVisual + ',' + (scene.textContent ?? '')
   } else if (preset.visualizeMode === 'regexp' || preset.visualizeMode === 'generate') {
     return scene.visualContent ?? scene.textContent ?? ''
   }

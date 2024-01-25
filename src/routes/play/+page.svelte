@@ -272,18 +272,20 @@
     shortSessionPath = ''
   }
 
+  function getUserInput(scene: SceneType): string {
+    const userNameLabel = $user.name + ': '
+    return scene.content.startsWith(userNameLabel)
+      ? scene.content.slice(userNameLabel.length)
+      : scene.content
+  }
+
   async function goBack() {
     while ($dialogues.length > 1) {
       const lastS = lastScene($dialogues)
       $session.startIndex--
       if (lastS.role === userRole) {
-        const scene = $dialogues.pop()
-        if (scene) {
-          const userNameLabel = $user.name + ': '
-          userInput = scene.content.startsWith(userNameLabel)
-            ? scene.content.slice(userNameLabel.length)
-            : scene.content
-        }
+        userInput = getUserInput(lastS)
+        $dialogues.pop()
         break
       } else {
         $dialogues.pop()
@@ -294,6 +296,28 @@
     }
     $dialogues = $dialogues
     $usage = calcUsage()
+    chooseNextChar(false)
+  }
+
+  async function reroll() {
+    if ($dialogues.length < 2) {
+      return
+    }
+    $dialogues.pop()
+    const orgContent = getUserInput(lastScene($dialogues))
+    const sceneId = newSceneId($dialogues)
+    const waitingScene = {
+      id: sceneId + 1,
+      role: assistantRole,
+      content: '',
+      textContent: '',
+      done: false
+    }
+    $dialogues = [...$dialogues, waitingScene]
+    await tick()
+    scrollToEnd()
+    chooseNextChar(false)
+    sendDialogue(orgContent)
   }
 
   async function summarize() {
@@ -383,6 +407,21 @@
   }
 
   let characters = [{ value: 'random', name: 'Random' }]
+
+  function forwardNextSpeaker(forward: boolean) {
+    if (forward) {
+      $session.nextSpeaker++
+      if ($session.nextSpeaker >= $chars.length) {
+        $session.nextSpeaker = 0
+      }
+    } else {
+      $session.nextSpeaker--
+      if ($session.nextSpeaker < 0) {
+        $session.nextSpeaker = $chars.length - 1
+      }
+    }
+    return characters[$session.nextSpeaker + 1].value
+  }
 
   function fillCharacters() {
     characters = [{ value: 'random', name: 'Random' }]
@@ -584,13 +623,9 @@
     }
   }
 
-  function chooseNextChar() {
+  function chooseNextChar(forward: boolean) {
     if (nextChar !== 'random') {
-      $session.nextSpeaker++
-      if ($session.nextSpeaker >= $chars.length) {
-        $session.nextSpeaker = 0
-      }
-      nextChar = $chars[$session.nextSpeaker].name
+      nextChar = forwardNextSpeaker(forward)
     }
   }
 
@@ -599,7 +634,7 @@
     tcLog('INFO', 'visual description:', scene.visualContent ?? '')
     scene.done = true
     $dialogues = $dialogues
-    chooseNextChar()
+    chooseNextChar(true)
     saveSession()
   }
 
@@ -807,6 +842,46 @@
     }
   }
 
+  async function sendDialogue(orgContent: string) {
+    if (nextChar === 'random') {
+      $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
+    } else {
+      $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
+    }
+    const prologs = preparePrologue()
+    const result = $preset.streaming
+      ? await sendChatStream(
+          $preset,
+          prologs,
+          $dialogues,
+          await getMemory(orgContent),
+          $session,
+          false,
+          received,
+          closed
+        )
+      : await sendChat($preset, prologs, $dialogues, await getMemory(orgContent), $session, false)
+    if (result) {
+      $usage = result.usage
+      let scene = lastScene($dialogues)
+      scene.role = result.scene.role
+      scene.content = result.scene.content
+      scene.name = nextChar
+      scene.done = result.scene.done
+      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      $dialogues = $dialogues
+      if (!$preset.streaming) {
+        await checkLorebook()
+      }
+      await tick()
+      scrollToEnd()
+      if (!$preset.streaming) {
+        chooseNextChar(true)
+      }
+    }
+    saveSession()
+  }
+
   async function sendInput(role: string, orgContent: string) {
     if (orgContent.startsWith('/')) {
       processCommands(orgContent)
@@ -845,42 +920,7 @@
     }
     await tick()
     scrollToEnd()
-    if (nextChar === 'random') {
-      $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
-    } else {
-      $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
-    }
-    const prologs = preparePrologue()
-    const result = $preset.streaming
-      ? await sendChatStream(
-          $preset,
-          prologs,
-          $dialogues,
-          await getMemory(orgContent),
-          $session,
-          false,
-          received,
-          closed
-        )
-      : await sendChat($preset, prologs, $dialogues, await getMemory(orgContent), $session, false)
-    if (result) {
-      $usage = result.usage
-      let scene = lastScene($dialogues)
-      scene.role = result.scene.role
-      scene.content = result.scene.content
-      scene.done = result.scene.done
-      scene = await extractImagePrompt($settings, scene, $replaceDict)
-      $dialogues = $dialogues
-      if (!$preset.streaming) {
-        await checkLorebook()
-      }
-      await tick()
-      scrollToEnd()
-      if (!$preset.streaming) {
-        chooseNextChar()
-      }
-    }
-    saveSession()
+    sendDialogue(orgContent)
   }
 
   async function continueDialogue() {
@@ -1060,6 +1100,21 @@
               d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
           </svg>
           <span class="pl-2">Back</span>
+        </Button>
+        <Button color="alternative" size="sm" on:click={reroll}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+          <span class="pl-2">Reroll</span>
         </Button>
         <Button color="alternative" size="sm" on:click={continueDialogue}>
           <svg

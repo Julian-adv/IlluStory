@@ -109,9 +109,8 @@
     await autoSaveFunc()
   }
 
-  $: tokenVisual = countTokens($curChar.visual)
   $: tokenDescription = countTokens($curChar.description)
-  $: totalTokens = tokenVisual + tokenDescription
+  $: totalTokens = tokenDescription
 </script>
 
 <div class="px-4">
@@ -204,9 +203,11 @@
       search={false}
       bind:value={$curChar.gender}
       save={autoSaveFunc} />
-    <TextField label="Visual" bind:value={$curChar.visual} save={autoSaveFunc} />
-    <span class="text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2"
-      >Tokens: {tokenVisual}</span>
+    <TextField
+      label="Visual"
+      help="This text is always inserted at the beginning of the prompt when an image is generated with Stable Diffusion."
+      bind:value={$curChar.visual}
+      save={autoSaveFunc} />
     <TextField label="Description" bind:value={$curChar.description} save={autoSaveFunc} />
     <span class="text-sm text-stone-400 px-2 col-start-2 col-span-2 mb-2"
       >Tokens: {tokenDescription}</span>

@@ -20,7 +20,7 @@
   import { saveSessionAuto } from '$lib/session'
   import { assistantRole } from '$lib/api'
   import { dirnameOf } from '$lib/fs'
-  import { tcConvertImageSrc } from '$lib/tauriCompat'
+  import { tcConvertImageSrc, tcLog } from '$lib/tauriCompat'
 
   export let scene: SceneType
   let translated: boolean
@@ -70,6 +70,7 @@
 
   function generateNewImage() {
     let imageSource = imageDescription($preset, scene)
+    tcLog('DEBUG', imageSource)
     info.imageFromSD = generateImage(
       $settings,
       info.imageSize.width,
