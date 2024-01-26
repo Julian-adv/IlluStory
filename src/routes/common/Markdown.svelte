@@ -4,11 +4,9 @@
   import FlexibleTextarea from './FlexibleTextarea.svelte'
   import { Button, Spinner } from 'flowbite-svelte'
   import { getUniqueId, translateButtonClass } from '$lib'
-  import { visualEnd, visualStart } from '$lib/image'
 
   export let value = ''
   export let translatedValue = ''
-  export let visualValue = ''
   export let waiting = false
   export let translated = false
   export let readOnly = true
@@ -127,6 +125,7 @@
       )
       text = text.replace(/(?<=>"[^"]*?)<span class='description'>(?=.*?"<)/g, '<span>')
       text = text.replace(/\n\n/g, '\n<div class="line-break"></div>')
+      text = text.replace(/\n/g, '<br>')
       const userNameRegex = new RegExp($user.name, 'g')
       text = text.replace(userNameRegex, "<span class='userName'>$&</span>")
       for (const char of $chars) {

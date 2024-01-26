@@ -388,8 +388,8 @@
           save={autoSaveFunc} />
         <NumberField
           label="Dynamic temperature exponent"
-          bind:value={$preset.oobabooga.dynamtemp_exponent}
-          defaultValue={defaultPreset.oobabooga.dynamtemp_exponent}
+          bind:value={$preset.oobabooga.dynatemp_exponent}
+          defaultValue={defaultPreset.oobabooga.dynatemp_exponent}
           min={0.01}
           max={5.0}
           save={autoSaveFunc} />

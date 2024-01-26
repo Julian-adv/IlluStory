@@ -227,7 +227,7 @@
 
   async function updateInitialScenes() {
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
-    $dialogues = await convertScenes($dialogues, $replaceDict)
+    $dialogues = await convertScenes($curScene.scenes, $replaceDict)
   }
 
   async function newSession() {

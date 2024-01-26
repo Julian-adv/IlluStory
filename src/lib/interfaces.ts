@@ -52,7 +52,7 @@ export interface OobaboogaParam {
   dynamic_temperature: boolean
   dynatemp_low: number
   dynatemp_high: number
-  dynamtemp_exponent: number
+  dynatemp_exponent: number
   top_p: number
   min_p: number
   top_k: number

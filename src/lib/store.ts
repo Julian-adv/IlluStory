@@ -51,7 +51,7 @@ export const defaultPreset: Preset = {
     dynamic_temperature: false,
     dynatemp_low: 1,
     dynatemp_high: 1,
-    dynamtemp_exponent: 1,
+    dynatemp_exponent: 1,
     top_p: 1.0,
     min_p: 0,
     top_k: 0,
