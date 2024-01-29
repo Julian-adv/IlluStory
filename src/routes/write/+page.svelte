@@ -44,6 +44,7 @@
     { value: 'Big O', name: 'Big O' },
     { value: 'Contrastive Search', name: 'Contrastive Search' },
     { value: 'Debug-deterministic', name: 'Debug-deterministic' },
+    { value: 'Default', name: 'Default' },
     { value: 'Divine Intellect', name: 'Divine Intellect' },
     { value: 'LLaMA-Precise', name: 'LLaMA-Precise' },
     { value: 'Midnight Enigma', name: 'Midnight Enigma' },
@@ -56,6 +57,63 @@
     { value: 'chat', name: 'Chat' },
     { value: 'instruct', name: 'Instruct' },
     { value: 'chat-instruct', name: 'Chat + Instruct' }
+  ]
+  const instructionTemplates = [
+    { value: 'Airoboros-v1.2', name: 'Airoboros-v1.2' },
+    { value: 'Alpaca', name: 'Alpaca' },
+    { value: 'Bactrian', name: 'Bactrian' },
+    { value: 'Baichuan Chat', name: 'Baichuan Chat' },
+    { value: 'Baize', name: 'Baize' },
+    { value: 'Bluemoon', name: 'Bluemoon' },
+    { value: 'ChatGLM', name: 'ChatGLM' },
+    { value: 'ChatML', name: 'ChatML' },
+    { value: 'Chinese-Vicuna-Chat', name: 'Chinese-Vicuna-Chat' },
+    { value: 'Default', name: 'Default' },
+    { value: 'Galactica Cite', name: 'Galactica Cite' },
+    { value: 'Galactica Finetuned', name: 'Galactica Finetuned' },
+    { value: 'Galactica Q', name: 'Galactica Q' },
+    { value: 'Galactica Summary', name: 'Galactica Summary' },
+    { value: 'Galactica v2', name: 'Galactica v2' },
+    { value: 'Galactica Work', name: 'Galactica Work' },
+    { value: 'Galactica', name: 'Galactica' },
+    { value: 'Gorilla', name: 'Gorilla' },
+    { value: 'Guanaco non-chat', name: 'Guanaco non-chat' },
+    { value: 'Guanaco-QLoRA', name: 'Guanaco-QLoRA' },
+    { value: 'H2O-prompt_answer', name: 'H2O-prompt_answer' },
+    { value: 'Hippogriff', name: 'Hippogriff' },
+    { value: 'INCITE-Chat', name: 'INCITE-Chat' },
+    { value: 'INCITE-Instruct', name: 'INCITE-Instruct' },
+    { value: 'Koala', name: 'Koala' },
+    { value: 'KoAlpaca', name: 'KoAlpaca' },
+    { value: 'Llama-v2', name: 'Llama-v2' },
+    { value: 'LLaVA', name: 'LLaVA' },
+    { value: 'Manticore Chat', name: 'Manticore Chat' },
+    { value: 'Metharme', name: 'Metharme' },
+    { value: 'Mistral', name: 'Mistral' },
+    { value: 'MOSS', name: 'MOSS' },
+    { value: 'NewHope', name: 'NewHope' },
+    { value: 'Open Assistant', name: 'Open Assistant' },
+    { value: 'OpenBuddy', name: 'OpenBuddy' },
+    { value: 'OpenChat', name: 'OpenChat' },
+    { value: 'OpenOrca-Platypus2', name: 'OpenOrca-Platypus2' },
+    { value: 'Orca Mini', name: 'Orca Mini' },
+    { value: 'Orca-Vicuna', name: 'Orca-Vicuna' },
+    { value: 'RWKV-Raven', name: 'RWKV-Raven' },
+    { value: 'Samantha', name: 'Samantha' },
+    { value: 'StableBeluga2', name: 'StableBeluga2' },
+    { value: 'StableLM', name: 'StableLM' },
+    { value: 'StableVicuna', name: 'StableVicuna' },
+    { value: 'Starchat-Beta', name: 'Starchat-Beta' },
+    { value: 'Synthia-CoT', name: 'Synthia-CoT' },
+    { value: 'Synthia', name: 'Synthia' },
+    { value: 'Tulu', name: 'Tulu' },
+    { value: 'Vicuna-v0', name: 'Vicuna-v0' },
+    { value: 'Vicuna-v1.1', name: 'Vicuna-v1.1' },
+    { value: 'Vigogne-Chat', name: 'Vigogne-Chat' },
+    { value: 'Vigogne-Instruct', name: 'Vigogne-Instruct' },
+    { value: 'Wizard-Mega ShareGPT', name: 'Wizard-Mega ShareGPT' },
+    { value: 'Wizard-Mega', name: 'Wizard-Mega' },
+    { value: 'Ziya', name: 'Ziya' }
   ]
   let autoSave = true
   let totalTokens = 0
@@ -343,6 +401,12 @@
         label="Mode"
         items={chatModes}
         bind:value={$preset.oobabooga.mode}
+        save={autoSaveFunc} />
+      <SelectField
+        label="Instruction template"
+        items={instructionTemplates}
+        search={true}
+        bind:value={$preset.oobabooga.instructionTemplate}
         save={autoSaveFunc} />
       <SelectField
         label="Parameter preset"

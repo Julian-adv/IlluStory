@@ -186,6 +186,7 @@ export async function sendChatOpenAiStream(
   memories: string,
   session: Session,
   summary: boolean,
+  continueGen: boolean,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {

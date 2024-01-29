@@ -45,7 +45,8 @@ export const defaultPreset: Preset = {
     apiUrl: 'http://localhost:5000/v1',
     model: 'gpt-3.5-turbo',
     mode: 'instruct',
-    preset: 'simple-1',
+    instructionTemplate: 'Default',
+    preset: 'Default',
     temperature: 1.0,
     temperature_last: false,
     dynamic_temperature: false,
@@ -81,7 +82,8 @@ export const defaultPreset: Preset = {
     truncation_length: 8192,
     ban_eos_token: false,
     add_bos_token: true,
-    skip_special_tokens: true
+    skip_special_tokens: true,
+    continue_: false
   },
 
   koboldAi: {

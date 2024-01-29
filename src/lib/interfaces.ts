@@ -46,6 +46,7 @@ export interface OobaboogaParam {
   apiUrl: string
   model: string
   mode: 'chat' | 'instruct' | 'chat-instruct'
+  instructionTemplate: string
   preset: string
   temperature: number
   temperature_last: boolean
@@ -83,6 +84,7 @@ export interface OobaboogaParam {
   ban_eos_token: boolean
   add_bos_token: boolean
   skip_special_tokens: boolean
+  continue_: boolean
 }
 
 export interface KoboldAiParam {

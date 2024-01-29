@@ -11,7 +11,7 @@
 
   export let role = 'user'
   export let value = ''
-  export let sendInput: (role: string, text: string) => void
+  export let sendInput: (role: string, text: string, continueGen: boolean) => void
   const enterPrompt = 'Write a prompt.'
   let placeholder = enterPrompt
 
@@ -63,12 +63,12 @@
             entered: trimmed
           }
         } else {
-          sendInput(role, state.entered)
+          sendInput(role, state.entered, false)
           return { state: 'start', value: '', translated: '', entered: '' }
         }
       },
       translated: () => {
-        sendInput(role, state.translated)
+        sendInput(role, state.translated, false)
         return { state: 'start', value: '', translated: '', entered: '' }
       },
       unmodified: () => {

@@ -143,6 +143,7 @@ export const nameToPreset: StringMap = {
   'Big O': bigOPreset,
   'Contrastive Search': contrastiveSearchPreset,
   'Debug-deterministic': debugDeterministicPreset,
+  Default: defaultPreset.oobabooga,
   'Divine Intellect': divineIntellectPreset,
   'LLaMA-Precise': llamaPrecisePreset,
   'Midnight Enigma': midnightEnigmaPreset,
@@ -172,7 +173,9 @@ function modifiedParameters(preset: OobaboogaParam): Partial<OobaboogaParam> {
   }
   modified.truncation_length = preset.truncation_length
   modified.max_tokens = preset.max_tokens
-  modified.preset = preset.preset
+  if (preset.preset !== 'Default') {
+    modified.preset = preset.preset
+  }
   return modified
 }
 
@@ -183,6 +186,7 @@ export async function sendChatOobaboogaStream(
   memories: string,
   session: Session,
   summary: boolean,
+  continueGen: boolean,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
@@ -196,9 +200,14 @@ export async function sendChatOobaboogaStream(
     session,
     summary
   )
+  const modified = modifiedParameters(preset.oobabooga)
+  if (continueGen) {
+    modified.continue_ = true
+    modified.truncation_length = (modified.truncation_length ?? 512) * 2
+  }
   const userName = get(user).name
   const request = {
-    ...modifiedParameters(preset.oobabooga),
+    ...modified,
     stream: true,
     messages: messages,
     stop: [

@@ -286,7 +286,7 @@
     await tick()
     scrollToEnd()
     chooseNextChar(false)
-    sendDialogue(orgContent)
+    sendDialogue(orgContent, false)
   }
 
   async function summarize() {
@@ -305,7 +305,17 @@
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming
-      ? await sendChatStream($preset, prologs, $dialogues, '', $session, true, received, closed)
+      ? await sendChatStream(
+          $preset,
+          prologs,
+          $dialogues,
+          '',
+          $session,
+          true,
+          false,
+          received,
+          closed
+        )
       : await sendChat($preset, prologs, $dialogues, '', $session, true)
     if (result) {
       $usage = result.usage
@@ -343,6 +353,7 @@
           '',
           $session,
           true,
+          false,
           received,
           closed
         )
@@ -663,7 +674,17 @@
             return { ...scene, textContent: scene.content }
           })
     if ($preset.streaming) {
-      await sendChatStream($preset, inst, [], '', $session, false, receivedVisual, closedVisual)
+      await sendChatStream(
+        $preset,
+        inst,
+        [],
+        '',
+        $session,
+        false,
+        false,
+        receivedVisual,
+        closedVisual
+      )
     } else {
       const result = await sendChat($preset, inst, [], '', $session, false)
       if (result) {
@@ -749,6 +770,7 @@
           '',
           $session,
           false,
+          false,
           receivedLorebook,
           closedLorebook
         )
@@ -811,7 +833,7 @@
     }
   }
 
-  async function sendDialogue(orgContent: string) {
+  async function sendDialogue(orgContent: string, continueGen: boolean) {
     if (nextChar === 'random') {
       $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
     } else {
@@ -826,6 +848,7 @@
           await getMemory(orgContent),
           $session,
           false,
+          continueGen,
           received,
           closed
         )
@@ -851,7 +874,7 @@
     saveSession()
   }
 
-  async function sendInput(role: string, orgContent: string) {
+  async function sendInput(role: string, orgContent: string, continueGen: boolean) {
     if (orgContent.startsWith('/')) {
       processCommands(orgContent)
       return
@@ -889,11 +912,11 @@
     }
     await tick()
     scrollToEnd()
-    sendDialogue(orgContent)
+    sendDialogue(orgContent, continueGen)
   }
 
   async function continueDialogue() {
-    await sendInput(userRole, '')
+    await sendInput(userRole, '', true)
   }
 </script>
 

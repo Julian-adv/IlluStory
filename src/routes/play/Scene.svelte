@@ -116,7 +116,6 @@
     <Markdown
       bind:value={scene.textContent}
       bind:translatedValue={scene.translatedContent}
-      bind:visualValue={scene.visualContent}
       bind:translated
       {onTranslate}
       {onEditDone}
