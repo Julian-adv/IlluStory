@@ -254,8 +254,8 @@
     font-family: var(--font-family, Geogia);
   }
 
-  :global(.markdown > p) {
-    display: inline;
+  :global(.markdown > p + p) {
+    margin-top: 0.5rem;
   }
 
   :global(.markdown .line-break) {

@@ -16,9 +16,6 @@ function fixSettings(settings: Settings) {
   if (!settings.sortType) {
     settings.sortType = defaultSettings.sortType
   }
-  if (!settings.convertMarkdown) {
-    settings.convertMarkdown = defaultSettings.convertMarkdown
-  }
   if (!settings.dialogSettings) {
     settings.dialogSettings = defaultSettings.dialogSettings
   }
