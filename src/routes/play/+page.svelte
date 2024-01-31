@@ -207,6 +207,7 @@
     $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
     $dialogues = await convertScenes($session.scenes, $replaceDict)
     setTriggers($lorebook, $session.lorebookTriggers)
+    fillCharacters()
   }
 
   async function loadRecentSession() {
