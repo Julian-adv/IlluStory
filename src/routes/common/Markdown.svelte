@@ -245,7 +245,6 @@
   :global(.markdown .charName) {
     color: var(--charName-color, black);
     font-weight: var(--charName-weight, normal);
-    font-style: var(--charName-style, normal);
     font-family: var(--font-family, Geogia);
     font-size: var(--font-size, 12pt);
   }

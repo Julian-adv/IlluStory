@@ -324,6 +324,7 @@
       bind:value={$preset.api}
       save={apiChange} />
     <CheckField label="Text streaming" help="" bind:value={$preset.streaming} save={autoSaveFunc} />
+    <CheckField label="Narrator mode" help="User plays as narrator." bind:value={$preset.narratorMode} save={autoSaveFunc} />
     {#if $preset.api === Api.OpenAi}
       <StringField
         label="URL"

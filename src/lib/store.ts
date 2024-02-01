@@ -30,6 +30,7 @@ export const defaultPreset: Preset = {
   summarizePrompt:
     'This is part of the history of the last conversation between <char>(<char_gender>) and <user>(<user_gender>). Summarize, condense, approximately timestamp the content of the messages exchanged between <char> and <user>, focusing on concrete events and direct information from their conversation. Remove or simplify any content that appears to be redundant or repetitive. Use abbreviations, common language shortcuts. Lastly, add "<Preiviously on <char> and <user>\'s story>" at the beginning of the output, and "</Previously>" at the end of the output. If any of these phrases are in the middle of the input you receive, delete them. They should only appear once, at the end of the output.',
 
+  narratorMode: false,
   openAi: {
     apiUrl: 'https://api.openai.com/v1',
     model: '',

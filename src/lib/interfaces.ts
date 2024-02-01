@@ -120,6 +120,7 @@ export interface Preset {
   visualizeRegexp: string
   visualizePrompt: string
   summarizePrompt: string
+  narratorMode: boolean
   openAi: OpenAiParam
   oobabooga: OobaboogaParam
   koboldAi: KoboldAiParam

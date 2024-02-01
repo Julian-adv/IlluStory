@@ -246,7 +246,9 @@
     const userNameLabel = $user.name + ': '
     return scene.content.startsWith(userNameLabel)
       ? scene.content.slice(userNameLabel.length)
-      : scene.content
+      : $preset.narratorMode && scene.content.startsWith('*(') && scene.content.endsWith(')*')
+        ? scene.content.slice(2, scene.content.length - 2)
+        : scene.content
   }
 
   async function goBack() {
@@ -884,6 +886,9 @@
     if (content[0] === '"') {
       content = `${$user.name}: ` + content
     }
+    if ($preset.narratorMode) {
+      content = `*(${content})*`
+    }
     const sceneId = newSceneId($dialogues)
     if (content) {
       const userScene = {
@@ -1068,7 +1073,7 @@
   </div>
   {#if started}
     <SceneList />
-    <div class="grid grid-cols-[8rem,1fr,3rem] gap-2 mt-2 px-4">
+    <div class="grid grid-cols-[8rem,1fr,8rem] gap-2 mt-2 px-4">
       <div class="col-span-3 text-sm text-stone-400">
         Prompt tokens: {$usage.prompt_tokens}, Completion tokens: {$usage.completion_tokens}, Total
         tokens: {$usage.total_tokens}
