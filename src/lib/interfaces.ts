@@ -89,23 +89,26 @@ export interface OobaboogaParam {
 
 export interface KoboldAiParam {
   apiUrl: string
-  preset: string
-  maxTokens: number
+  maxLength: number
   temperature: number
+  dynatempRange: number
+  dynatempExponent: number
   topP: number
   topK: number
-  typicalP: number
+  typical: number
   tfs: number
   topA: number
   minP: number
-  repetitionPenalty: number
-  repetitionPenaltyRange: number
+  repPen: number
+  repPenRange: number
+  presencePenalty: number
+  useDefaultBadwordsIds: boolean
   samplerOrder: number[]
-  seed: number
-  mirostatMode: number
+  samplerSeed: number
+  mirostat: number
   mirostatTau: number
   mirostatEta: number
-  contextSize: number
+  maxContextLength: number
   systemPrefix: string
   userPrefix: string
   assistantPrefix: string

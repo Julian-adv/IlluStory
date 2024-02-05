@@ -110,8 +110,16 @@ export async function killServer() {
 }
 
 export function labelColor(
-  value: number | boolean | string,
-  defaultValue: number | boolean | string
+  value: number | boolean | string | number[],
+  defaultValue: number | boolean | string | number[]
 ) {
+  if (
+    Array.isArray(value) &&
+    Array.isArray(defaultValue) &&
+    value.length === defaultValue.length &&
+    value.every((v, i) => v === defaultValue[i])
+  ) {
+    return 'text-black'
+  }
   return value !== defaultValue ? 'text-blue-700' : 'text-black'
 }

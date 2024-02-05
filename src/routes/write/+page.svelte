@@ -324,7 +324,11 @@
       bind:value={$preset.api}
       save={apiChange} />
     <CheckField label="Text streaming" help="" bind:value={$preset.streaming} save={autoSaveFunc} />
-    <CheckField label="Narrator mode" help="User plays as narrator." bind:value={$preset.narratorMode} save={autoSaveFunc} />
+    <CheckField
+      label="Narrator mode"
+      help="User plays as narrator."
+      bind:value={$preset.narratorMode}
+      save={autoSaveFunc} />
     {#if $preset.api === Api.OpenAi}
       <StringField
         label="URL"
@@ -707,25 +711,37 @@
         help="For example, http://localhost:5001/api."
         placeholder=""
         bind:value={$preset.koboldAi.apiUrl}
+        defaultValue={defaultPreset.koboldAi.apiUrl}
         save={autoSaveFunc} />
-      <SelectField
-        label="Parameter preset"
-        items={parameterPresets}
-        help="Parameter preset to use."
-        search={false}
-        bind:value={$preset.koboldAi.preset}
-        save={onChangeParameterPreset} />
       <NumberField
         label="Temperature"
         help="Primary factor to control randomness of outputs. 0 = deterministic (only the most likely token is used). Higher value = more randomness."
         bind:value={$preset.koboldAi.temperature}
+        defaultValue={defaultPreset.koboldAi.temperature}
         min={0.0}
         max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Dynamic temperature range"
+        help="If greater than 0, uses dynamic temperature. Dynamic temperature range will be between Temp+Range and Temp-Range. If less or equal to 0 , uses static temperature."
+        bind:value={$preset.koboldAi.dynatempRange}
+        defaultValue={defaultPreset.koboldAi.dynatempRange}
+        min={0.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Dynamic temperature exponent"
+        help="The steepness of the curve is controlled by it."
+        bind:value={$preset.koboldAi.dynatempExponent}
+        defaultValue={defaultPreset.koboldAi.dynatempExponent}
+        min={0.0}
+        max={5.0}
         save={autoSaveFunc} />
       <NumberField
         label="Top p"
         help="If not set to 1, select tokens with probabilities adding up to less than this number. Higher value = higher range of possible random results."
         bind:value={$preset.koboldAi.topP}
+        defaultValue={defaultPreset.koboldAi.topP}
         min={0.0}
         max={1.0}
         save={autoSaveFunc} />
@@ -733,6 +749,7 @@
         label="Top k"
         help="Similar to top_p, but select instead only the top_k most likely tokens. Higher value = higher range of possible random results."
         bind:value={$preset.koboldAi.topK}
+        defaultValue={defaultPreset.koboldAi.topK}
         min={0}
         max={100}
         step={1}
@@ -740,7 +757,8 @@
       <NumberField
         label="Typical p"
         help="If not set to 1, select only tokens that are at least this much more likely to appear than random tokens, given the prior text."
-        bind:value={$preset.koboldAi.typicalP}
+        bind:value={$preset.koboldAi.typical}
+        defaultValue={defaultPreset.koboldAi.typical}
         min={0.0}
         max={1.0}
         save={autoSaveFunc} />
@@ -748,6 +766,7 @@
         label="TFS"
         help="Tail Free Sampling, https://www.trentonbricken.com/Tail-Free-Sampling/"
         bind:value={$preset.koboldAi.tfs}
+        defaultValue={defaultPreset.koboldAi.tfs}
         min={0.0}
         max={1.0}
         save={autoSaveFunc} />
@@ -755,6 +774,7 @@
         label="Top a"
         help=""
         bind:value={$preset.koboldAi.topA}
+        defaultValue={defaultPreset.koboldAi.topA}
         min={0.0}
         max={1.0}
         save={autoSaveFunc} />
@@ -762,38 +782,55 @@
         label="Min p"
         help=""
         bind:value={$preset.koboldAi.minP}
+        defaultValue={defaultPreset.koboldAi.minP}
         min={0.0}
         max={1.0}
         save={autoSaveFunc} />
       <NumberField
         label="Repetition penalty"
         help="Exponential penalty factor for repeating prior tokens. 1 means no penalty, higher value = less repetition, lower value = more repetition."
-        bind:value={$preset.koboldAi.repetitionPenalty}
+        bind:value={$preset.koboldAi.repPen}
+        defaultValue={defaultPreset.koboldAi.repPen}
         min={1.0}
         max={2.0}
         save={autoSaveFunc} />
       <NumberField
         label="Repetition penalty range"
         help="Higher means it reads farther back into it's memory to try to not repeat itself."
-        bind:value={$preset.koboldAi.repetitionPenaltyRange}
+        bind:value={$preset.koboldAi.repPenRange}
+        defaultValue={defaultPreset.koboldAi.repPenRange}
         min={0}
         max={4096}
         step={1}
         save={autoSaveFunc} />
-      <StringField
+      <NumberField
+        label="Repetition penalty range"
+        help="Similar to repetition_penalty, but with an additive offset on the raw token scores instead of a multiplicative factor. It may generate better results. 0 means no penalty, higher value = less repetition, lower value = more repetition."
+        bind:value={$preset.koboldAi.presencePenalty}
+        defaultValue={defaultPreset.koboldAi.presencePenalty}
+        min={-2.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
         label="Seed"
-        help="Set the Pytorch seed to this number. Note that some loaders do not use Pytorch (notably llama.cpp), and others are not deterministic (notably ExLlama v1 and v2). For these loaders, the seed has no effect."
-        bind:value={$preset.koboldAi.seed}
+        help="RNG seed to use for sampling. If not specified, the global RNG will be used."
+        bind:value={$preset.koboldAi.samplerSeed}
+        defaultValue={defaultPreset.koboldAi.samplerSeed}
+        min={-1}
+        max={999999}
+        step={1}
         save={autoSaveFunc} />
       <NumberListField
         label="Sampler order"
         help="The order of the sampler, e.g. 6,0,1,3,4,2,5"
         bind:value={$preset.koboldAi.samplerOrder}
+        defaultValue={defaultPreset.koboldAi.samplerOrder}
         save={autoSaveFunc} />
       <NumberField
         label="Mirostat mode"
         help="Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text."
-        bind:value={$preset.koboldAi.mirostatMode}
+        bind:value={$preset.koboldAi.mirostat}
+        defaultValue={defaultPreset.koboldAi.mirostat}
         min={0}
         max={2}
         step={1}
@@ -802,6 +839,7 @@
         label="Mirostat tau"
         help="Set the Mirostat target entropy, parameter tau."
         bind:value={$preset.koboldAi.mirostatTau}
+        defaultValue={defaultPreset.koboldAi.mirostatTau}
         min={0}
         max={10}
         save={autoSaveFunc} />
@@ -809,6 +847,7 @@
         label="Mirostat eta"
         help="Set the Mirostat learning rate, parameter eta."
         bind:value={$preset.koboldAi.mirostatEta}
+        defaultValue={defaultPreset.koboldAi.mirostatEta}
         min={0}
         max={1}
         save={autoSaveFunc} />
@@ -830,7 +869,8 @@
       <NumberField
         label="Max tokens"
         help="The maximum number of tokens to generate in the completion."
-        bind:value={$preset.koboldAi.maxTokens}
+        bind:value={$preset.koboldAi.maxLength}
+        defaultValue={defaultPreset.koboldAi.maxLength}
         min={48}
         max={1024}
         step={8}
@@ -838,7 +878,8 @@
       <NumberField
         label="Context size"
         help="Represents the model's context size. If story tokens near this, the old chats will be stored and removed."
-        bind:value={$preset.koboldAi.contextSize}
+        bind:value={$preset.koboldAi.maxContextLength}
+        defaultValue={defaultPreset.koboldAi.maxContextLength}
         min={512}
         max={32768}
         step={8}
