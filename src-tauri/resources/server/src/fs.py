@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from datetime import datetime
+from pathlib import Path
 from typing import List, Dict, Union
 import os
 import shutil
@@ -33,7 +34,6 @@ resource_directory = "../src-tauri"
 
 @router.post("/exists")
 async def exists(path: Path):
-    path = os.path.join(directory, path.path)
     result = {"exists": os.path.exists(path)}
     return result
 
@@ -41,6 +41,13 @@ async def exists(path: Path):
 @router.get("/appDataDir")
 async def app_data_dir():
     return {"path": ""}
+
+
+@router.get("/homeDir")
+async def home_dir():
+    home_directory = os.path.expanduser("~") + "\\"
+    print(home_directory)
+    return {"path": home_directory}
 
 
 @router.post("/createDir")

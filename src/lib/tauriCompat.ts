@@ -33,7 +33,7 @@ export async function tcSetDataDir() {
 }
 
 async function fetchGet(api: string) {
-  const response = await fetch('http://localhost:8000/api/' + api, {
+  const response = await fetch('http://localhost:8001/api/' + api, {
     method: 'GET'
   })
   const json = await response.json()
@@ -41,7 +41,7 @@ async function fetchGet(api: string) {
 }
 
 async function fetchPost(api: string, body: any) {
-  const response = await fetch('http://localhost:8000/api/' + api, {
+  const response = await fetch('http://localhost:8001/api/' + api, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -57,8 +57,8 @@ async function fetchPost(api: string, body: any) {
 }
 
 export async function tcExists(path: string): Promise<boolean> {
+  path = get(settings).dataDir + '/' + path
   if (window.__TAURI_METADATA__) {
-    path = get(settings).dataDir + '/' + path
     return await exists(path)
   } else {
     const result = await fetchPost('fs/exists', { path: path })
@@ -107,10 +107,10 @@ function isAbsolute(path: string) {
 }
 
 export async function tcReadTextFile(path: string): Promise<string> {
+  if (!isAbsolute(path)) {
+    path = get(settings).dataDir + '/' + path
+  }
   if (window.__TAURI_METADATA__) {
-    if (!isAbsolute(path)) {
-      path = get(settings).dataDir + '/' + path
-    }
     return await readTextFile(path)
   } else {
     const result = await fetchPost('fs/readTextFile', { path: path })
@@ -119,10 +119,10 @@ export async function tcReadTextFile(path: string): Promise<string> {
 }
 
 export async function tcReadBinaryFile(path: string): Promise<Uint8Array> {
+  if (!isAbsolute(path)) {
+    path = get(settings).dataDir + '/' + path
+  }
   if (window.__TAURI_METADATA__) {
-    if (!isAbsolute(path)) {
-      path = get(settings).dataDir + '/' + path
-    }
     return await readBinaryFile(path)
   } else {
     const result = await fetchPost('fs/readBinaryFile', { path: path })
@@ -131,10 +131,10 @@ export async function tcReadBinaryFile(path: string): Promise<Uint8Array> {
 }
 
 export async function tcWriteTextFile(path: string, text: string): Promise<void> {
+  if (!isAbsolute(path)) {
+    path = get(settings).dataDir + '/' + path
+  }
   if (window.__TAURI_METADATA__) {
-    if (!isAbsolute(path)) {
-      path = get(settings).dataDir + '/' + path
-    }
     await writeTextFile(path, text)
   } else {
     await fetchPost('fs/writeTextFile', { path: path, text: text })
@@ -146,8 +146,8 @@ export async function tcWriteBinaryFile(path: string, data: string): Promise<voi
 }
 
 export async function tcReadDir(path: string): Promise<FileEntry[]> {
+  path = get(settings).dataDir + '/' + path
   if (window.__TAURI_METADATA__) {
-    path = get(settings).dataDir + '/' + path
     try {
       return await readDir(path, { recursive: true })
     } catch (e) {
@@ -161,8 +161,9 @@ export async function tcReadDir(path: string): Promise<FileEntry[]> {
 }
 
 export async function tcMetadata(path: string) {
+  path = get(settings).dataDir + '/' + path
   if (window.__TAURI_METADATA__) {
-    return await metadata(get(settings).dataDir + '/' + path)
+    return await metadata(path)
   } else {
     const result = await fetchPost('fs/metadata', { path: path })
     return result
@@ -420,6 +421,6 @@ export function tcConvertImageSrc(src: string | undefined) {
   if (window.__TAURI_METADATA__) {
     return convertFileSrc(get(settings).dataDir + '/' + src)
   } else {
-    return 'http://localhost:8000/api/' + src
+    return 'http://localhost:8001/static/' + src
   }
 }

@@ -17,6 +17,6 @@ directory = "data"
 @router.post("/log", status_code=status.HTTP_204_NO_CONTENT)
 async def log(param: LogMessage):
     print(param.level)
-    logging.basicConfig(filename=f"{directory}/{param.path}.log", level=logging.DEBUG)
+    logging.basicConfig(filename=param.path, level=logging.DEBUG)
     log_level = getattr(logging, param.level)
     logging.log(log_level, param.msg)

@@ -14,7 +14,7 @@ class UrlBody(BaseModel):
 @router.post("/post")
 async def proxy(req: UrlBody):
     try:
-        print(req.url)
+        print("req.url = " + req.url)
         response = requests.post(req.url, json=req.body, headers=req.headers)
         json = response.json()
         return {"ok": True, "data": json}
