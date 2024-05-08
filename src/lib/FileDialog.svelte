@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Input, Label, Modal } from 'flowbite-svelte'
-  import { tcReadDir } from './tauriCompat'
+  import { tcMetadata, tcReadDir } from './tauriCompat'
   import CommonCard from './CommonCard.svelte'
   import type { StoryCard } from './interfaces'
   import { cardFromPath } from './card'
@@ -35,8 +35,14 @@
   }
 
   async function readCards() {
-    dir = dirnameOf(value)
-    fileName = basenameOf(value)
+    let meta = await tcMetadata(value)
+    if (meta.isDir) {
+      dir = value
+      fileName = ''
+    } else {
+      dir = dirnameOf(value)
+      fileName = basenameOf(value)
+    }
     const entries = await tcReadDir(dir)
     const dotExt = '.' + ext
     cards = await Promise.all(

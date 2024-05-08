@@ -157,8 +157,8 @@ def scan_dir(
 
 @router.post("/readDir")
 async def read_dir(path: Path):
-    path = os.path.join(directory, path.path)
-    path = path.replace("\\", "/")
+    # path = os.path.join(directory, path.path)
+    path = path.path.replace("\\", "/")
     print(path)
     try:
         entries = scan_dir(path)
@@ -172,8 +172,8 @@ async def read_dir(path: Path):
 
 @router.post("/metadata")
 async def metadata(path: Path):
-    path = os.path.join(directory, path.path)
-    path = path.replace("\\", "/")
+    # path = os.path.join(directory, path.path)
+    path = path.path.replace("\\", "/")
     print(path)
     try:
         info = os.stat(path)

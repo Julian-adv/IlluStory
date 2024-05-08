@@ -146,7 +146,9 @@ export async function tcWriteBinaryFile(path: string, data: string): Promise<voi
 }
 
 export async function tcReadDir(path: string): Promise<FileEntry[]> {
-  path = get(settings).dataDir + '/' + path
+  if (!isAbsolute(path)) {
+    path = get(settings).dataDir + '/' + path
+  }
   if (window.__TAURI_METADATA__) {
     try {
       return await readDir(path, { recursive: true })
@@ -161,7 +163,9 @@ export async function tcReadDir(path: string): Promise<FileEntry[]> {
 }
 
 export async function tcMetadata(path: string) {
-  path = get(settings).dataDir + '/' + path
+  if (!isAbsolute(path)) {
+    path = get(settings).dataDir + '/' + path
+  }
   if (window.__TAURI_METADATA__) {
     return await metadata(path)
   } else {
