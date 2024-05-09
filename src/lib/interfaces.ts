@@ -247,7 +247,7 @@ export interface Session {
   presetCard: string
   userCard: string
   charCards: string[]
-  nextSpeaker: number
+  nextSpeaker: string
   sceneCard: string
   lorebookCard: string
   startIndex: number

@@ -6,8 +6,8 @@ import { tcConvertImageSrc, tcOpen, tcReadTextFile } from './tauriCompat'
 export async function loadSession(path: string) {
   const json = await tcReadTextFile(path)
   const session = JSON.parse(json) as Session
-  if (!session.nextSpeaker) {
-    session.nextSpeaker = 0
+  if (!session.nextSpeaker || typeof session.nextSpeaker === 'number') {
+    session.nextSpeaker = 'auto'
   }
   if (!session.lorebookTriggers) {
     session.lorebookTriggers = []
@@ -86,7 +86,7 @@ function generateCharSetting(tag: string | undefined, char: Char, user: Char) {
   return replaceName(charDesc, dict)
 }
 
-export function replaceChars(prompts: SceneType[], chars: Char[], speaker: number, user: Char) {
+export function replaceChars(prompts: SceneType[], chars: Char[], speaker: Char, user: Char) {
   const newPrompts: SceneType[] = []
   for (const prompt of prompts) {
     if (prompt.role === charSetting) {
@@ -97,7 +97,7 @@ export function replaceChars(prompts: SceneType[], chars: Char[], speaker: numbe
           newPrompts.push({ ...prompt, role, content })
         }
       } else {
-        const content = generateCharSetting(prompt.tag, chars[speaker], user)
+        const content = generateCharSetting(prompt.tag, speaker, user)
         newPrompts.push({ ...prompt, content })
       }
     } else if (prompt.role === userSetting) {

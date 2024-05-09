@@ -36,10 +36,8 @@ function visualOfName(name: string | undefined) {
       return char.visual
     }
   }
-  if (name === 'random') {
-    return charArray[Math.floor(Math.random() * charArray.length)].visual
-  }
-  return ''
+  // It shouldn't happen.
+  return charArray[Math.floor(Math.random() * charArray.length)].visual
 }
 
 export function imageDescription(preset: Preset, scene: SceneType) {

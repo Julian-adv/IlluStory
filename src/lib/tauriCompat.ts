@@ -142,6 +142,9 @@ export async function tcWriteTextFile(path: string, text: string): Promise<void>
 }
 
 export async function tcWriteBinaryFile(path: string, data: string): Promise<void> {
+  if (!isAbsolute(path)) {
+    path = get(settings).dataDir + '/' + path
+  }
   await fetchPost('fs/writeBinaryFile', { path: path, text: data })
 }
 

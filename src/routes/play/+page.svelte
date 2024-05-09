@@ -51,7 +51,8 @@
     type StringDictionary,
     type Lorebook,
     type Trigger,
-    Api
+    Api,
+    type Char
   } from '$lib/interfaces'
   import {
     loadSession,
@@ -194,6 +195,36 @@
 
   let shortSessionPath = ''
 
+  function chooseChar(chars: Char[], char: string | undefined, dialogues: SceneType[]): Char {
+    if (char === 'auto') {
+      var userInp = ''
+      for (let i = dialogues.length - 1; i >= 0; i--) {
+        if (dialogues[i].role === userRole) {
+          userInp = dialogues[i].content
+          break
+        }
+      }
+      for (const ch of chars) {
+        if (userInp.indexOf(ch.name) !== -1) {
+          return ch
+        }
+      }
+      // User didn't mention any character, we keep previous speaker
+      for (let i = dialogues.length - 1; i >= 0; i--) {
+        if (dialogues[i].role === assistantRole && dialogues[i].name) {
+          char = dialogues[i].name
+          break
+        }
+      }
+    }
+    for (const ch of chars) {
+      if (ch.name === char) {
+        return ch
+      }
+    }
+    return chars[0]
+  }
+
   async function loadSessionCommon(path: string) {
     const dataDir = await tcAppDataDir()
     $sessionPath = path
@@ -204,7 +235,8 @@
     $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
     $lorebookCard = await cardFromPath(dataDir + $session.lorebookCard)
     await loadVarsFromPath()
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    // Empty dictionary will be sufficient.
+    $replaceDict = {}
     $dialogues = await convertScenes($session.scenes, $replaceDict)
     setTriggers($lorebook, $session.lorebookTriggers)
     fillCharacters()
@@ -227,7 +259,7 @@
   }
 
   async function updateInitialScenes() {
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
     $dialogues = await convertScenes($curScene.scenes, $replaceDict)
   }
 
@@ -268,7 +300,6 @@
     }
     $dialogues = $dialogues
     $usage = calcUsage()
-    chooseNextChar(false)
   }
 
   async function reroll() {
@@ -288,7 +319,6 @@
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
-    chooseNextChar(false)
     sendDialogue(orgContent, false)
   }
 
@@ -304,7 +334,7 @@
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming
@@ -345,7 +375,7 @@
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming
@@ -389,39 +419,25 @@
     return memory
   }
 
-  let characters = [{ value: 'random', name: 'Random' }]
-
-  function forwardNextSpeaker(forward: boolean) {
-    if (forward) {
-      $session.nextSpeaker++
-      if ($session.nextSpeaker >= $chars.length) {
-        $session.nextSpeaker = 0
-      }
-    } else {
-      $session.nextSpeaker--
-      if ($session.nextSpeaker < 0) {
-        $session.nextSpeaker = $chars.length - 1
-      }
-    }
-    return characters[$session.nextSpeaker + 1].value
-  }
+  let characters = [{ value: 'auto', name: 'Auto' }]
 
   function fillCharacters() {
-    characters = [{ value: 'random', name: 'Random' }]
+    characters = [{ value: 'auto', name: 'Auto' }]
     for (const char of $chars) {
       characters.push({ value: char.name, name: char.name })
     }
-    nextChar = characters[$session.nextSpeaker + 1].value
+    nextChar = $session.nextSpeaker
   }
 
   function onChangeNextChar(value: string) {
-    $session.nextSpeaker = $chars.findIndex(char => char.name === value)
+    $session.nextSpeaker = value
   }
 
   function preparePrologue() {
     let prologs
-    prologs = replaceChars($preset.prompts, $chars, $session.nextSpeaker, $user)
-    $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+    let speaker = chooseChar($chars, $session.nextSpeaker, $dialogues)
+    prologs = replaceChars($preset.prompts, $chars, speaker, $user)
+    $replaceDict = makeReplaceDict(speaker, $user)
     prologs = replaceNames(prologs, $replaceDict)
     return prologs
   }
@@ -539,7 +555,7 @@
   async function start() {
     tcLog('INFO', 'start new session')
     await loadVarsFromPath()
-    $session.nextSpeaker = 0
+    $session.nextSpeaker = 'auto'
     $dialogues = []
     await updateInitialScenes()
     initLorebook($lorebook, $session)
@@ -606,18 +622,12 @@
     }
   }
 
-  function chooseNextChar(forward: boolean) {
-    if (nextChar !== 'random') {
-      nextChar = forwardNextSpeaker(forward)
-    }
-  }
-
   function finishVisual() {
     const scene = lastScene($dialogues)
     tcLog('INFO', 'visual description:', scene.visualContent ?? '')
     scene.done = true
     $dialogues = $dialogues
-    chooseNextChar(true)
+    // chooseNextChar(true)
     saveSession()
   }
 
@@ -633,17 +643,29 @@
     finishVisual()
   }
 
+  function chooseCharByName(chars: Char[], name: string): Char {
+    chars.forEach(ch => {
+      if (ch.name === name) {
+        return ch
+      }
+    })
+    return chars[0]
+  }
   async function generateVisual() {
     let prevVisualPrompt = ''
+    let prevSpeaker = ''
     for (let i = $dialogues.length - 1; i >= 0; i--) {
       const scene = $dialogues[i]
       if (scene.role === assistantRole && scene.visualContent) {
         prevVisualPrompt = scene.visualContent
         break
       }
+      if (scene.role === assistantRole && scene.name) {
+        prevSpeaker = scene.name
+      }
     }
     if (prevVisualPrompt === '') {
-      prevVisualPrompt = $chars[$session.nextSpeaker].visual
+      prevVisualPrompt = chooseCharByName($chars, prevSpeaker).visual
     } else {
       prevVisualPrompt = `<Visual>${prevVisualPrompt}</Visual>`
     }
@@ -761,7 +783,7 @@
           content: '\n</Story>\n<Question>\n' + rule.condition
         }
       ]
-      $replaceDict = makeReplaceDict($chars[$session.nextSpeaker], $user)
+      $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
       const inst = replaceNames(instructions, $replaceDict)
       lorebookAnswer = ''
 
@@ -837,11 +859,7 @@
   }
 
   async function sendDialogue(orgContent: string, continueGen: boolean) {
-    if (nextChar === 'random') {
-      $session.nextSpeaker = Math.floor(Math.random() * $chars.length)
-    } else {
-      $session.nextSpeaker = $chars.findIndex(char => char.name === nextChar)
-    }
+    let speaker = nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues).name : nextChar
     const prologs = preparePrologue()
     const result = $preset.streaming
       ? await sendChatStream(
@@ -861,7 +879,7 @@
       let scene = lastScene($dialogues)
       scene.role = result.scene.role
       scene.content = result.scene.content
-      scene.name = nextChar
+      scene.name = speaker
       scene.done = result.scene.done
       scene = await extractImagePrompt($settings, scene, $replaceDict)
       $dialogues = $dialogues
@@ -870,9 +888,6 @@
       }
       await tick()
       scrollToEnd()
-      if (!$preset.streaming) {
-        chooseNextChar(true)
-      }
     }
     saveSession()
   }
@@ -1112,7 +1127,7 @@
               stroke-linejoin="round"
               d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
-          <span class="pl-2">Reroll</span>
+          <span class="pl-2">Regenerate</span>
         </Button>
         <Button color="alternative" size="sm" on:click={continueDialogue}>
           <svg
@@ -1144,7 +1159,7 @@
           </svg>
           <span class="pl-2">Summarize</span>
         </Button>
-        <span>Next character:</span>
+        <span>AI role:</span>
         <DropSelect
           items={characters}
           size="sm"

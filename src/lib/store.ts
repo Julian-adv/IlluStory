@@ -124,7 +124,7 @@ export const defaultSession: Session = {
   presetCard: '',
   userCard: '',
   charCards: [],
-  nextSpeaker: 0,
+  nextSpeaker: 'auto',
   sceneCard: '',
   lorebookCard: '',
   startIndex: 0,
