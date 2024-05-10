@@ -3,17 +3,15 @@
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
   import {
-    chars,
     dialogues,
     lorebook,
     preset,
     replaceDict,
     session,
     sessionPath,
-    settings,
-    user
+    settings
   } from '$lib/store'
-  import { getRandomSize, iconForName, lastScene, realImageSize, scrollToEnd } from '$lib'
+  import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { extractImagePrompt, imageDescription } from '$lib/image'
@@ -23,6 +21,7 @@
   import { assistantRole } from '$lib/api'
   import { dirnameOf } from '$lib/fs'
   import { tcConvertImageSrc, tcLog } from '$lib/tauriCompat'
+  import CharIcon from '../common/CharIcon.svelte'
 
   export let scene: SceneType
   let translated: boolean
@@ -115,10 +114,7 @@
       class={imageClass} />
   {/if}
   <div class="px-4">
-    <div style="float: left" class="mr-4 char-icon text-stone-50">
-      <img src={iconForName($chars, $user, scene.name)} alt="icon" />
-      <div>{scene.name}</div>
-    </div>
+    <CharIcon name={scene.name ?? 'Noname'} size={80} offsetX={8} offsetY={-92} scale={2.84} />
     <Markdown
       bind:value={scene.textContent}
       bind:translatedValue={scene.translatedContent}
@@ -130,26 +126,3 @@
   </div>
 </div>
 <div class="clear-both p-2"></div>
-
-<style>
-  .char-icon {
-    position: relative;
-    overflow: hidden;
-    width: 64px;
-    height: 64px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .char-icon img {
-    max-width: 256px;
-    position: absolute;
-    top: -24px;
-    left: -100px;
-  }
-
-  .char-icon div {
-    position: absolute;
-    bottom: 0;
-  }
-</style>
