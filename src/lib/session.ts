@@ -38,7 +38,13 @@ export async function loadSessionDialog(): Promise<[Session | null, string]> {
 
 export function prepareForSave(session: Session, dialogues: SceneType[], lorebook: Lorebook) {
   session.scenes = dialogues.map(scene => {
-    return { id: scene.id, role: scene.role, content: scene.content, image: scene.image }
+    return {
+      id: scene.id,
+      role: scene.role,
+      content: scene.content,
+      image: scene.image,
+      name: scene.name
+    }
   })
   session.lorebookTriggers = lorebook.rules.map(rule => {
     return { id: rule.id, triggered: rule.triggered }

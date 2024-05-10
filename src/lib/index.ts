@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { ImageSize, SceneType } from './interfaces'
+import type { Char, ImageSize, SceneType } from './interfaces'
 import { settings } from './store'
 import { tcPost } from './tauriCompat'
 
@@ -122,4 +122,16 @@ export function labelColor(
     return 'text-black'
   }
   return value !== defaultValue ? 'text-blue-700' : 'text-black'
+}
+
+export function iconForName(chars: Char[], user: Char, name: string | undefined): string {
+  for (const ch of chars) {
+    if (ch.name === name) {
+      return ch.image
+    }
+  }
+  if (user.name === name) {
+    return user.image
+  }
+  return ''
 }

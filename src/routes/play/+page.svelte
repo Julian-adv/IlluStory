@@ -433,17 +433,25 @@
     $session.nextSpeaker = value
   }
 
-  function preparePrologue() {
+  function preparePrologue(speakerName: string) {
     let prologs
-    let speaker = chooseChar($chars, $session.nextSpeaker, $dialogues)
+    let speaker = chooseCharByName($chars, speakerName)
     prologs = replaceChars($preset.prompts, $chars, speaker, $user)
     $replaceDict = makeReplaceDict(speaker, $user)
     prologs = replaceNames(prologs, $replaceDict)
     return prologs
   }
 
+  function lastSpeakerName(dialogues: SceneType[]): string {
+    let speaker = lastScene(dialogues).name
+    if (speaker) {
+      return speaker
+    }
+    return $chars[0].name
+  }
+
   function calcUsage() {
-    const prologs = preparePrologue()
+    const prologs = preparePrologue(lastSpeakerName($dialogues))
     const prompt = generatePrompt($preset, prologs, $dialogues, '', false)
     const tokens = countTokensApi(prompt)
     return {
@@ -859,8 +867,7 @@
   }
 
   async function sendDialogue(orgContent: string, continueGen: boolean) {
-    let speaker = nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues).name : nextChar
-    const prologs = preparePrologue()
+    const prologs = preparePrologue(lastSpeakerName($dialogues))
     const result = $preset.streaming
       ? await sendChatStream(
           $preset,
@@ -879,7 +886,6 @@
       let scene = lastScene($dialogues)
       scene.role = result.scene.role
       scene.content = result.scene.content
-      scene.name = speaker
       scene.done = result.scene.done
       scene = await extractImagePrompt($settings, scene, $replaceDict)
       $dialogues = $dialogues
@@ -905,12 +911,14 @@
       content = `*(${content})*`
     }
     const sceneId = newSceneId($dialogues)
+    let speaker = nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues).name : nextChar
     if (content) {
       const userScene = {
         id: sceneId,
         role: role,
         content: content,
         textContent: content,
+        name: $user.name,
         done: true
       }
       const waitingScene = {
@@ -918,6 +926,7 @@
         role: assistantRole,
         content: '',
         textContent: '',
+        name: speaker,
         done: false
       }
       $dialogues = [...$dialogues, userScene, waitingScene]
@@ -927,6 +936,7 @@
         role: assistantRole,
         content: '',
         textContent: '',
+        name: speaker,
         done: false
       }
       $dialogues = [...$dialogues, waitingScene]
