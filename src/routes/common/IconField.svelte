@@ -5,9 +5,9 @@
 
   export let label = ''
   export let name = ''
-  let iconSize = 80
-  let iconX = 0
-  let iconY = 0
+  export let iconX = 0
+  export let iconY = 0
+  export let iconSize = 80
   let scale = 1.0
 </script>
 

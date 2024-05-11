@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { iconForName } from '$lib'
+  import { iconForName, realImageSize } from '$lib'
   import { chars, user } from '$lib/store'
 
   export let name: string
   export let size: number
   export let offsetX: number
   export let offsetY: number
-  export let scale: number
   $: styles = `float: left;--iconWidth:${size}px;--iconHeight:${
     size + 24
-  }px;--iconX:${-offsetX}px;--iconY:${-offsetY}px;--scale:scale(${scale});`
+  }px;--iconX:${-offsetX}px;--iconY:${-offsetY}px;--max-width:${realImageSize(512)}px;`
 </script>
 
 <div style={styles} class="mr-4 char-icon text-stone-50">
@@ -38,8 +37,7 @@
   }
 
   .char-icon img {
-    /* max-width: var(--max-width); */
-    transform: var(--scale);
+    max-width: var(--max-width);
     position: absolute;
     top: var(--iconY);
     left: var(--iconX);
