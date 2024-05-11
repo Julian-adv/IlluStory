@@ -43,7 +43,14 @@
     sceneExt,
     sessionExt
   } from '$lib/fs'
-  import { killServer, lastScene, newSceneId, normalizePath, scrollToEnd } from '$lib'
+  import {
+    chooseCharByName,
+    killServer,
+    lastScene,
+    newSceneId,
+    normalizePath,
+    scrollToEnd
+  } from '$lib'
   import {
     type SceneType,
     type Preset,
@@ -435,7 +442,7 @@
 
   function preparePrologue(speakerName: string) {
     let prologs
-    let speaker = chooseCharByName($chars, speakerName)
+    let speaker = chooseCharByName($chars, $user, speakerName)
     prologs = replaceChars($preset.prompts, $chars, speaker, $user)
     $replaceDict = makeReplaceDict(speaker, $user)
     prologs = replaceNames(prologs, $replaceDict)
@@ -651,14 +658,6 @@
     finishVisual()
   }
 
-  function chooseCharByName(chars: Char[], name: string): Char {
-    chars.forEach(ch => {
-      if (ch.name === name) {
-        return ch
-      }
-    })
-    return chars[0]
-  }
   async function generateVisual() {
     let prevVisualPrompt = ''
     let prevSpeaker = ''
@@ -673,7 +672,7 @@
       }
     }
     if (prevVisualPrompt === '') {
-      prevVisualPrompt = chooseCharByName($chars, prevSpeaker).visual
+      prevVisualPrompt = chooseCharByName($chars, $user, prevSpeaker).visual
     } else {
       prevVisualPrompt = `<Visual>${prevVisualPrompt}</Visual>`
     }

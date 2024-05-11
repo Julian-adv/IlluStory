@@ -1,7 +1,7 @@
 import { open } from '@tauri-apps/api/dialog'
 import { charExt, loadMetaData, savePath } from './fs'
 import type { Char } from './interfaces'
-import { tcLog, tcOpen, tcReadTextFile } from './tauriCompat'
+import { tcOpen, tcReadTextFile } from './tauriCompat'
 
 export async function loadChar(path: string) {
   const json = await tcReadTextFile(path)

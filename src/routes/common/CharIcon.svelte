@@ -3,12 +3,15 @@
   import { chars, user } from '$lib/store'
 
   export let name: string
-  export let size: number
-  export let offsetX: number
-  export let offsetY: number
-  $: styles = `float: left;--iconWidth:${size}px;--iconHeight:${
-    size + 24
-  }px;--iconX:${-offsetX}px;--iconY:${-offsetY}px;--max-width:${realImageSize(512)}px;`
+  export let iconSize: number
+  export let iconX: number
+  export let iconY: number
+  export let partSize: number
+  $: styles = `float: left;--iconWidth:${iconSize}px;--iconHeight:${iconSize + 24}px;--iconX:${
+    (-iconX * iconSize) / partSize
+  }px;--iconY:${(-iconY * iconSize) / partSize}px;--max-width:${
+    (realImageSize(512) * iconSize) / partSize
+  }px;`
 </script>
 
 <div style={styles} class="mr-4 char-icon text-stone-50">

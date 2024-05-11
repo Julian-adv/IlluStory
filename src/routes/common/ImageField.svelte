@@ -11,7 +11,7 @@
   export let height = 512
   export let iconX = 0
   export let iconY = 0
-  export let iconSize = 80
+  export let partSize = 512
   export let save = () => {}
 
   $: imageWidth = realImageSize(width)
@@ -27,7 +27,7 @@
     helperClass = helperClassHidden
   }
 
-  async function onClick() {
+  async function _onClick() {
     let image = await loadImage()
     if (image) {
       value = image
@@ -37,6 +37,7 @@
 
   let iconHandle = document.getElementById('icon-handle')
   let imageWrapper = document.getElementById('image-wrapper')
+
   onMount(() => {
     helperClass = helperClassHidden
     iconHandle = document.getElementById('icon-handle')
@@ -82,6 +83,8 @@
       iconX =
         iconHandle.getBoundingClientRect().left - imageWrapper.getBoundingClientRect().left - 2
       iconY = iconHandle.getBoundingClientRect().top - imageWrapper.getBoundingClientRect().top - 2
+      partSize = iconHandle.getBoundingClientRect().width
+      save()
     }
   }
 
@@ -116,7 +119,10 @@
       <div>Click to change</div>
     </div>
   {/if}
-  <div id="icon-handle" class="icon-handle" style="--iconSize: {iconSize}px;">
+  <div
+    id="icon-handle"
+    class="icon-handle"
+    style="--iconX: {iconX}px; --iconY: {iconY}px; --partSize: {partSize}px;">
     <div class="icon-handle-br" on:mousedown={onMouseDownHandle} />
   </div>
 </div>
@@ -138,10 +144,10 @@
 
   .icon-handle {
     position: absolute;
-    top: 50px;
-    left: 50px;
-    width: var(--iconSize);
-    height: var(--iconSize);
+    top: var(--iconY);
+    left: var(--iconX);
+    width: var(--partSize);
+    height: var(--partSize);
     border: 2px solid blue;
   }
 

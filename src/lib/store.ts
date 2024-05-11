@@ -199,6 +199,10 @@ export const settings = writable(defaultSettings)
 
 export const emptyChar: Char = {
   image: '',
+  iconX: 0,
+  iconY: 0,
+  iconSize: 80,
+  partSize: 512,
   name: '',
   title: '',
   gender: '',

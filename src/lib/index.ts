@@ -135,3 +135,15 @@ export function iconForName(chars: Char[], user: Char, name: string | undefined)
   }
   return ''
 }
+
+export function chooseCharByName(chars: Char[], user: Char, name: string): Char {
+  for (const ch of chars) {
+    if (ch.name === name) {
+      return ch
+    }
+  }
+  if (user.name === name) {
+    return user
+  }
+  return chars[0]
+}

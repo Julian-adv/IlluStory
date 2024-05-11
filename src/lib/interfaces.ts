@@ -217,6 +217,10 @@ export interface SelectItem {
 
 export interface Char {
   image: string
+  iconX: number
+  iconY: number
+  iconSize: number
+  partSize: number
   name: string
   title: string
   gender: string

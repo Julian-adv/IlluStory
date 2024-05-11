@@ -3,15 +3,17 @@
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
   import {
+    chars,
     dialogues,
     lorebook,
     preset,
     replaceDict,
     session,
     sessionPath,
-    settings
+    settings,
+    user
   } from '$lib/store'
-  import { getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
+  import { chooseCharByName, getRandomSize, lastScene, realImageSize, scrollToEnd } from '$lib'
   import { generateImage } from '$lib/imageApi'
   import { translateText } from '$lib/deepLApi'
   import { extractImagePrompt, imageDescription } from '$lib/image'
@@ -58,6 +60,8 @@
     }
   }
 
+  let speaker = chooseCharByName($chars, $user, scene.name ?? '')
+
   onMount(async () => {
     sessionDir = dirnameOf($sessionPath)
     if (scene.done) {
@@ -67,6 +71,7 @@
     info.imageFromSD.then(() => {
       saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
     })
+    speaker = chooseCharByName($chars, $user, scene.name ?? '')
   })
 
   function generateNewImage() {
@@ -114,7 +119,12 @@
       class={imageClass} />
   {/if}
   <div class="px-4">
-    <CharIcon name={scene.name ?? 'Noname'} size={80} offsetX={8} offsetY={-92} scale={2.84} />
+    <CharIcon
+      name={scene.name ?? 'Unknown'}
+      iconSize={speaker.iconSize}
+      iconX={speaker.iconX}
+      iconY={speaker.iconY}
+      partSize={speaker.partSize} />
     <Markdown
       bind:value={scene.textContent}
       bind:translatedValue={scene.translatedContent}
