@@ -114,6 +114,11 @@ export const defaultPreset: Preset = {
     assistantPrefix: '### Response:\n\n'
   },
 
+  infermatic: {
+    apiUrl: 'https://api.totalgpt.ai/v1',
+    model: ''
+  },
+
   prompts: []
 }
 

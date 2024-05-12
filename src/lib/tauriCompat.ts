@@ -314,6 +314,23 @@ export async function tcPost(url: string, body: any, headers?: any) {
   }
 }
 
+export async function tcGet(url: string, headers?: any) {
+  if (window.__TAURI_METADATA__) {
+    // TODO: test it
+    const client = await getClient()
+    return await client.get(url, {
+      headers: headers ?? { 'Content-Type': 'application/json' }
+    })
+  } else {
+    const result = await fetchPost('request/get', {
+      url: url,
+      body: {},
+      headers: headers ?? { 'Content-Type': 'application/json' }
+    })
+    return result
+  }
+}
+
 export function tcConvertFileSrc(path: string) {
   if (window.__TAURI_METADATA__) {
     return convertFileSrc(path)

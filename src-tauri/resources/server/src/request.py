@@ -21,3 +21,15 @@ async def proxy(req: UrlBody):
     except Exception as e:
         print(f"Failed to post data: {e}")
         return {"ok": False, "data": {}}
+
+
+@router.post("/get")
+async def getProxy(req: UrlBody):
+    try:
+        print("req.url = " + req.url)
+        response = requests.get(req.url, headers=req.headers)
+        json = response.json()
+        return {"ok": True, "data": json}
+    except Exception as e:
+        print(f"Failed to get data: {e}")
+        return {"ok": False, "data": {}}

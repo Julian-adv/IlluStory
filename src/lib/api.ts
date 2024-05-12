@@ -9,6 +9,7 @@ import { get } from 'svelte/store'
 import { sessionPath, settings, lorebook } from './store'
 import { basenameOf } from './fs'
 import { tcSaveMemory } from './tauriCompat'
+import { loadModelsInfermatic, sendChatInfermatic, sendChatInfermaticStream } from './apiInfermatic'
 
 export const systemRole = 'system'
 export const assistantRole = 'assistant'
@@ -78,6 +79,10 @@ export function changeApi(api: Api) {
       sendChatStream = sendChatKoboldAiStream
       countTokensApi = countTokensLlama
       break
+    case Api.Infermatic:
+      sendChat = sendChatInfermatic
+      sendChatStream = sendChatInfermaticStream
+      countTokensApi = countTokensLlama
   }
 }
 
@@ -200,7 +205,7 @@ export function tokensOver(preset: Preset, tokens: number) {
     case Api.Oobabooga:
       return tokens + preset.oobabooga.max_tokens > preset.oobabooga.truncation_length
     case Api.KoboldAi:
-      return tokens + preset.koboldAi.maxTokens > preset.koboldAi.contextSize
+      return tokens + preset.koboldAi.maxLength > preset.koboldAi.maxContextLength
   }
   return false
 }
@@ -374,5 +379,7 @@ export function loadModels(preset: Preset) {
       return loadModelsOobabooga(preset)
     case Api.KoboldAi:
       return loadModelsKoboldAi(preset)
+    case Api.Infermatic:
+      return loadModelsInfermatic(preset)
   }
 }

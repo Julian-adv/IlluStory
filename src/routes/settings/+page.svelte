@@ -81,6 +81,12 @@
       help="Open AI API key."
       bind:value={$settings.openAiApiKey}
       {save} />
+    <StringField
+      label="Infermatic AI API Key"
+      placeholder="sk-xxxxx"
+      help="Infermatic AI API key."
+      bind:value={$settings.infermaticAiApiKey}
+      {save} />
     <h1 class="text-lg font-semibold mt-4 col-span-3">Embeddings</h1>
     <SelectField
       label="Embedding"

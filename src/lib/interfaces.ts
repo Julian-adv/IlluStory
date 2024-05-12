@@ -29,7 +29,8 @@ export interface Message {
 export enum Api {
   OpenAi = 'openAi',
   Oobabooga = 'oobabooga',
-  KoboldAi = 'koboldAi'
+  KoboldAi = 'koboldAi',
+  Infermatic = 'infermatic'
 }
 
 export interface OpenAiParam {
@@ -114,6 +115,11 @@ export interface KoboldAiParam {
   assistantPrefix: string
 }
 
+export interface InfermaticParam {
+  apiUrl: string
+  model: string
+}
+
 export interface Preset {
   title: string
   image: string
@@ -127,6 +133,7 @@ export interface Preset {
   openAi: OpenAiParam
   oobabooga: OobaboogaParam
   koboldAi: KoboldAiParam
+  infermatic: InfermaticParam
 
   prompts: SceneType[]
 }
@@ -169,6 +176,7 @@ export interface TextSettings {
 export interface Settings {
   dataDir: string
   openAiApiKey: string
+  infermaticAiApiKey: string
   sortOrder: SortOrder
   sortType: SortType
   convertMarkdown: boolean

@@ -36,9 +36,10 @@
   import { nameToPreset } from '$lib/apiOobabooga'
 
   const apis = [
-    { value: Api.OpenAi, name: 'Open AI' },
+    { value: Api.OpenAi, name: 'OpenAI' },
     { value: Api.Oobabooga, name: 'Oobabooga' },
-    { value: Api.KoboldAi, name: 'Kobold AI' }
+    { value: Api.KoboldAi, name: 'KoboldCpp' },
+    { value: Api.Infermatic, name: 'InfermaticAI' }
   ]
   const parameterPresets = [
     { value: 'Big O', name: 'Big O' },
@@ -209,6 +210,7 @@
 
   async function apiChange(value: string) {
     changeApi(value as Api)
+    models = []
     models = await getModels()
     autoSaveFunc()
   }
@@ -883,6 +885,21 @@
         min={512}
         max={32768}
         step={8}
+        save={autoSaveFunc} />
+    {/if}
+    {#if $preset.api === Api.Infermatic}
+      <StringField
+        label="URL"
+        help="For example, https://api.totalgpt.ai/v1"
+        placeholder=""
+        bind:value={$preset.infermatic.apiUrl}
+        defaultValue={defaultPreset.infermatic.apiUrl}
+        save={autoSaveFunc} />
+      <SelectField
+        label="Model"
+        items={models}
+        search={true}
+        bind:value={$preset.infermatic.model}
         save={autoSaveFunc} />
     {/if}
     <TextField

@@ -34,7 +34,7 @@ resource_directory = "../src-tauri"
 
 @router.post("/exists")
 async def exists(path: Path):
-    result = {"exists": os.path.exists(path)}
+    result = {"exists": os.path.exists(path.path)}
     return result
 
 
