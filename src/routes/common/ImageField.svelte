@@ -9,6 +9,7 @@
   export let help = ''
   export let width = 512
   export let height = 512
+  export let showHandle = false
   export let iconX = 0
   export let iconY = 0
   export let partSize = 512
@@ -83,7 +84,7 @@
       iconX =
         iconHandle.getBoundingClientRect().left - imageWrapper.getBoundingClientRect().left - 2
       iconY = iconHandle.getBoundingClientRect().top - imageWrapper.getBoundingClientRect().top - 2
-      partSize = iconHandle.getBoundingClientRect().width
+      partSize = iconHandle.getBoundingClientRect().width - 4
       save()
     }
   }
@@ -102,7 +103,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="image-wrapper"
-  class="col-span-2 p-1 image-wrapper"
+  class="col-span-2 p-[4px] image-wrapper"
   on:mousedown={onMouseDown}
   on:mousemove={onMouseMove}
   on:mouseup={onMouseUp}>
@@ -119,12 +120,14 @@
       <div>Click to change</div>
     </div>
   {/if}
-  <div
-    id="icon-handle"
-    class="icon-handle"
-    style="--iconX: {iconX}px; --iconY: {iconY}px; --partSize: {partSize}px;">
-    <div class="icon-handle-br" on:mousedown={onMouseDownHandle} />
-  </div>
+  {#if showHandle}
+    <div
+      id="icon-handle"
+      class="icon-handle"
+      style="--iconX: {iconX - 2}px; --iconY: {iconY - 2}px; --partSize: {partSize + 4}px;">
+      <div class="icon-handle-br" on:mousedown={onMouseDownHandle} />
+    </div>
+  {/if}
 </div>
 <div></div>
 <!-- svelte-ignore a11y-no-static-element-interactions -->

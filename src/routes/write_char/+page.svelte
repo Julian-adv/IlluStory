@@ -177,6 +177,7 @@
       bind:value={$curChar.image}
       width={512}
       height={768}
+      showHandle={true}
       bind:iconX={$curChar.iconX}
       bind:iconY={$curChar.iconY}
       bind:partSize={$curChar.partSize}
