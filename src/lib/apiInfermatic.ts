@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import { apiUrl, assistantRole, generateMessagesCheck } from './api'
+import { apiUrl, assistantRole, generateMessagesCheck, generatePromptCheck } from './api'
 import type { ChatResult, Preset, SceneType, Session } from './interfaces'
 import { settings, user } from './store'
 import { tcGet, tcLog } from './tauriCompat'
@@ -41,7 +41,7 @@ export async function sendChatInfermaticStream(
 ): Promise<ChatResult | null> {
   const uri = preset.oobabooga.apiUrl + apiUrl(false)
   const url = new URL(uri)
-  const { messages, tokens } = await generateMessagesCheck(
+  const { prompt, tokens } = await generatePromptCheck(
     preset,
     prologues,
     dialogues,
@@ -50,33 +50,40 @@ export async function sendChatInfermaticStream(
     summary
   )
   const userName = get(user).name
+  const stopping_strings = [
+    `\nJulien:`,
+    `\nStellar:`,
+    '<|eot_id|>',
+    '<|start_header_id|>user<|end_header_id|>',
+    '<|start_header_id|>assistant<|end_header_id|>',
+    '<|start_header_id|>system<|end_header_id|>'
+  ]
+  preset.infermatic.max_new_tokens = preset.infermatic.max_tokens
+  preset.infermatic.n_predict = preset.infermatic.max_tokens
+  preset.infermatic.typical = preset.infermatic.typical_p
+  preset.infermatic.sampler_seed = preset.infermatic.seed
+  preset.infermatic.rep_pen = preset.infermatic.repetition_penalty
+  preset.infermatic.rep_pen_range = preset.infermatic.repetition_penalty_range
+  preset.infermatic.repeat_last_n = preset.infermatic.repetition_penalty_range
+  preset.infermatic.tfs_z = preset.infermatic.tfs
+  preset.infermatic.mirostat = preset.infermatic.mirostat_mode
+  preset.infermatic.ignore_eos = preset.infermatic.ban_eos_token
   const request = {
     ...preset.infermatic,
     stream: true,
-    messages: messages,
-    stop: [
-      '### INPUT',
-      '### Input',
-      '### User',
-      '### USER',
-      '### INSTRUCTION',
-      '### Instruction',
-      '### Response',
-      '\n```',
-      '\nUser:',
-      '\nuser:',
-      '\n<|user|>',
-      `\n${userName}:`,
-      `\n${userName} `
-    ]
+    prompt: prompt,
+    stopping_strings: stopping_strings,
+    stop: stopping_strings
   }
-  tcLog('INFO', 'prompt:', JSON.stringify(request, null, 2))
+  tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
   const respFromInfermatic = await fetch(url, {
     body: JSON.stringify(request),
     headers: {
+      Authorization: 'Bearer ' + get(settings).infermaticAiApiKey,
       'Content-Type': 'application/json'
     },
-    method: 'POST'
+    method: 'POST',
+    signal: null
   })
   if (
     respFromInfermatic.ok &&

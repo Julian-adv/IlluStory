@@ -901,6 +901,242 @@
         search={true}
         bind:value={$preset.infermatic.model}
         save={autoSaveFunc} />
+      <NumberField
+        label="Max tokens"
+        help="The maximum number of tokens to generate in the completion."
+        bind:value={$preset.infermatic.max_tokens}
+        defaultValue={defaultPreset.infermatic.max_tokens}
+        min={48}
+        max={1024}
+        step={8}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Temperature"
+        help="Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+        bind:value={$preset.infermatic.temperature}
+        defaultValue={defaultPreset.infermatic.temperature}
+        min={0.01}
+        max={1.99}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Top p"
+        help="If not set to 1, select tokens with probabilities adding up to less than this number. Higher value = higher range of possible random results."
+        bind:value={$preset.infermatic.top_p}
+        defaultValue={defaultPreset.infermatic.top_p}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Typical p"
+        help="If not set to 1, select only tokens that are at least this much more likely to appear than random tokens, given the prior text."
+        bind:value={$preset.infermatic.typical_p}
+        defaultValue={defaultPreset.infermatic.typical_p}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Seed"
+        help="RNG seed to use for sampling. If not specified, the global RNG will be used."
+        bind:value={$preset.infermatic.seed}
+        defaultValue={defaultPreset.infermatic.seed}
+        min={-1}
+        max={999999}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Min p"
+        help="Tokens with probability smaller than `(min_p) * (probability of the most likely token)` are discarded. This is the same as top_a but without squaring the probability."
+        bind:value={$preset.infermatic.min_p}
+        defaultValue={defaultPreset.infermatic.min_p}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Repetition penalty"
+        help="Exponential penalty factor for repeating prior tokens. 1 means no penalty, higher value = less repetition, lower value = more repetition."
+        bind:value={$preset.infermatic.repetition_penalty}
+        defaultValue={defaultPreset.infermatic.repetition_penalty}
+        min={1.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Frequency penalty"
+        help="Repetition penalty that scales based on how many times the token has appeared in the context. Be careful with this; there's no limit to how much a token can be penalized."
+        bind:value={$preset.infermatic.frequency_penalty}
+        defaultValue={defaultPreset.infermatic.frequency_penalty}
+        min={-2.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Presence penalty"
+        help="Similar to repetition_penalty, but with an additive offset on the raw token scores instead of a multiplicative factor. It may generate better results. 0 means no penalty, higher value = less repetition, lower value = more repetition."
+        bind:value={$preset.infermatic.presence_penalty}
+        defaultValue={defaultPreset.infermatic.presence_penalty}
+        min={-2.0}
+        max={2.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Top k"
+        help="Similar to top_p, but select instead only the top_k most likely tokens. Higher value = higher range of possible random results."
+        bind:value={$preset.infermatic.top_k}
+        defaultValue={defaultPreset.infermatic.top_k}
+        min={0}
+        max={100}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Min tokens"
+        help="The minimum number of tokens to generate in the completion."
+        bind:value={$preset.infermatic.min_tokens}
+        defaultValue={defaultPreset.infermatic.min_tokens}
+        min={48}
+        max={1024}
+        step={8}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Length penalty"
+        help="Used by beam search only. `length_penalty > 0.0` promotes longer sequences, while `length_penalty < 0.0` encourages shorter sequences."
+        bind:value={$preset.infermatic.length_penalty}
+        defaultValue={defaultPreset.infermatic.length_penalty}
+        min={-5.0}
+        max={5.0}
+        step={0.1}
+        save={autoSaveFunc} />
+      <CheckField
+        label="Early stopping"
+        help="Used by beam search only. When checked, the generation stops as soon as there are 'num_beams' complete candidates; otherwise, a heuristic is applied and the generation stops when is it very unlikely to find better candidate."
+        bind:value={$preset.infermatic.early_stopping}
+        defaultValue={defaultPreset.infermatic.early_stopping}
+        save={autoSaveFunc} />
+      <CheckField
+        label="Add the BOS token to the beginning of prompts"
+        help="By default, the tokenizer will add a BOS (Beginning of Sequence) token to your prompt. During training, BOS tokens are used to separate different documents. If unchecked, no BOS token will be added, and the model will interpret your prompt as being in the middle of a document instead of at the start of one. This significantly changes the output and can make it more creative."
+        bind:value={$preset.infermatic.add_bos_token}
+        defaultValue={defaultPreset.infermatic.add_bos_token}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Smoothing factor"
+        help=""
+        bind:value={$preset.infermatic.smoothing_factor}
+        defaultValue={defaultPreset.infermatic.smoothing_factor}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Smoothing curve"
+        help=""
+        bind:value={$preset.infermatic.smoothing_curve}
+        defaultValue={defaultPreset.infermatic.smoothing_curve}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Max tokens second"
+        help=""
+        bind:value={$preset.infermatic.max_tokens_second}
+        defaultValue={defaultPreset.infermatic.max_tokens_second}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Truncation length"
+        help="The leftmost tokens are removed if the prompt exceeds this length. Most models require this to be at most 2048. If set 0, use oobabooga's parameter."
+        bind:value={$preset.infermatic.truncation_length}
+        defaultValue={defaultPreset.infermatic.truncation_length}
+        min={0}
+        max={16384}
+        step={256}
+        save={autoSaveFunc} />
+      <CheckField
+        label="Ban the EOS token"
+        help="One of the possible tokens that a model can generate is the EOS (End of Sequence) token. When it is generated, the generation stops prematurely. When this parameter is checked, that token is banned from being generated, and the generation will always generate 'max_new_tokens' tokens."
+        bind:value={$preset.infermatic.ban_eos_token}
+        defaultValue={defaultPreset.infermatic.ban_eos_token}
+        save={autoSaveFunc} />
+      <CheckField
+        label="Skip special tokens"
+        help="When decoding the generated tokens, skip special tokens from being converted to their text representation. Otherwise, BOS appears as `<s>`, EOS as `</s>`, etc."
+        bind:value={$preset.infermatic.skip_special_tokens}
+        defaultValue={defaultPreset.infermatic.skip_special_tokens}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Top a"
+        help="Tokens with probability smaller than `(top_a) * (probability of the most likely token)^2` are discarded."
+        bind:value={$preset.infermatic.top_a}
+        defaultValue={defaultPreset.infermatic.top_a}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="TFS"
+        help="Tries to detect a tail of low-probability tokens in the distribution and removes those tokens. See [this blog post](https://www.trentonbricken.com/Tail-Free-Sampling/) for details. The closer to 0, the more discarded tokens."
+        bind:value={$preset.infermatic.tfs}
+        defaultValue={defaultPreset.infermatic.tfs}
+        min={0.0}
+        max={1.0}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat mode"
+        help="Activates the Mirostat sampling technique. It aims to control perplexity during sampling. See the [paper](https://arxiv.org/abs/2007.14966)."
+        bind:value={$preset.infermatic.mirostat_mode}
+        defaultValue={defaultPreset.infermatic.mirostat_mode}
+        min={0}
+        max={2}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat tau"
+        help="Set the Mirostat target entropy, parameter tau. According to the Preset Arena, 8 is a good value."
+        bind:value={$preset.infermatic.mirostat_tau}
+        defaultValue={defaultPreset.infermatic.mirostat_tau}
+        min={0}
+        max={10}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Mirostat eta"
+        help="Set the Mirostat learning rate, parameter eta. According to the Preset Arena, 0.1 is a good value."
+        bind:value={$preset.infermatic.mirostat_eta}
+        defaultValue={defaultPreset.infermatic.mirostat_eta}
+        min={0}
+        max={1}
+        save={autoSaveFunc} />
+      <StringField
+        label="Custom token bans"
+        help=""
+        placeholder=""
+        bind:value={$preset.infermatic.custom_token_bans}
+        defaultValue={defaultPreset.infermatic.custom_token_bans}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Repetition penalty range"
+        help="Higher means it reads farther back into it's memory to try to not repeat itself."
+        bind:value={$preset.infermatic.repetition_penalty_range}
+        defaultValue={defaultPreset.infermatic.repetition_penalty_range}
+        min={0}
+        max={4096}
+        step={1}
+        save={autoSaveFunc} />
+      <NumberField
+        label="Guidance scale"
+        help=""
+        bind:value={$preset.infermatic.guidance_scale}
+        defaultValue={defaultPreset.infermatic.guidance_scale}
+        min={0}
+        max={1.0}
+        step={0.1}
+        save={autoSaveFunc} />
+      <StringField
+        label="Negative prompt"
+        help=""
+        bind:value={$preset.infermatic.negative_prompt}
+        defaultValue={defaultPreset.infermatic.negative_prompt}
+        save={autoSaveFunc} />
+      <StringField
+        label="Grammar string"
+        help=""
+        bind:value={$preset.infermatic.grammar_string}
+        defaultValue={defaultPreset.infermatic.grammar_string}
+        save={autoSaveFunc} />
     {/if}
     <TextField
       label="Summarize prompt"

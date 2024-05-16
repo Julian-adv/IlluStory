@@ -161,6 +161,9 @@ export async function loadPreset(path: string): Promise<Preset> {
   if (!preset.koboldAi.samplerOrder) {
     preset.koboldAi.samplerOrder = []
   }
+  if (!preset.infermatic) {
+    preset.infermatic = defaultPreset.infermatic
+  }
   changeApi(preset.api)
   return preset
 }

@@ -17,9 +17,9 @@
   let name = ''
 
   $: filteredItems = items.filter(item => item.name.toLowerCase().includes(searchStr.toLowerCase()))
-  $: name = findName(value)
+  $: name = findName(value, items)
 
-  function findName(str: string) {
+  function findName(str: string, items: SelectItem[]) {
     const selected = items.find(item => item.value === str)
     if (selected) {
       return selected.name
