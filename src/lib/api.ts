@@ -89,7 +89,18 @@ export function changeApi(api: Api) {
 function systemPrefix(preset: Preset) {
   switch (preset.api) {
     case Api.KoboldAi:
-      return preset.koboldAi.systemPrefix
+    case Api.Infermatic:
+      return preset.systemPrefix
+    default:
+      return ''
+  }
+}
+
+function systemPostfix(preset: Preset) {
+  switch (preset.api) {
+    case Api.KoboldAi:
+    case Api.Infermatic:
+      return preset.systemPostfix
     default:
       return ''
   }
@@ -98,7 +109,18 @@ function systemPrefix(preset: Preset) {
 function assistantPrefix(preset: Preset) {
   switch (preset.api) {
     case Api.KoboldAi:
-      return preset.koboldAi.assistantPrefix
+    case Api.Infermatic:
+      return preset.assistantPrefix
+    default:
+      return ''
+  }
+}
+
+function assistantPostfix(preset: Preset) {
+  switch (preset.api) {
+    case Api.KoboldAi:
+    case Api.Infermatic:
+      return preset.assistantPostfix
     default:
       return ''
   }
@@ -107,7 +129,18 @@ function assistantPrefix(preset: Preset) {
 function userPrefix(preset: Preset) {
   switch (preset.api) {
     case Api.KoboldAi:
-      return preset.koboldAi.userPrefix
+    case Api.Infermatic:
+      return preset.userPrefix
+    default:
+      return ''
+  }
+}
+
+function userPostfix(preset: Preset) {
+  switch (preset.api) {
+    case Api.KoboldAi:
+    case Api.Infermatic:
+      return preset.userPostfix
     default:
       return ''
   }
@@ -126,6 +159,26 @@ function addRolePrefix(preset: Preset, scene: SceneType, dialogues: SceneType[])
         return assistantPrefix(preset)
       case userRole:
         return userPrefix(preset)
+      default:
+        return ''
+    }
+  }
+  return ''
+}
+
+function addRolePostfix(preset: Preset, scene: SceneType, dialogues: SceneType[]) {
+  const oneInstruction = get(settings).oneInstruction
+  const last =
+    dialogues[dialogues.length - 1] === scene ||
+    (preset.streaming && dialogues[dialogues.length - 2] === scene)
+  if ((oneInstruction && last && scene.role === userRole) || !oneInstruction) {
+    switch (scene.role) {
+      case systemRole:
+        return systemPostfix(preset)
+      case assistantRole:
+        return assistantPostfix(preset)
+      case userRole:
+        return userPostfix(preset)
       default:
         return ''
     }
@@ -174,7 +227,11 @@ export function generatePrompt(
         }
         break
       default:
-        prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+        prompt +=
+          addRolePrefix(preset, scene, dialogues) +
+          scene.textContent +
+          addRolePostfix(preset, scene, dialogues) +
+          '\n'
     }
   }
   if (!sentChatHistory) {

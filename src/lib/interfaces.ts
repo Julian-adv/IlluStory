@@ -110,58 +110,28 @@ export interface KoboldAiParam {
   mirostatTau: number
   mirostatEta: number
   maxContextLength: number
-  systemPrefix: string
-  userPrefix: string
-  assistantPrefix: string
 }
 
 export interface InfermaticParam {
   apiUrl: string
-  model: string
-  max_new_tokens: number
-  max_tokens: number
-  temperature: number
-  top_p: number
-  typical_p: number
-  typical: number
-  sampler_seed: number
-  min_p: number
-  repetition_penalty: number
-  frequency_penalty: number
-  presence_penalty: number
-  top_k: number
-  min_tokens: number
-  length_penalty: number
-  early_stopping: boolean
-  add_bos_token: boolean
-  smoothing_factor: number
-  smoothing_curve: number
-  max_tokens_second: number
-  stopping_strings: string[]
-  stop: string[]
-  truncation_length: number
-  ban_eos_token: boolean
-  skip_special_tokens: boolean
-  top_a: number
-  tfs: number
-  mirostat_mode: number
-  mirostat_tau: number
-  mirostat_eta: number
-  custom_token_bans: string
-  legacy_api: boolean
-  rep_pen: number
-  rep_pen_range: number
-  repetition_penalty_range: number
-  seed: number
-  guidance_scale: number
-  negative_prompt: string
-  grammar_string: string
-  repeat_penalty: number
-  tfs_z: number
-  repeat_last_n: number
-  n_predict: number
-  mirostat: number
-  ignore_eos: boolean
+  body: {
+    model: string
+    max_tokens: number
+    temperature: number
+    top_p: number
+    min_p: number
+    repetition_penalty: number
+    frequency_penalty: number
+    presence_penalty: number
+    top_k: number
+    min_tokens: number
+    length_penalty: number
+    early_stopping: boolean
+    stop: string[]
+    skip_special_tokens: boolean
+    seed: number
+    ignore_eos: boolean
+  }
 }
 
 export interface Preset {
@@ -174,6 +144,12 @@ export interface Preset {
   visualizePrompt: string
   summarizePrompt: string
   narratorMode: boolean
+  systemPrefix: string
+  systemPostfix: string
+  assistantPrefix: string
+  assistantPostfix: string
+  userPrefix: string
+  userPostfix: string
   openAi: OpenAiParam
   oobabooga: OobaboogaParam
   koboldAi: KoboldAiParam

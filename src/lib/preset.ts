@@ -164,6 +164,9 @@ export async function loadPreset(path: string): Promise<Preset> {
   if (!preset.infermatic) {
     preset.infermatic = defaultPreset.infermatic
   }
+  if (!preset.infermatic.body) {
+    preset.infermatic.body = defaultPreset.infermatic.body
+  }
   changeApi(preset.api)
   return preset
 }

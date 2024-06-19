@@ -56,9 +56,11 @@ def save_memory(memory: Memory):
 
     sentences = extract_sentences(memory.doc)
     combined = [
-        sentences[i] + " " + sentences[i + 1]
-        if i + 1 < len(sentences)
-        else sentences[i]
+        (
+            sentences[i] + " " + sentences[i + 1]
+            if i + 1 < len(sentences)
+            else sentences[i]
+        )
         for i in range(0, len(sentences), 2)
     ]
 
@@ -104,7 +106,6 @@ def save_embeddings(memory: MemoryEmbeddings):
 
 @router.post("/get")
 def get_memory(query: Query):
-    print(f"query {query.n}: {query.text}")
     collection = client.get_collection(name=query.collection)
     results = collection.query(
         query_texts=[query.text],

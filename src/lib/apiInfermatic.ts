@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { apiUrl, assistantRole, generateMessagesCheck, generatePromptCheck } from './api'
 import type { ChatResult, Preset, SceneType, Session } from './interfaces'
-import { settings, user } from './store'
+import { curChar, settings, user } from './store'
 import { tcGet, tcLog } from './tauriCompat'
 
 export async function sendChatInfermatic(
@@ -39,8 +39,7 @@ export async function sendChatInfermaticStream(
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
-  const uri = preset.oobabooga.apiUrl + apiUrl(false)
-  const url = new URL(uri)
+  const url = preset.infermatic.apiUrl + apiUrl(true)
   const { prompt, tokens } = await generatePromptCheck(
     preset,
     prologues,
@@ -50,29 +49,19 @@ export async function sendChatInfermaticStream(
     summary
   )
   const userName = get(user).name
+  const charName = get(curChar).name
   const stopping_strings = [
-    `\nJulien:`,
-    `\nStellar:`,
+    `\n${userName}:`,
+    `\n${charName}:`,
     '<|eot_id|>',
     '<|start_header_id|>user<|end_header_id|>',
     '<|start_header_id|>assistant<|end_header_id|>',
     '<|start_header_id|>system<|end_header_id|>'
   ]
-  preset.infermatic.max_new_tokens = preset.infermatic.max_tokens
-  preset.infermatic.n_predict = preset.infermatic.max_tokens
-  preset.infermatic.typical = preset.infermatic.typical_p
-  preset.infermatic.sampler_seed = preset.infermatic.seed
-  preset.infermatic.rep_pen = preset.infermatic.repetition_penalty
-  preset.infermatic.rep_pen_range = preset.infermatic.repetition_penalty_range
-  preset.infermatic.repeat_last_n = preset.infermatic.repetition_penalty_range
-  preset.infermatic.tfs_z = preset.infermatic.tfs
-  preset.infermatic.mirostat = preset.infermatic.mirostat_mode
-  preset.infermatic.ignore_eos = preset.infermatic.ban_eos_token
   const request = {
-    ...preset.infermatic,
+    ...preset.infermatic.body,
     stream: true,
     prompt: prompt,
-    stopping_strings: stopping_strings,
     stop: stopping_strings
   }
   tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
@@ -107,8 +96,8 @@ export async function sendChatInfermaticStream(
             return
           } else {
             const json = JSON.parse(text)
-            if (json.choices[0].delta.content) {
-              received(json.choices[0].delta.content)
+            if (json.choices[0].text) {
+              received(json.choices[0].text)
             }
           }
         }
