@@ -217,8 +217,8 @@
       {save} />
     <h1 class="text-lg font-semibold mt-4 col-span-3">Formatting</h1>
     <CheckField
-      label="Convert to Markdown"
-      help="Convert the AI's output to markdown."
+      label="Highlight text using RegExp"
+      help=""
       bind:value={$settings.convertMarkdown}
       {save} />
     <FontField
@@ -236,19 +236,19 @@
       max={20}
       step={1}
       {save} />
+    <SampleField
+      label="Dialog"
+      help=""
+      bind:value={$settings.dialogSettings}
+      sample="&quot;This is how the lines will look like.&quot;"
+      {save} />
+    <SampleField
+      label="Description"
+      help=""
+      bind:value={$settings.descriptionSettings}
+      sample="A typical narrative will look like this."
+      {save} />
     {#if $settings.convertMarkdown}
-      <SampleField
-        label="Dialog"
-        help=""
-        bind:value={$settings.dialogSettings}
-        sample="&quot;This is how the lines will look like.&quot;"
-        {save} />
-      <SampleField
-        label="Description"
-        help=""
-        bind:value={$settings.descriptionSettings}
-        sample="A typical narrative will look like this."
-        {save} />
       <SampleField
         label="User name"
         help=""

@@ -226,8 +226,24 @@
     font-size: var(--font-size, 12pt);
   }
 
+  :global(.markdown p) {
+    color: var(--dialog-color, black);
+    font-weight: var(--dialog-weight, normal);
+    font-style: var(--dialog-style, normal);
+    font-family: var(--font-family, Geogia);
+    font-size: var(--font-size, 12pt);
+  }
+
   :global(.markdown .description) {
     color: var(--desc-color, black);
+    font-weight: var(--desc-weight, normal);
+    font-style: var(--desc-style, normal);
+    font-family: var(--font-family, Geogia);
+    font-size: var(--font-size, 12pt);
+  }
+
+  :global(.markdown em) {
+    color: var(--desc-color, gray);
     font-weight: var(--desc-weight, normal);
     font-style: var(--desc-style, normal);
     font-family: var(--font-family, Geogia);
