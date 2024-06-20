@@ -66,18 +66,9 @@ export async function tcExists(path: string): Promise<boolean> {
   }
 }
 
-export async function tcAppDataDir(): Promise<string> {
-  if (window.__TAURI_METADATA__) {
-    return ''
-  } else {
-    const result = await fetchGet('fs/appDataDir')
-    return result.path
-  }
-}
-
 export async function tcCreateDir(path: string): Promise<void> {
+  path = get(settings).dataDir + '/' + path
   if (window.__TAURI_METADATA__) {
-    path = get(settings).dataDir + '/' + path
     await createDir(path, { recursive: true })
   } else {
     await fetchPost('fs/createDir', { path: path })

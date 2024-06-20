@@ -3,7 +3,6 @@ import type { Preset, Char, FirstScene, Session, Lorebook } from './interfaces'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
 import {
-  tcAppDataDir,
   tcCopyFile,
   tcCreateDir,
   tcExists,
@@ -156,9 +155,8 @@ export async function installDefaults() {
     return
   }
 
-  const dataDir = await tcAppDataDir()
-  if (!(await tcExists(dataDir))) {
-    tcCreateDir('')
+  if (!(await tcExists(''))) {
+    await tcCreateDir('')
   }
 
   for (const file of filesToCopy) {

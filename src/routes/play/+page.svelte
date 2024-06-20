@@ -83,7 +83,6 @@
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
   import {
-    tcAppDataDir,
     tcCreateDir,
     tcExists,
     tcGetMemory,
@@ -141,20 +140,15 @@
     }
   }
 
-  function relativePath(dataDir: string, path: string) {
-    return path.replace(dataDir, '')
-  }
-
   const sessionsDir = 'sessions'
 
   async function saveCardUpdate() {
     if ($sessionPath) {
-      const dataDir = await tcAppDataDir()
-      $session.presetCard = relativePath(dataDir, $presetCard.path)
-      $session.userCard = relativePath(dataDir, $userCard.path)
-      $session.charCards = $charCards.map(card => relativePath(dataDir, card.path))
-      $session.sceneCard = relativePath(dataDir, $sceneCard.path)
-      $session.lorebookCard = relativePath(dataDir, $lorebookCard.path)
+      $session.presetCard = $presetCard.path
+      $session.userCard = $userCard.path
+      $session.charCards = $charCards.map(card => card.path)
+      $session.sceneCard = $sceneCard.path
+      $session.lorebookCard = $lorebookCard.path
       saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
     }
   }
@@ -163,11 +157,9 @@
     const timestamp = formatDate(new Date())
     const thisSessionDir = sessionsDir + '/' + timestamp
     if (!(await tcExists(thisSessionDir))) {
-      tcCreateDir(thisSessionDir)
+      await tcCreateDir(thisSessionDir)
     }
-    const dataDir = await tcAppDataDir()
-    const thisSessionPath = dataDir + thisSessionDir
-    const tempPath = thisSessionPath + '/session-' + timestamp + '.' + sessionExt
+    const tempPath = thisSessionDir + '/session-' + timestamp + '.' + sessionExt
     $sessionPath = tempPath
     saveCardUpdate()
   }
@@ -233,14 +225,13 @@
   }
 
   async function loadSessionCommon(path: string) {
-    const dataDir = await tcAppDataDir()
     $sessionPath = path
     shortSessionPath = basenameOf(path)
-    $presetCard = await cardFromPath(dataDir + $session.presetCard)
-    $userCard = await cardFromPath(dataDir + $session.userCard)
-    $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
-    $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
-    $lorebookCard = await cardFromPath(dataDir + $session.lorebookCard)
+    $presetCard = await cardFromPath($session.presetCard)
+    $userCard = await cardFromPath($session.userCard)
+    $charCards = await Promise.all($session.charCards.map(path => cardFromPath(path)))
+    $sceneCard = await cardFromPath($session.sceneCard)
+    $lorebookCard = await cardFromPath($session.lorebookCard)
     await loadVarsFromPath()
     // Empty dictionary will be sufficient.
     $replaceDict = {}
@@ -268,6 +259,7 @@
   async function updateInitialScenes() {
     $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
     $dialogues = await convertScenes($curScene.scenes, $replaceDict)
+    $dialogues[0].name = $chars[0].name
   }
 
   async function newSession() {
@@ -473,13 +465,7 @@
     if ($dialogues.length === 0) {
       await loadRecentSession()
     } else {
-      // const dataDir = await tcAppDataDir()
-      // $presetCard = await cardFromPath(dataDir + $session.presetCard)
-      // $userCard = await cardFromPath(dataDir + $session.userCard)
-      // $charCards = await Promise.all($session.charCards.map(path => cardFromPath(dataDir + path)))
-      // $sceneCard = await cardFromPath(dataDir + $session.sceneCard)
       await loadVarsFromPath()
-      // await updateInitialScenes()
       started = true
     }
     numMemory = findNumberOfMemory($preset)
@@ -572,14 +558,14 @@
     await loadVarsFromPath()
     $session.nextSpeaker = 'auto'
     $dialogues = []
-    await updateInitialScenes()
     initLorebook($lorebook, $session)
-    $usage = calcUsage()
     $sessionPath = ''
     userInput = ''
     $session.startIndex = 0
     fillCharacters()
     await saveSessionNew()
+    await updateInitialScenes()
+    $usage = calcUsage()
   }
 
   function onRemove(index: number) {

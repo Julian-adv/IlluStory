@@ -32,14 +32,14 @@
   import { extOf, allExts, presetExt, charExt, sessionExt, sceneExt } from '$lib/fs'
   import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
-  import { cardFromPreset, loadChar } from '$lib/charSettings'
+  import { loadChar } from '$lib/charSettings'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
   import { loadSession } from '$lib/session'
   import { slide } from 'svelte/transition'
   import { loadScene } from '$lib/scene'
   import { loadPreset } from '$lib/preset'
   import { cardFromPath } from '$lib/card'
-  import { tcAppDataDir, tcLog, tcReadDir } from '$lib/tauriCompat'
+  import { tcLog, tcReadDir } from '$lib/tauriCompat'
 
   let showingCards: StoryCard[] = []
   let extFlag = FileType.All
@@ -74,7 +74,7 @@
     reloadCards()
     loading = false
     if (!unlisten) {
-      invoke('start_watch', { path: await tcAppDataDir() }).catch(err => tcLog('ERROR', err))
+      invoke('start_watch', { path: '' }).catch(err => tcLog('ERROR', err))
       unlisten = await listen<string>('change', _event => {
         if (!working) {
           reloadCards()
@@ -102,7 +102,7 @@
         if (tempPreset) {
           $presetPath = card.path
           $preset = tempPreset
-          cardFromPreset($preset, $presetPath)
+          // cardFromPreset($preset, $presetPath)
           goto('/write')
         }
       } else if (ext === charExt) {
