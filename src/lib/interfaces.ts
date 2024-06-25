@@ -298,9 +298,17 @@ export interface SceneResult {
   imageSize: ImageSize
 }
 
+export enum RuleType {
+  Question = 1,
+  Keyword
+}
+
 export interface Rule {
   id: string
+  type: RuleType
+  enabled: boolean
   triggered: boolean
+  keywords: string
   condition: string
   answer: string
   content: string

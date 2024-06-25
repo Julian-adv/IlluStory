@@ -19,7 +19,7 @@
     { id: 'write_char', text: 'Edit character' },
     { id: 'write_scene', text: 'Edit scene' },
     { id: 'play', text: 'Chat' },
-    { id: 'lore_book', text: 'Edit Lorebook' },
+    { id: 'lorebook', text: 'Edit Lorebook' },
     { id: 'about', text: 'About' },
     { id: 'settings', text: 'Settings' }
   ]

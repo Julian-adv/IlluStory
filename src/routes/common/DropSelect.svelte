@@ -48,7 +48,7 @@
       <Search size="md" bind:value={searchStr} />
     </div>
     {#each filteredItems as item}
-      {#if item.value.startsWith('-')}
+      {#if typeof item.value === 'string' && item.value.startsWith('-')}
         <DropdownDivider />
       {:else}
         <DropdownItem class="hover:bg-stone-100" on:click={onClick(item)}>{item.name}</DropdownItem>
@@ -58,7 +58,7 @@
 {:else}
   <Dropdown class="overflow-y-auto max-h-[40rem]" bind:open={dropdownOpen}>
     {#each filteredItems as item}
-      {#if item.value.startsWith('-')}
+      {#if typeof item.value === 'string' && item.value.startsWith('-')}
         <DropdownDivider />
       {:else}
         <DropdownItem class="hover:bg-stone-100" on:click={onClick(item)}>{item.name}</DropdownItem>

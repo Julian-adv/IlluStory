@@ -1,24 +1,34 @@
 <script lang="ts">
   import { Button, Checkbox } from 'flowbite-svelte'
   import { lorebookExt, saveObjQuietly, savePath } from '$lib/fs'
-  import type { Lorebook } from '$lib/interfaces'
-  import { lorebook, lorebookPath } from '$lib/store'
+  import { RuleType, type Lorebook } from '$lib/interfaces'
+  import { lorebook, lorebookPath, fileDialog } from '$lib/store'
   import StringField from '../common/StringField.svelte'
   import ImageField from '../common/ImageField.svelte'
   import TextField from '../common/TextField.svelte'
   import DragAndDropList from '../common/DragAndDropList.svelte'
+  import FileDialog from '$lib/FileDialog.svelte'
+  import SelectField from '../common/SelectField.svelte'
+  import CheckField from '../common/CheckField.svelte'
   import { tcOpen } from '$lib/tauriCompat'
   import { loadLorebook } from '$lib/lorebook'
   import { nanoid } from 'nanoid'
 
   let autoSave = true
 
+  const ruleTypes = [
+    { value: RuleType.Keyword, name: 'Keywords' },
+    { value: RuleType.Question, name: 'Question' }
+  ]
+
   function addRule() {
     $lorebook.rules = [
       ...$lorebook.rules,
       {
         id: nanoid(),
+        enabled: true,
         triggered: false,
+        type: RuleType.Keyword,
         condition: '',
         answer: '',
         content: '',
@@ -70,7 +80,13 @@
 </script>
 
 <div class="px-4">
+  <input type="file" id="fileInput" class="hidden" />
   <h1 class="text-lg font-semibold mb-1">Lorebook</h1>
+  <FileDialog
+    bind:openDialog={$fileDialog.open}
+    bind:ext={$fileDialog.ext}
+    bind:value={$fileDialog.value}
+    bind:title={$fileDialog.title} />
   <div class="mb-5 flex gap-2">
     <Button color="alternative" size="sm" on:click={load}>
       <svg
@@ -137,9 +153,20 @@
     onChange={autoSaveFunc}
     removesItems
     let:i>
-    <TextField label="Question" bind:value={$lorebook.rules[i].condition} save={autoSaveFunc} />
-    <TextField label="Answer" bind:value={$lorebook.rules[i].answer} save={autoSaveFunc} />
-    <TextField label="Content" bind:value={$lorebook.rules[i].content} save={autoSaveFunc} />
+    <SelectField
+      label="Type"
+      items={ruleTypes}
+      bind:value={$lorebook.rules[i].type}
+      save={autoSaveFunc} />
+    <CheckField label="Enabled" bind:value={$lorebook.rules[i].enabled} save={autoSaveFunc} />
+    {#if $lorebook.rules[i].type === RuleType.Keyword}
+      <TextField label="Keywords" bind:value={$lorebook.rules[i].keywords} save={autoSaveFunc} />
+      <TextField label="Content" bind:value={$lorebook.rules[i].content} save={autoSaveFunc} />
+    {:else}
+      <TextField label="Question" bind:value={$lorebook.rules[i].condition} save={autoSaveFunc} />
+      <TextField label="Answer" bind:value={$lorebook.rules[i].answer} save={autoSaveFunc} />
+      <TextField label="Content" bind:value={$lorebook.rules[i].content} save={autoSaveFunc} />
+    {/if}
   </DragAndDropList>
   <div class="h-2"></div>
   <Button size="xs" color="alternative" on:click={addRule}>
