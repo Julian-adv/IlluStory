@@ -66,7 +66,6 @@
     loadSessionDialog,
     makeReplaceDict,
     prepareForSave,
-    replaceChars,
     replaceName,
     replaceNames,
     saveSessionAuto
@@ -305,6 +304,7 @@
     if ($dialogues.length < 2) {
       return
     }
+    let speaker = nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues).name : nextChar
     $dialogues.pop()
     const orgContent = getUserInput(lastScene($dialogues))
     const sceneId = newSceneId($dialogues)
@@ -313,6 +313,7 @@
       role: assistantRole,
       content: '',
       textContent: '',
+      name: speaker,
       done: false
     }
     $dialogues = [...$dialogues, waitingScene]
@@ -335,12 +336,12 @@
     scrollToEnd()
     $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
-    prologs = replaceNames(prologs, $replaceDict)
     const result = $preset.streaming
       ? await sendChatStream(
           $preset,
           prologs,
           $dialogues,
+          $replaceDict,
           '',
           $session,
           true,
@@ -348,7 +349,7 @@
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues, '', $session, true)
+      : await sendChat($preset, prologs, $dialogues, $replaceDict, '', $session, true)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
@@ -382,6 +383,7 @@
           $preset,
           prologs,
           $dialogues.slice(0, 1),
+          $replaceDict,
           '',
           $session,
           true,
@@ -389,7 +391,7 @@
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues.slice(0, 1), '', $session, true)
+      : await sendChat($preset, prologs, $dialogues.slice(0, 1), $replaceDict, '', $session, true)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
@@ -432,26 +434,25 @@
     $session.nextSpeaker = value
   }
 
-  function preparePrologue(speakerName: string) {
-    let prologs
-    let speaker = chooseCharByName($chars, $user, speakerName)
-    prologs = replaceChars($preset.prompts, $chars, speaker, $user)
-    $replaceDict = makeReplaceDict(speaker, $user)
-    prologs = replaceNames(prologs, $replaceDict)
-    return prologs
-  }
+  // function preparePrologue(speakerName: string) {
+  //   let prologs
+  //   let speaker = chooseCharByName($chars, $user, speakerName)
+  //   prologs = replaceChars($preset.prompts, $chars, speaker, $user)
+  //   $replaceDict = makeReplaceDict(speaker, $user)
+  //   prologs = replaceNames(prologs, $replaceDict)
+  //   return prologs
+  // }
 
-  function lastSpeakerName(dialogues: SceneType[]): string {
-    let speaker = lastScene(dialogues).name
-    if (speaker) {
-      return speaker
-    }
-    return $chars[0].name
-  }
+  // function lastSpeakerName(dialogues: SceneType[]): string {
+  //   let speaker = lastScene(dialogues).name
+  //   if (speaker) {
+  //     return speaker
+  //   }
+  //   return $chars[0].name
+  // }
 
   function calcUsage() {
-    const prologs = preparePrologue(lastSpeakerName($dialogues))
-    const prompt = generatePrompt($preset, prologs, $dialogues, '', false)
+    const prompt = generatePrompt($preset, $preset.prompts, $dialogues, $replaceDict, '', false)
     const tokens = countTokensApi(prompt)
     return {
       prompt_tokens: tokens,
@@ -696,6 +697,7 @@
         $preset,
         inst,
         [],
+        $replaceDict,
         '',
         $session,
         false,
@@ -704,7 +706,7 @@
         closedVisual
       )
     } else {
-      const result = await sendChat($preset, inst, [], '', $session, false)
+      const result = await sendChat($preset, inst, [], $replaceDict, '', $session, false)
       if (result) {
         closedVisual()
       }
@@ -785,6 +787,7 @@
           $preset,
           inst,
           [],
+          $replaceDict,
           '',
           $session,
           false,
@@ -793,7 +796,7 @@
           closedLorebook
         )
       } else {
-        const result = await sendChat($preset, inst, [], '', $session, false)
+        const result = await sendChat($preset, inst, [], $replaceDict, '', $session, false)
         if (result) {
           lorebookAnswer = result.scene.content
           closedLorebook()
@@ -852,12 +855,12 @@
   }
 
   async function sendDialogue(orgContent: string, continueGen: boolean) {
-    const prologs = preparePrologue(lastSpeakerName($dialogues))
     const result = $preset.streaming
       ? await sendChatStream(
           $preset,
-          prologs,
+          $preset.prompts,
           $dialogues,
+          $replaceDict,
           await getMemory(orgContent),
           $session,
           false,
@@ -865,7 +868,15 @@
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues, await getMemory(orgContent), $session, false)
+      : await sendChat(
+          $preset,
+          $preset.prompts,
+          $dialogues,
+          $replaceDict,
+          await getMemory(orgContent),
+          $session,
+          false
+        )
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)

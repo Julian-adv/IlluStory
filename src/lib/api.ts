@@ -1,4 +1,11 @@
-import { Api, type Message, type Preset, type SceneType, type Session } from './interfaces'
+import {
+  Api,
+  type Message,
+  type Preset,
+  type SceneType,
+  type Session,
+  type StringDictionary
+} from './interfaces'
 import { loadModelsOobabooga, sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
 import { loadModelsOpenAi, sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
 import { isWithinTokenLimit } from 'gpt-tokenizer'
@@ -10,6 +17,7 @@ import { sessionPath, settings, lorebook } from './store'
 import { basenameOf } from './fs'
 import { tcSaveMemory } from './tauriCompat'
 import { loadModelsInfermatic, sendChatInfermatic, sendChatInfermaticStream } from './apiInfermatic'
+import { replaceName } from './session'
 
 export const systemRole = 'system'
 export const assistantRole = 'assistant'
@@ -188,8 +196,9 @@ function addRolePostfix(preset: Preset, scene: SceneType, dialogues: SceneType[]
 
 export function generatePrompt(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   summary = false
 ) {
@@ -199,7 +208,7 @@ export function generatePrompt(
     prompt += systemPrefix(preset)
   }
   let sentChatHistory = false
-  for (const scene of prologues) {
+  for (const scene of prompts) {
     switch (scene.role) {
       case startStory:
         break
@@ -229,7 +238,7 @@ export function generatePrompt(
       default:
         prompt +=
           addRolePrefix(preset, scene, dialogues) +
-          scene.textContent +
+          replaceName(scene.content, dict) +
           addRolePostfix(preset, scene, dialogues) +
           '\n'
     }
@@ -275,8 +284,9 @@ export async function saveMemory(scene: SceneType) {
 
 export async function generatePromptCheck(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary = false
@@ -286,8 +296,9 @@ export async function generatePromptCheck(
   while (session.startIndex < dialogues.length || dialogues.length === 0) {
     prompt = generatePrompt(
       preset,
-      prologues,
+      prompts,
       dialogues.slice(session.startIndex),
+      dict,
       memories,
       summary
     )
@@ -320,8 +331,9 @@ function convertRole(role: string) {
 
 export function generateMessages(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   summary: boolean
 ) {
@@ -333,8 +345,8 @@ export function generateMessages(
     }
   } else {
     let sentChatHistory = false
-    for (let i = 0; i < prologues.length; i++) {
-      const scene = prologues[i]
+    for (let i = 0; i < prompts.length; i++) {
+      const scene = prompts[i]
       switch (scene.role) {
         case startStory:
           break
@@ -349,13 +361,13 @@ export function generateMessages(
         case assocMemory: {
           if (memories) {
             messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
-            const nextScene = prologues[i + 1]
+            const nextScene = prompts[i + 1]
             if (nextScene.role === endTag) {
               messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
               i++
             }
           } else {
-            if (prologues[i + 1].role === endTag) {
+            if (prompts[i + 1].role === endTag) {
               i++
             }
           }
@@ -375,7 +387,7 @@ export function generateMessages(
         default:
           messages.push({
             role: convertRole(scene.role),
-            content: scene.textContent ?? scene.content
+            content: replaceName(scene.content, dict)
           })
       }
     }
@@ -390,8 +402,9 @@ export function generateMessages(
 
 export async function generateMessagesCheck(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean
@@ -401,8 +414,9 @@ export async function generateMessagesCheck(
   while (session.startIndex < dialogues.length || dialogues.length === 0) {
     messages = generateMessages(
       preset,
-      prologues,
+      prompts,
       dialogues.slice(session.startIndex),
+      dict,
       memories,
       summary
     )

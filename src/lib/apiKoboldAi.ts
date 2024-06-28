@@ -1,13 +1,14 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, Usage, ChatResult, Session } from './interfaces'
+import type { SceneType, Preset, Usage, ChatResult, Session, StringDictionary } from './interfaces'
 import { user } from './store'
 import { assistantRole, countTokensApi, generatePromptCheck } from './api'
 import { tcLog } from './tauriCompat'
 
 export async function sendChatKoboldAi(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean
@@ -16,8 +17,9 @@ export async function sendChatKoboldAi(
   const url = new URL(uri)
   const { prompt, tokens } = await generatePromptCheck(
     preset,
-    prologues,
+    prompts,
     dialogues,
+    dict,
     memories,
     session,
     summary
@@ -88,8 +90,9 @@ export async function sendChatKoboldAi(
 
 export async function sendChatKoboldAiStream(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean,
@@ -102,8 +105,9 @@ export async function sendChatKoboldAiStream(
 
   const { prompt, tokens } = await generatePromptCheck(
     preset,
-    prologues,
+    prompts,
     dialogues,
+    dict,
     memories,
     session
   )

@@ -1,13 +1,14 @@
 import { get } from 'svelte/store'
 import { apiUrl, assistantRole, generateMessagesCheck, generatePromptCheck } from './api'
-import type { ChatResult, Preset, SceneType, Session } from './interfaces'
+import type { ChatResult, Preset, SceneType, Session, StringDictionary } from './interfaces'
 import { curChar, settings, user } from './store'
 import { tcGet, tcLog } from './tauriCompat'
 
 export async function sendChatInfermatic(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean
@@ -16,8 +17,9 @@ export async function sendChatInfermatic(
   url
   const { messages } = await generateMessagesCheck(
     preset,
-    prologues,
+    prompts,
     dialogues,
+    dict,
     memories,
     session,
     summary
@@ -30,8 +32,9 @@ export async function sendChatInfermatic(
 
 export async function sendChatInfermaticStream(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean,
@@ -42,8 +45,9 @@ export async function sendChatInfermaticStream(
   const url = preset.infermatic.apiUrl + apiUrl(true)
   const { prompt, tokens } = await generatePromptCheck(
     preset,
-    prologues,
+    prompts,
     dialogues,
+    dict,
     memories,
     session,
     summary

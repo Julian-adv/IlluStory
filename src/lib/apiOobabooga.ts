@@ -1,13 +1,21 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, ChatResult, Session, OobaboogaParam } from './interfaces'
+import type {
+  SceneType,
+  Preset,
+  ChatResult,
+  Session,
+  OobaboogaParam,
+  StringDictionary
+} from './interfaces'
 import { defaultPreset, user, zeroUsage } from './store'
 import { apiUrl, assistantRole, generateMessagesCheck } from './api'
 import { tcLog } from './tauriCompat'
 
 export async function sendChatOobabooga(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean
@@ -16,8 +24,9 @@ export async function sendChatOobabooga(
   const url = new URL(uri)
   const { messages } = await generateMessagesCheck(
     preset,
-    prologues,
+    prompts,
     dialogues,
+    dict,
     memories,
     session,
     summary
@@ -181,8 +190,9 @@ function modifiedParameters(preset: OobaboogaParam): Partial<OobaboogaParam> {
 
 export async function sendChatOobaboogaStream(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean,
@@ -194,8 +204,9 @@ export async function sendChatOobaboogaStream(
   const url = new URL(uri)
   const { messages, tokens } = await generateMessagesCheck(
     preset,
-    prologues,
+    prompts,
     dialogues,
+    dict,
     memories,
     session,
     summary

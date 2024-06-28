@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { Preset, SceneType, ChatResult, Session } from './interfaces'
+import type { Preset, SceneType, ChatResult, Session, StringDictionary } from './interfaces'
 import { lorebook, settings, zeroUsage } from './store'
 import {
   apiUrl,
@@ -16,11 +16,13 @@ import {
 import { getStartEndIndex } from '$lib'
 import { tcLog } from './tauriCompat'
 import OpenAI from 'openai'
+import { replaceName } from './session'
 
 function generatePrompt(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   summary: boolean
 ) {
@@ -32,7 +34,7 @@ function generatePrompt(
     }
   } else {
     let sentChatHistory = false
-    for (const scene of prologues) {
+    for (const scene of prompts) {
       switch (scene.role) {
         case startStory:
           break
@@ -60,7 +62,7 @@ function generatePrompt(
           }
           break
         default:
-          prompt += scene.content + '\n'
+          prompt += replaceName(scene.content, dict) + '\n'
       }
     }
     if (!sentChatHistory) {
@@ -74,8 +76,9 @@ function generatePrompt(
 
 async function generateOpenAIPromptCheck(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary = false
@@ -85,8 +88,9 @@ async function generateOpenAIPromptCheck(
   while (session.startIndex < dialogues.length || dialogues.length === 0) {
     prompt = generatePrompt(
       preset,
-      prologues,
+      prompts,
       dialogues.slice(session.startIndex),
+      dict,
       memories,
       summary
     )
@@ -103,8 +107,9 @@ async function generateOpenAIPromptCheck(
 
 export async function sendChatOpenAi(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean
@@ -124,8 +129,9 @@ export async function sendChatOpenAi(
   if (instructModel) {
     const { prompt } = await generateOpenAIPromptCheck(
       preset,
-      prologues,
+      prompts,
       dialogues,
+      dict,
       memories,
       session,
       summary
@@ -137,8 +143,9 @@ export async function sendChatOpenAi(
   } else {
     const { messages } = await generateMessagesCheck(
       preset,
-      prologues,
+      prompts,
       dialogues,
+      dict,
       memories,
       session,
       summary
@@ -181,8 +188,9 @@ export async function sendChatOpenAi(
 
 export async function sendChatOpenAiStream(
   preset: Preset,
-  prologues: SceneType[],
+  prompts: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
   memories: string,
   session: Session,
   summary: boolean,
@@ -206,8 +214,9 @@ export async function sendChatOpenAiStream(
   if (instructModel) {
     const { prompt, tokens } = await generateOpenAIPromptCheck(
       preset,
-      prologues,
+      prompts,
       dialogues,
+      dict,
       memories,
       session,
       summary
@@ -220,8 +229,9 @@ export async function sendChatOpenAiStream(
   } else {
     const { messages, tokens } = await generateMessagesCheck(
       preset,
-      prologues,
+      prompts,
       dialogues,
+      dict,
       memories,
       session,
       summary
