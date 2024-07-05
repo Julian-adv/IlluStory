@@ -1,7 +1,7 @@
 import type { Settings } from './interfaces'
-import { tcLog, tcPost } from './tauriCompat'
+import { tcGetComfyImage, tcLog, tcPost } from './tauriCompat'
 
-export async function generateImage(
+export async function generateImageAutomatic1111(
   settings: Settings,
   width: number,
   height: number,
@@ -104,4 +104,14 @@ export async function generateImage(
     tcLog('ERROR', 'generateImage: ', String(error))
     return ''
   }
+}
+
+export async function generateImage(
+  settings: Settings,
+  width: number,
+  height: number,
+  prompt: string
+): Promise<string> {
+  const result = await tcGetComfyImage('127.0.0.1:8188', width, height, prompt)
+  return `data:image/png;base64,${result.image}`
 }

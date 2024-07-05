@@ -4,3 +4,4 @@ uvicorn==0.23.2
 requests==2.31.0
 chromadb==0.4.14
 psutil==5.9.5
+websocket-client==1.8.0

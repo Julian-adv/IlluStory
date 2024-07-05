@@ -11,11 +11,12 @@ from src import image
 from src import memory
 from src import logging
 from src import process
+from src import gen_image
 
 app = FastAPI()
 
 
-origins = ["http://localhost:5173", "http://127.0.0.1:8001"]
+origins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://127.0.0.1:8001"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,6 +34,7 @@ app.include_router(request.router)
 app.include_router(memory.router)
 app.include_router(logging.router)
 app.include_router(process.router)
+app.include_router(gen_image.router)
 
 if os.path.exists("../../../build/_app"):
     app.mount("/_app", StaticFiles(directory="../../../build/_app"))

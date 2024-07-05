@@ -29,6 +29,7 @@
         enabled: true,
         triggered: false,
         type: RuleType.Keyword,
+        keywords: '',
         condition: '',
         answer: '',
         content: '',

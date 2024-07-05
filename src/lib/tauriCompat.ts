@@ -439,3 +439,22 @@ export function tcConvertImageSrc(src: string | undefined) {
     return 'http://localhost:8001/static/' + src
   }
 }
+
+export async function tcGetComfyImage(
+  serverAddr: string,
+  width: number,
+  height: number,
+  prompt: string
+) {
+  if (window.__TAURI_METADATA__) {
+    // not implemented
+    return ''
+  } else {
+    return await fetchPost('gen_image/comfy', {
+      server_address: serverAddr,
+      width: width,
+      height: height,
+      prompt: prompt
+    })
+  }
+}
