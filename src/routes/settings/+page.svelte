@@ -10,6 +10,8 @@
   import TextField from '../common/TextField.svelte'
   import SelectField from '../common/SelectField.svelte'
   import { installDefaults } from '$lib/fs'
+  import { ImageGeneration } from '$lib/interfaces'
+  import { tcGet } from '$lib/tauriCompat'
 
   const languages = [
     { value: 'BG', name: 'Bulgarian' },
@@ -53,9 +55,22 @@
     { value: 'ada-002', name: 'text-embedding-ada-002' }
   ]
 
+  const backends = [
+    { value: ImageGeneration.Automatic1111, name: 'Automatic1111' },
+    { value: ImageGeneration.ComfyUI, name: 'ComfyUI' }
+  ]
+
+  let models = [{ value: 'none', name: 'None' }]
+
   onMount(async () => {
     await installDefaults()
     await loadSettings()
+    const json = await tcGet(`http://${$settings.sdURL}/object_info/CheckpointLoaderSimple`)
+    models = []
+    for (const model of json.data.CheckpointLoaderSimple.input.required.ckpt_name[0]) {
+      models.push({ value: model, name: model })
+    }
+    models = models
   })
 
   function save() {
@@ -94,13 +109,15 @@
       help="Embeddings to use for the long term memory."
       bind:value={$settings.embeddings}
       {save} />
-    <h1 class="text-lg font-semibold mt-4 col-span-3">Stable Diffusion</h1>
+    <h1 class="text-lg font-semibold mt-4 col-span-3">Image Generation</h1>
+    <SelectField label="Backend" items={backends} bind:value={$settings.imageGeneration} {save} />
     <StringField
-      label="URL"
+      label="Server address"
       placeholder=""
-      help="Automatic1111's Stable Diffusion web UI server URL. Usually http://localhost:7860"
+      help="Automatic1111's Stable Diffusion web UI server address(localhost:7860) or ComfyUI's server address(localhost:8188)."
       bind:value={$settings.sdURL}
       {save} />
+    <SelectField label="Model" items={models} bind:value={$settings.model} {save} />
     <StringField
       label="Image sizes"
       help="A comma-separated list of image sizes. Example: 512x768, 768x512. One of which is chosen at random."

@@ -13,9 +13,13 @@ router = APIRouter(prefix="/api/gen_image")
 
 class ComfyReq(BaseModel):
     server_address: str
+    model: str
     width: int
     height: int
     prompt: str
+    negative_prompt: str
+    steps: int
+    cfg: float
 
 
 # This is an example that uses the websockets api and the SaveImageWebsocket node to get images directly without
@@ -79,8 +83,8 @@ prompt_text = """
   "3": {
     "inputs": {
       "seed": 365447695490082,
-      "steps": 30,
-      "cfg": 6,
+      "steps": 10,
+      "cfg": 4,
       "sampler_name": "dpmpp_2m_sde_gpu",
       "scheduler": "karras",
       "denoise": 1,
@@ -170,10 +174,12 @@ prompt_text = """
   },
   "13": {
     "inputs": {
-      "weight": 1,
+      "weight": 0.8,
+      "weight_type": "ease in-out",
+      "combine_embeds": "concat",
       "start_at": 0,
-      "end_at": 0.3,
-      "weight_type": "prompt is more important",
+      "end_at": 1,
+      "embeds_scaling": "V only",
       "model": [
         "12",
         0
@@ -187,7 +193,7 @@ prompt_text = """
         0
       ]
     },
-    "class_type": "IPAdapter"
+    "class_type": "IPAdapterAdvanced"
   },
   "14": {
     "inputs": {
@@ -213,8 +219,8 @@ prompt_text = """
       "guide_size_for": true,
       "max_size": 1024,
       "seed": 774163909736209,
-      "steps": 20,
-      "cfg": 6,
+      "steps": 10,
+      "cfg": 4,
       "sampler_name": "dpmpp_2m_sde_gpu",
       "scheduler": "karras",
       "denoise": 0.5,
@@ -300,12 +306,10 @@ prompt_text = """
 async def comfy(req: ComfyReq):
     prompt = json.loads(prompt_text)
 
-    # prompt["4"]["inputs"]["ckpt_name"] = "whitePonyDiffusion3_fixed.safetensors"
-    prompt["4"]["inputs"]["ckpt_name"] = "ARAZmixPony033.fp16.safetensors"
-    # set the text prompt for our positive CLIPTextEncode
-    prompt_mod = "score_9,score_8,score_7,8k UHD resolution," + req.prompt
-    prompt["6"]["inputs"]["text"] = prompt_mod
-    print(f"prompt: {prompt_mod}")
+    prompt["4"]["inputs"]["ckpt_name"] = req.model
+    prompt["6"]["inputs"]["text"] = req.prompt
+    prompt["7"]["inputs"]["text"] = req.negative_prompt
+    print(f"prompt: {req.prompt}")
     print(f"size: {req.width}x{req.height}")
 
     # set the seed for our KSampler node
@@ -314,6 +318,12 @@ async def comfy(req: ComfyReq):
     prompt["5"]["inputs"]["height"] = req.height
 
     prompt["22"]["inputs"]["seed"] = random.randint(1, 1000000000000000)
+
+    prompt["3"]["inputs"]["steps"] = req.steps
+    prompt["22"]["inputs"]["steps"] = req.steps
+
+    prompt["3"]["inputs"]["cfg"] = req.cfg
+    prompt["22"]["inputs"]["cfg"] = req.cfg
 
     ws = websocket.WebSocket()
     ws.connect("ws://{}/ws?clientId={}".format(req.server_address, client_id))

@@ -174,6 +174,11 @@ export enum CardType {
   Lorebook
 }
 
+export enum ImageGeneration {
+  Automatic1111 = 'a',
+  ComfyUI = 'c'
+}
+
 export interface StoryCard {
   type: CardType
   name: string
@@ -206,7 +211,9 @@ export interface Settings {
   charNameSettings: TextSettings
   fontFamily: string
   fontSize: number
+  imageGeneration: ImageGeneration
   sdURL: string
+  model: string
   enableADetailer: boolean
   imageSizes: string
   steps: number

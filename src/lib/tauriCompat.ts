@@ -442,9 +442,13 @@ export function tcConvertImageSrc(src: string | undefined) {
 
 export async function tcGetComfyImage(
   serverAddr: string,
+  model: string,
   width: number,
   height: number,
-  prompt: string
+  prompt: string,
+  negativePrompt: string,
+  steps: number,
+  cfg: number
 ) {
   if (window.__TAURI_METADATA__) {
     // not implemented
@@ -452,9 +456,13 @@ export async function tcGetComfyImage(
   } else {
     return await fetchPost('gen_image/comfy', {
       server_address: serverAddr,
+      model: model,
       width: width,
       height: height,
-      prompt: prompt
+      prompt: prompt,
+      negative_prompt: negativePrompt,
+      steps: steps,
+      cfg: cfg
     })
   }
 }

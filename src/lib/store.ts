@@ -9,7 +9,7 @@ import type {
   Session,
   Lorebook
 } from './interfaces'
-import { Api, CardType, SortOrder, SortType } from './interfaces'
+import { Api, CardType, ImageGeneration, SortOrder, SortType } from './interfaces'
 import { defaultImage } from '$lib'
 import type { Command } from '@tauri-apps/api/shell'
 
@@ -199,7 +199,9 @@ export const defaultSettings: Settings = {
   },
   fontFamily: 'Geogia',
   fontSize: 12,
+  imageGeneration: ImageGeneration.ComfyUI,
   sdURL: 'http://localhost:7860',
+  model: '',
   imageSizes: '512x768, 768x512, 1024x512',
   steps: 30,
   cfgScale: 7.0,
