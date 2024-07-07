@@ -1,14 +1,15 @@
 import { get } from 'svelte/store'
 import { apiUrl, assistantRole, generateMessagesCheck, generatePromptCheck } from './api'
-import type { ChatResult, Preset, SceneType, Session, StringDictionary } from './interfaces'
-import { curChar, settings, user } from './store'
+import type { Char, ChatResult, Preset, SceneType, Session } from './interfaces'
+import { settings } from './store'
 import { tcGet, tcLog } from './tauriCompat'
 
 export async function sendChatInfermatic(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean
@@ -19,13 +20,14 @@ export async function sendChatInfermatic(
     preset,
     prompts,
     dialogues,
-    dict,
+    char,
+    user,
     memories,
     session,
     summary
   )
   messages
-  const userName = get(user).name
+  const userName = user.name
   userName
   return null
 }
@@ -34,7 +36,8 @@ export async function sendChatInfermaticStream(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean,
@@ -47,13 +50,14 @@ export async function sendChatInfermaticStream(
     preset,
     prompts,
     dialogues,
-    dict,
+    char,
+    user,
     memories,
     session,
     summary
   )
-  const userName = get(user).name
-  const charName = get(curChar).name
+  const userName = user.name
+  const charName = char.name
   const stopping_strings = [
     `\n${userName}:`,
     `\n${charName}:`,

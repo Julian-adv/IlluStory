@@ -1,10 +1,10 @@
 import {
   Api,
+  type Char,
   type Message,
   type Preset,
   type SceneType,
-  type Session,
-  type StringDictionary
+  type Session
 } from './interfaces'
 import { loadModelsOobabooga, sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
 import { loadModelsOpenAi, sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
@@ -17,7 +17,7 @@ import { sessionPath, settings, lorebook } from './store'
 import { basenameOf } from './fs'
 import { tcSaveMemory } from './tauriCompat'
 import { loadModelsInfermatic, sendChatInfermatic, sendChatInfermaticStream } from './apiInfermatic'
-import { replaceName } from './session'
+import { makeReplaceDict, replaceName } from './session'
 
 export const systemRole = 'system'
 export const assistantRole = 'assistant'
@@ -198,7 +198,8 @@ export function generatePrompt(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   summary = false
 ) {
@@ -207,10 +208,17 @@ export function generatePrompt(
   if (oneInstruction) {
     prompt += systemPrefix(preset)
   }
+  const dict = makeReplaceDict(char, user)
   let sentChatHistory = false
   for (const scene of prompts) {
     switch (scene.role) {
       case startStory:
+        break
+      case charSetting:
+        prompt += replaceName(char.description, dict)
+        break
+      case userSetting:
+        prompt += replaceName(user.description, dict)
         break
       case chatHistory: {
         const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
@@ -286,7 +294,8 @@ export async function generatePromptCheck(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary = false
@@ -298,7 +307,8 @@ export async function generatePromptCheck(
       preset,
       prompts,
       dialogues.slice(session.startIndex),
-      dict,
+      char,
+      user,
       memories,
       summary
     )
@@ -333,7 +343,8 @@ export function generateMessages(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   summary: boolean
 ) {
@@ -344,6 +355,7 @@ export function generateMessages(
       messages.push({ role: scene.role, content: scene.content })
     }
   } else {
+    const dict = makeReplaceDict(char, user)
     let sentChatHistory = false
     for (let i = 0; i < prompts.length; i++) {
       const scene = prompts[i]
@@ -404,7 +416,8 @@ export async function generateMessagesCheck(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean
@@ -416,7 +429,8 @@ export async function generateMessagesCheck(
       preset,
       prompts,
       dialogues.slice(session.startIndex),
-      dict,
+      char,
+      user,
       memories,
       summary
     )

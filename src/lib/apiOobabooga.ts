@@ -1,13 +1,5 @@
-import { get } from 'svelte/store'
-import type {
-  SceneType,
-  Preset,
-  ChatResult,
-  Session,
-  OobaboogaParam,
-  StringDictionary
-} from './interfaces'
-import { defaultPreset, user, zeroUsage } from './store'
+import type { SceneType, Preset, ChatResult, Session, OobaboogaParam, Char } from './interfaces'
+import { defaultPreset, zeroUsage } from './store'
 import { apiUrl, assistantRole, generateMessagesCheck } from './api'
 import { tcLog } from './tauriCompat'
 
@@ -15,7 +7,8 @@ export async function sendChatOobabooga(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean
@@ -26,12 +19,13 @@ export async function sendChatOobabooga(
     preset,
     prompts,
     dialogues,
-    dict,
+    char,
+    user,
     memories,
     session,
     summary
   )
-  const userName = get(user).name
+  const userName = user.name
   const request = {
     ...preset.oobabooga,
     // continue_: false,
@@ -192,7 +186,8 @@ export async function sendChatOobaboogaStream(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean,
@@ -206,7 +201,8 @@ export async function sendChatOobaboogaStream(
     preset,
     prompts,
     dialogues,
-    dict,
+    char,
+    user,
     memories,
     session,
     summary
@@ -216,7 +212,7 @@ export async function sendChatOobaboogaStream(
     modified.continue_ = true
     modified.truncation_length = (modified.truncation_length ?? 512) * 2
   }
-  const userName = get(user).name
+  const userName = user.name
   const request = {
     ...modified,
     stream: true,

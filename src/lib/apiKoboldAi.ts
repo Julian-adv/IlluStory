@@ -1,6 +1,4 @@
-import { get } from 'svelte/store'
-import type { SceneType, Preset, Usage, ChatResult, Session, StringDictionary } from './interfaces'
-import { user } from './store'
+import type { SceneType, Preset, Usage, ChatResult, Session, Char } from './interfaces'
 import { assistantRole, countTokensApi, generatePromptCheck } from './api'
 import { tcLog } from './tauriCompat'
 
@@ -8,7 +6,8 @@ export async function sendChatKoboldAi(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean
@@ -19,14 +18,15 @@ export async function sendChatKoboldAi(
     preset,
     prompts,
     dialogues,
-    dict,
+    char,
+    user,
     memories,
     session,
     summary
   )
   tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
-  const userName = get(user).name
+  const userName = user.name
 
   const respFromKobold = await fetch(url, {
     body: JSON.stringify({
@@ -92,7 +92,8 @@ export async function sendChatKoboldAiStream(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean,
@@ -107,12 +108,13 @@ export async function sendChatKoboldAiStream(
     preset,
     prompts,
     dialogues,
-    dict,
+    char,
+    user,
     memories,
     session
   )
   tcLog('INFO', 'prompt:', prompt)
-  const userName = get(user).name
+  const userName = user.name
 
   const respFromKobold = await fetch(url, {
     body: JSON.stringify({

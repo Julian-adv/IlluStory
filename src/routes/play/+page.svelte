@@ -28,7 +28,6 @@
     emptyCard,
     settings,
     session,
-    replaceDict,
     fileDialog,
     lorebookCard,
     lorebookPath,
@@ -55,21 +54,12 @@
     type SceneType,
     type Preset,
     type StoryCard,
-    type StringDictionary,
     type Lorebook,
     type Trigger,
     Api,
     type Char
   } from '$lib/interfaces'
-  import {
-    loadSession,
-    loadSessionDialog,
-    makeReplaceDict,
-    prepareForSave,
-    replaceName,
-    replaceNames,
-    saveSessionAuto
-  } from '$lib/session'
+  import { loadSession, loadSessionDialog, prepareForSave, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '$lib/CommonCard.svelte'
   import { loadChar } from '$lib/charSettings'
@@ -98,11 +88,11 @@
   let nextChar = 'random'
   let numMemory = 1
 
-  async function convertScenes(newScenes: SceneType[], dict: StringDictionary) {
+  async function convertScenes(newScenes: SceneType[]) {
     let scenes = []
     for (let i = 0; i < newScenes.length; i++) {
       let scene = newScenes[i]
-      scene = await extractImagePrompt($settings, newScenes[i], dict)
+      scene = await extractImagePrompt($settings, newScenes[i])
       scene.done = true
       scenes.push(scene)
     }
@@ -232,9 +222,7 @@
     $sceneCard = await cardFromPath($session.sceneCard)
     $lorebookCard = await cardFromPath($session.lorebookCard)
     await loadVarsFromPath()
-    // Empty dictionary will be sufficient.
-    $replaceDict = {}
-    $dialogues = await convertScenes($session.scenes, $replaceDict)
+    $dialogues = await convertScenes($session.scenes)
     setTriggers($lorebook, $session.lorebookTriggers)
     fillCharacters()
   }
@@ -256,8 +244,7 @@
   }
 
   async function updateInitialScenes() {
-    $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
-    $dialogues = await convertScenes($curScene.scenes, $replaceDict)
+    $dialogues = await convertScenes($curScene.scenes)
     $dialogues[0].name = $chars[0].name
   }
 
@@ -334,14 +321,15 @@
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
-    $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
+    $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues)
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     const result = $preset.streaming
       ? await sendChatStream(
           $preset,
           prologs,
           $dialogues,
-          $replaceDict,
+          $curChar,
+          $user,
           '',
           $session,
           true,
@@ -349,56 +337,14 @@
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues, $replaceDict, '', $session, true)
+      : await sendChat($preset, prologs, $dialogues, $curChar, $user, '', $session, true)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
       scene.role = result.scene.role
       scene.content = result.scene.content
       scene.done = result.scene.done
-      scene = await extractImagePrompt($settings, scene, $replaceDict)
-      $dialogues = $dialogues
-      await tick()
-      scrollToEnd()
-    }
-  }
-
-  async function _summarizeEarlyScene() {
-    const sceneId = newSceneId($dialogues)
-    const waitingScene = {
-      id: sceneId,
-      role: assistantRole,
-      content: '',
-      textContent: '',
-      done: false
-    }
-    $dialogues = [...$dialogues, waitingScene]
-    await tick()
-    scrollToEnd()
-    $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
-    let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
-    prologs = replaceNames(prologs, $replaceDict)
-    const result = $preset.streaming
-      ? await sendChatStream(
-          $preset,
-          prologs,
-          $dialogues.slice(0, 1),
-          $replaceDict,
-          '',
-          $session,
-          true,
-          false,
-          received,
-          closed
-        )
-      : await sendChat($preset, prologs, $dialogues.slice(0, 1), $replaceDict, '', $session, true)
-    if (result) {
-      $usage = result.usage
-      let scene = lastScene($dialogues)
-      scene.role = result.scene.role
-      scene.content = result.scene.content
-      scene.done = result.scene.done
-      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      scene = await extractImagePrompt($settings, scene)
       $dialogues = $dialogues
       await tick()
       scrollToEnd()
@@ -434,25 +380,8 @@
     $session.nextSpeaker = value
   }
 
-  // function preparePrologue(speakerName: string) {
-  //   let prologs
-  //   let speaker = chooseCharByName($chars, $user, speakerName)
-  //   prologs = replaceChars($preset.prompts, $chars, speaker, $user)
-  //   $replaceDict = makeReplaceDict(speaker, $user)
-  //   prologs = replaceNames(prologs, $replaceDict)
-  //   return prologs
-  // }
-
-  // function lastSpeakerName(dialogues: SceneType[]): string {
-  //   let speaker = lastScene(dialogues).name
-  //   if (speaker) {
-  //     return speaker
-  //   }
-  //   return $chars[0].name
-  // }
-
   function calcUsage() {
-    const prompt = generatePrompt($preset, $preset.prompts, $dialogues, $replaceDict, '', false)
+    const prompt = generatePrompt($preset, $preset.prompts, $dialogues, $curChar, $user, '', false)
     const tokens = countTokensApi(prompt)
     return {
       prompt_tokens: tokens,
@@ -697,7 +626,8 @@
         $preset,
         inst,
         [],
-        $replaceDict,
+        $curChar,
+        $user,
         '',
         $session,
         false,
@@ -706,7 +636,7 @@
         closedVisual
       )
     } else {
-      const result = await sendChat($preset, inst, [], $replaceDict, '', $session, false)
+      const result = await sendChat($preset, inst, [], $curChar, $user, '', $session, false)
       if (result) {
         closedVisual()
       }
@@ -752,7 +682,6 @@
       if (lorebookAnswer.slice(0, 10).trim().toLowerCase().includes(rule.answer.toLowerCase())) {
         tcLog('INFO', 'lorebook triggered:', rule.condition)
         rule.triggered = true
-        rule.textContent = replaceName(rule.content, $replaceDict)
       }
       break
     }
@@ -778,16 +707,16 @@
           content: '\n</Story>\n<Question>\n' + rule.condition
         }
       ]
-      $replaceDict = makeReplaceDict(chooseChar($chars, $session.nextSpeaker, $dialogues), $user)
-      const inst = replaceNames(instructions, $replaceDict)
+      $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues)
       lorebookAnswer = ''
 
       if ($preset.streaming) {
         await sendChatStream(
           $preset,
-          inst,
+          instructions,
           [],
-          $replaceDict,
+          $curChar,
+          $user,
           '',
           $session,
           false,
@@ -796,7 +725,16 @@
           closedLorebook
         )
       } else {
-        const result = await sendChat($preset, inst, [], $replaceDict, '', $session, false)
+        const result = await sendChat(
+          $preset,
+          instructions,
+          [],
+          $curChar,
+          $user,
+          '',
+          $session,
+          false
+        )
         if (result) {
           lorebookAnswer = result.scene.content
           closedLorebook()
@@ -834,7 +772,7 @@
         break
       }
     }
-    scene = await extractImagePrompt($settings, scene, $replaceDict)
+    scene = await extractImagePrompt($settings, scene)
     $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
     await checkLorebook()
@@ -860,7 +798,8 @@
           $preset,
           $preset.prompts,
           $dialogues,
-          $replaceDict,
+          $curChar,
+          $user,
           await getMemory(orgContent),
           $session,
           false,
@@ -872,7 +811,8 @@
           $preset,
           $preset.prompts,
           $dialogues,
-          $replaceDict,
+          $curChar,
+          $user,
           await getMemory(orgContent),
           $session,
           false
@@ -883,7 +823,7 @@
       scene.role = result.scene.role
       scene.content = result.scene.content
       scene.done = result.scene.done
-      scene = await extractImagePrompt($settings, scene, $replaceDict)
+      scene = await extractImagePrompt($settings, scene)
       $dialogues = $dialogues
       if (!$preset.streaming) {
         await checkLorebook()
@@ -907,7 +847,7 @@
       content = `*(${content})*`
     }
     const sceneId = newSceneId($dialogues)
-    let speaker = nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues).name : nextChar
+    $curChar = chooseChar($chars, nextChar, $dialogues)
     if (content) {
       const userScene = {
         id: sceneId,
@@ -922,7 +862,7 @@
         role: assistantRole,
         content: '',
         textContent: '',
-        name: speaker,
+        name: $curChar.name,
         done: false
       }
       $dialogues = [...$dialogues, userScene, waitingScene]
@@ -932,7 +872,7 @@
         role: assistantRole,
         content: '',
         textContent: '',
-        name: speaker,
+        name: $curChar.name,
         done: false
       }
       $dialogues = [...$dialogues, waitingScene]

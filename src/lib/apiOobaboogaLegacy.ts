@@ -1,5 +1,13 @@
 import { get } from 'svelte/store'
-import type { SceneType, Preset, Usage, ChatResult, Session } from './interfaces'
+import type {
+  SceneType,
+  Preset,
+  Usage,
+  ChatResult,
+  Session,
+  Char,
+  StringDictionary
+} from './interfaces'
 import { user } from './store'
 import { assistantRole, countTokensApi, generatePromptCheck } from './api'
 import { tcLog } from './tauriCompat'
@@ -8,6 +16,9 @@ export async function sendChatOobabooga(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean
@@ -18,13 +29,16 @@ export async function sendChatOobabooga(
     preset,
     prologues,
     dialogues,
+    dict,
+    char,
+    user,
     memories,
     session,
     summary
   )
   tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
-  const userName = get(user).name
+  const userName = user.name
 
   const respFromOoga = await fetch(url, {
     body: JSON.stringify({
@@ -94,18 +108,24 @@ export async function sendChatOobaboogaStream(
   preset: Preset,
   prologues: SceneType[],
   dialogues: SceneType[],
+  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean,
   received: (text: string) => void,
   closedCallback: () => void
 ): Promise<ChatResult | null> {
-  const userName = get(user).name
+  const userName = user.name
 
   const { prompt, tokens } = await generatePromptCheck(
     preset,
     prologues,
     dialogues,
+    dict,
+    char,
+    user,
     memories,
     session,
     summary

@@ -1,7 +1,6 @@
 import { get } from 'svelte/store'
 import { translateText } from './deepLApi'
-import type { Preset, SceneType, Settings, StringDictionary } from './interfaces'
-import { replaceName } from './session'
+import type { Preset, SceneType, Settings } from './interfaces'
 import { chars } from './store'
 
 export const visualStart = '<Visual>'
@@ -13,12 +12,7 @@ function clearImagePrompt(str: string) {
   return str.replace(regexp, '').trim()
 }
 
-export async function extractImagePrompt(
-  settings: Settings,
-  scene: SceneType,
-  dict: StringDictionary
-) {
-  scene.content = replaceName(scene.content, dict)
+export async function extractImagePrompt(settings: Settings, scene: SceneType) {
   const matches = scene.content.match(regexp) || []
   const extractedContents = matches.map(str => str.slice(visualStart.length, -visualEnd.length))
   scene.textContent = clearImagePrompt(scene.content)

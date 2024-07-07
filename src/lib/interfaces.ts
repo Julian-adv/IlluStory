@@ -306,8 +306,8 @@ export interface SceneResult {
 }
 
 export enum RuleType {
-  Question = 1,
-  Keyword
+  Question = 'q',
+  Keyword = 'k'
 }
 
 export interface Rule {

@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { Preset, SceneType, ChatResult, Session, StringDictionary } from './interfaces'
+import type { Preset, SceneType, ChatResult, Session, Char } from './interfaces'
 import { lorebook, settings, zeroUsage } from './store'
 import {
   apiUrl,
@@ -16,13 +16,14 @@ import {
 import { getStartEndIndex } from '$lib'
 import { tcLog } from './tauriCompat'
 import OpenAI from 'openai'
-import { replaceName } from './session'
+import { makeReplaceDict, replaceName } from './session'
 
 function generatePrompt(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   summary: boolean
 ) {
@@ -33,6 +34,7 @@ function generatePrompt(
       prompt += scene.content + '\n'
     }
   } else {
+    const dict = makeReplaceDict(char, user)
     let sentChatHistory = false
     for (const scene of prompts) {
       switch (scene.role) {
@@ -78,7 +80,8 @@ async function generateOpenAIPromptCheck(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary = false
@@ -90,7 +93,8 @@ async function generateOpenAIPromptCheck(
       preset,
       prompts,
       dialogues.slice(session.startIndex),
-      dict,
+      char,
+      user,
       memories,
       summary
     )
@@ -109,7 +113,8 @@ export async function sendChatOpenAi(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean
@@ -131,7 +136,8 @@ export async function sendChatOpenAi(
       preset,
       prompts,
       dialogues,
-      dict,
+      char,
+      user,
       memories,
       session,
       summary
@@ -145,7 +151,8 @@ export async function sendChatOpenAi(
       preset,
       prompts,
       dialogues,
-      dict,
+      char,
+      user,
       memories,
       session,
       summary
@@ -190,7 +197,8 @@ export async function sendChatOpenAiStream(
   preset: Preset,
   prompts: SceneType[],
   dialogues: SceneType[],
-  dict: StringDictionary,
+  char: Char,
+  user: Char,
   memories: string,
   session: Session,
   summary: boolean,
@@ -216,7 +224,8 @@ export async function sendChatOpenAiStream(
       preset,
       prompts,
       dialogues,
-      dict,
+      char,
+      user,
       memories,
       session,
       summary
@@ -231,7 +240,8 @@ export async function sendChatOpenAiStream(
       preset,
       prompts,
       dialogues,
-      dict,
+      char,
+      user,
       memories,
       session,
       summary

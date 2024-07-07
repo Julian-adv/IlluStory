@@ -7,7 +7,6 @@
     dialogues,
     lorebook,
     preset,
-    replaceDict,
     session,
     sessionPath,
     settings,
@@ -104,7 +103,7 @@
   async function onEditDone(content: string) {
     scene.content = content
     scene.translatedContent = ''
-    scene = await extractImagePrompt($settings, scene, $replaceDict)
+    scene = await extractImagePrompt($settings, scene)
     info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
   }
 </script>
