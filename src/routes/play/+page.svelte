@@ -332,12 +332,11 @@
           $user,
           '',
           $session,
-          true,
           false,
           received,
           closed
         )
-      : await sendChat($preset, prologs, $dialogues, $curChar, $user, '', $session, true)
+      : await sendChat($preset, prologs, $dialogues, $curChar, $user, '', $session)
     if (result) {
       $usage = result.usage
       let scene = lastScene($dialogues)
@@ -381,7 +380,7 @@
   }
 
   function calcUsage() {
-    const prompt = generatePrompt($preset, $preset.prompts, $dialogues, $curChar, $user, '', false)
+    const prompt = generatePrompt($preset, $preset.prompts, $dialogues, $curChar, $user, '')
     const tokens = countTokensApi(prompt)
     return {
       prompt_tokens: tokens,
@@ -631,12 +630,11 @@
         '',
         $session,
         false,
-        false,
         receivedVisual,
         closedVisual
       )
     } else {
-      const result = await sendChat($preset, inst, [], $curChar, $user, '', $session, false)
+      const result = await sendChat($preset, inst, [], $curChar, $user, '', $session)
       if (result) {
         closedVisual()
       }
@@ -720,21 +718,11 @@
           '',
           $session,
           false,
-          false,
           receivedLorebook,
           closedLorebook
         )
       } else {
-        const result = await sendChat(
-          $preset,
-          instructions,
-          [],
-          $curChar,
-          $user,
-          '',
-          $session,
-          false
-        )
+        const result = await sendChat($preset, instructions, [], $curChar, $user, '', $session)
         if (result) {
           lorebookAnswer = result.scene.content
           closedLorebook()
@@ -802,7 +790,6 @@
           $user,
           await getMemory(orgContent),
           $session,
-          false,
           continueGen,
           received,
           closed
@@ -814,8 +801,7 @@
           $curChar,
           $user,
           await getMemory(orgContent),
-          $session,
-          false
+          $session
         )
     if (result) {
       $usage = result.usage

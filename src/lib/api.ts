@@ -200,8 +200,7 @@ export function generatePrompt(
   dialogues: SceneType[],
   char: Char,
   user: Char,
-  memories: string,
-  summary = false
+  memories: string
 ) {
   let prompt = ''
   const oneInstruction = get(settings).oneInstruction
@@ -252,21 +251,11 @@ export function generatePrompt(
     }
   }
   if (!sentChatHistory) {
-    if (summary) {
-      prompt += '<Story>\n'
-    }
     for (const scene of dialogues) {
-      if (summary) {
-        prompt += scene.textContent + '\n'
-      } else {
-        prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
-      }
-    }
-    if (summary) {
-      prompt += '</Story>\n'
+      prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
     }
   }
-  if (oneInstruction || summary) {
+  if (oneInstruction) {
     prompt += assistantPrefix(preset)
   }
   return prompt
@@ -297,8 +286,7 @@ export async function generatePromptCheck(
   char: Char,
   user: Char,
   memories: string,
-  session: Session,
-  summary = false
+  session: Session
 ) {
   let prompt = ''
   let tokens = 0
@@ -309,8 +297,7 @@ export async function generatePromptCheck(
       dialogues.slice(session.startIndex),
       char,
       user,
-      memories,
-      summary
+      memories
     )
     tokens = countTokensApi(prompt)
     if (tokensOver(preset, tokens)) {
@@ -345,68 +332,60 @@ export function generateMessages(
   dialogues: SceneType[],
   char: Char,
   user: Char,
-  memories: string,
-  summary: boolean
+  memories: string
 ) {
   const messages: Message[] = []
-  if (summary) {
-    messages.push({ role: systemRole, content: preset.summarizePrompt })
+  const dict = makeReplaceDict(char, user)
+  let sentChatHistory = false
+  for (let i = 0; i < prompts.length; i++) {
+    const scene = prompts[i]
+    switch (scene.role) {
+      case startStory:
+        break
+      case chatHistory: {
+        const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
+        for (const mesg of dialogues.slice(start, end)) {
+          messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
+        }
+        sentChatHistory = true
+        break
+      }
+      case assocMemory: {
+        if (memories) {
+          messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
+          const nextScene = prompts[i + 1]
+          if (nextScene.role === endTag) {
+            messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
+            i++
+          }
+        } else {
+          if (prompts[i + 1].role === endTag) {
+            i++
+          }
+        }
+        break
+      }
+      case lorebookRole: {
+        for (const rule of get(lorebook).rules) {
+          if (rule.triggered) {
+            if (scene.textContent) {
+              messages.push({ role: systemRole, content: scene.textContent })
+            }
+            messages.push({ role: systemRole, content: rule.textContent })
+          }
+        }
+        break
+      }
+      default:
+        messages.push({
+          role: convertRole(scene.role),
+          content: replaceName(scene.content, dict)
+        })
+    }
+  }
+  if (!sentChatHistory) {
     for (const scene of dialogues) {
       messages.push({ role: scene.role, content: scene.content })
-    }
-  } else {
-    const dict = makeReplaceDict(char, user)
-    let sentChatHistory = false
-    for (let i = 0; i < prompts.length; i++) {
-      const scene = prompts[i]
-      switch (scene.role) {
-        case startStory:
-          break
-        case chatHistory: {
-          const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
-          for (const mesg of dialogues.slice(start, end)) {
-            messages.push({ role: mesg.role, content: mesg.textContent ?? mesg.content })
-          }
-          sentChatHistory = true
-          break
-        }
-        case assocMemory: {
-          if (memories) {
-            messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
-            const nextScene = prompts[i + 1]
-            if (nextScene.role === endTag) {
-              messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
-              i++
-            }
-          } else {
-            if (prompts[i + 1].role === endTag) {
-              i++
-            }
-          }
-          break
-        }
-        case lorebookRole: {
-          for (const rule of get(lorebook).rules) {
-            if (rule.triggered) {
-              if (scene.textContent) {
-                messages.push({ role: systemRole, content: scene.textContent })
-              }
-              messages.push({ role: systemRole, content: rule.textContent })
-            }
-          }
-          break
-        }
-        default:
-          messages.push({
-            role: convertRole(scene.role),
-            content: replaceName(scene.content, dict)
-          })
-      }
-    }
-    if (!sentChatHistory) {
-      for (const scene of dialogues) {
-        messages.push({ role: scene.role, content: scene.content })
-      }
     }
   }
   return messages
@@ -419,8 +398,7 @@ export async function generateMessagesCheck(
   char: Char,
   user: Char,
   memories: string,
-  session: Session,
-  summary: boolean
+  session: Session
 ) {
   let messages: Message[] = []
   let tokens = 0
@@ -431,8 +409,7 @@ export async function generateMessagesCheck(
       dialogues.slice(session.startIndex),
       char,
       user,
-      memories,
-      summary
+      memories
     )
     tokens = 0
     for (const mesg of messages) {

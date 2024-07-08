@@ -9,8 +9,7 @@ export async function sendChatKoboldAi(
   char: Char,
   user: Char,
   memories: string,
-  session: Session,
-  summary: boolean
+  session: Session
 ): Promise<ChatResult | null> {
   const uri = preset.koboldAi.apiUrl + '/v1/generate'
   const url = new URL(uri)
@@ -21,8 +20,7 @@ export async function sendChatKoboldAi(
     char,
     user,
     memories,
-    session,
-    summary
+    session
   )
   tcLog('INFO', 'prompt:', prompt)
   const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
@@ -96,7 +94,6 @@ export async function sendChatKoboldAiStream(
   user: Char,
   memories: string,
   session: Session,
-  summary: boolean,
   continueGen: boolean,
   received: (text: string) => void,
   closedCallback: () => void

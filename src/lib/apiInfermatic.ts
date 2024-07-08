@@ -11,8 +11,7 @@ export async function sendChatInfermatic(
   char: Char,
   user: Char,
   memories: string,
-  session: Session,
-  summary: boolean
+  session: Session
 ): Promise<ChatResult | null> {
   const url = new URL(preset.infermatic.apiUrl + apiUrl(false))
   url
@@ -23,8 +22,7 @@ export async function sendChatInfermatic(
     char,
     user,
     memories,
-    session,
-    summary
+    session
   )
   messages
   const userName = user.name
@@ -40,7 +38,6 @@ export async function sendChatInfermaticStream(
   user: Char,
   memories: string,
   session: Session,
-  summary: boolean,
   continueGen: boolean,
   received: (text: string) => void,
   closedCallback: () => void
@@ -53,8 +50,7 @@ export async function sendChatInfermaticStream(
     char,
     user,
     memories,
-    session,
-    summary
+    session
   )
   const userName = user.name
   const charName = char.name

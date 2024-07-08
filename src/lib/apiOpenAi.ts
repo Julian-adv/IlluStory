@@ -116,8 +116,7 @@ export async function sendChatOpenAi(
   char: Char,
   user: Char,
   memories: string,
-  session: Session,
-  summary: boolean
+  session: Session
 ): Promise<ChatResult | null> {
   const instructModel = preset.openAi.model.includes('instruct')
   const uri = preset.openAi.apiUrl + apiUrl(instructModel)
@@ -139,8 +138,7 @@ export async function sendChatOpenAi(
       char,
       user,
       memories,
-      session,
-      summary
+      session
     )
     request = {
       ...commonReq,
@@ -154,8 +152,7 @@ export async function sendChatOpenAi(
       char,
       user,
       memories,
-      session,
-      summary
+      session
     )
     request = {
       ...commonReq,
@@ -201,7 +198,6 @@ export async function sendChatOpenAiStream(
   user: Char,
   memories: string,
   session: Session,
-  summary: boolean,
   continueGen: boolean,
   received: (text: string) => void,
   closedCallback: () => void
@@ -227,8 +223,7 @@ export async function sendChatOpenAiStream(
       char,
       user,
       memories,
-      session,
-      summary
+      session
     )
     request = {
       ...commonReq,
@@ -243,8 +238,7 @@ export async function sendChatOpenAiStream(
       char,
       user,
       memories,
-      session,
-      summary
+      session
     )
     request = {
       ...commonReq,

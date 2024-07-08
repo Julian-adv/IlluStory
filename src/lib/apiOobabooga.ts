@@ -10,8 +10,7 @@ export async function sendChatOobabooga(
   char: Char,
   user: Char,
   memories: string,
-  session: Session,
-  summary: boolean
+  session: Session
 ): Promise<ChatResult | null> {
   const uri = preset.oobabooga.apiUrl + apiUrl(false)
   const url = new URL(uri)
@@ -22,8 +21,7 @@ export async function sendChatOobabooga(
     char,
     user,
     memories,
-    session,
-    summary
+    session
   )
   const userName = user.name
   const request = {
@@ -190,7 +188,6 @@ export async function sendChatOobaboogaStream(
   user: Char,
   memories: string,
   session: Session,
-  summary: boolean,
   continueGen: boolean,
   received: (text: string) => void,
   closedCallback: () => void
@@ -204,8 +201,7 @@ export async function sendChatOobaboogaStream(
     char,
     user,
     memories,
-    session,
-    summary
+    session
   )
   const modified = modifiedParameters(preset.oobabooga)
   if (continueGen) {
