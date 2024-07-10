@@ -7,6 +7,7 @@ import os
 import shutil
 import base64
 import stat
+from .logging import print_log
 
 
 router = APIRouter(
@@ -46,7 +47,7 @@ async def app_data_dir():
 @router.get("/homeDir")
 async def home_dir():
     home_directory = os.path.expanduser("~") + "\\"
-    print(home_directory)
+    print_log("DEBUG", "home dir:", home_directory)
     return {"path": home_directory}
 
 
@@ -54,7 +55,7 @@ async def home_dir():
 async def create_dir(path: Path):
     path = os.path.join(directory, path.path)
     path = path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "create dir:", path)
     os.makedirs(path, exist_ok=True)
     return {"success": True}
 
@@ -63,7 +64,7 @@ async def create_dir(path: Path):
 async def resolve_resource(path: Path):
     path = os.path.join(resource_directory, path.path)
     path = path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "resolve resource:", path)
     return {"path": path}
 
 
@@ -71,7 +72,7 @@ async def resolve_resource(path: Path):
 async def copy_file(path: CopyFile):
     dest_path = os.path.join(directory, path.dest)
     dest_path = dest_path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "copy file:", path.src, dest_path)
     shutil.copyfile(path.src, dest_path)
     return {"success": True}
 
@@ -80,13 +81,13 @@ async def copy_file(path: CopyFile):
 async def read_text_file(path: Path):
     path = os.path.join(directory, path.path)
     path = path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "read:", path)
     try:
         with open(path, "r") as f:
             result = {"text": f.read()}
         return result
     except Exception as e:
-        print(f"Error occurred: {e}")
+        print_log("ERROR", str(e))
         return {"text": ""}
 
 
@@ -94,13 +95,13 @@ async def read_text_file(path: Path):
 async def read_binary_file(path: Path):
     path = os.path.join(directory, path.path)
     path = path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "Read binary:", path)
     try:
         with open(path, "rb") as f:
             data = f.read()
         return {"data": data}
     except Exception as e:
-        print(f"Error occurred: {e}")
+        print_log("ERROR", str(e))
         return {"data": ""}
 
 
@@ -108,13 +109,13 @@ async def read_binary_file(path: Path):
 async def write_text_file(content: PathText):
     path = os.path.join(directory, content.path)
     path = path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "write:", path)
     try:
         with open(path, "w") as f:
             f.write(content.text)
         return {"success": True}
     except Exception as e:
-        print(f"Error occurred: {e}")
+        print_log("ERROR", str(e))
         return {"success": False}
 
 
@@ -122,7 +123,7 @@ async def write_text_file(content: PathText):
 async def write_binary_file(content: PathText):
     path = os.path.join(directory, content.path)
     path = path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "write binary:", path)
     try:
         text = content.text.split(",")[1]
         data = base64.b64decode(text)
@@ -130,7 +131,7 @@ async def write_binary_file(content: PathText):
             f.write(data)
         return {"success": True}
     except Exception as e:
-        print(f"Error occurred: {e}")
+        print_log("ERROR", str(e))
         return {"success": False}
 
 
@@ -159,14 +160,14 @@ def scan_dir(
 async def read_dir(path: Path):
     # path = os.path.join(directory, path.path)
     path = path.path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "read directory:", path)
     try:
         entries = scan_dir(path)
-        for entry in entries:
-            print(entry)
+        # for entry in entries:
+        #     print(entry)
         return {"entries": entries}
     except Exception as e:
-        print(f"Error occurred: {e}.")
+        print_log("ERROR", str(e))
         return {"entries": []}
 
 
@@ -174,12 +175,12 @@ async def read_dir(path: Path):
 async def metadata(path: Path):
     # path = os.path.join(directory, path.path)
     path = path.path.replace("\\", "/")
-    print(path)
+    print_log("DEBUG", "read meta:", path)
     try:
         info = os.stat(path)
         return {"modifiedAt": info.st_mtime, "isDir": stat.S_ISDIR(info.st_mode)}
     except Exception as e:
-        print(f"Error occurred: {e}.")
+        print_log("ERROR", str(e))
         return {"modifiedAt": 0, "isDir": False}
 
 

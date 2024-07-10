@@ -993,6 +993,17 @@
         save={autoSaveFunc} />
     {/if}
     {#if $preset.api === Api.KoboldAi || $preset.api === Api.Infermatic}
+      <h1 class="text-lg font-semibold mb-1 mt-3 col-span-3">Prompts</h1>
+      <TextField
+        label="Story String"
+        help=""
+        bind:value={$preset.storyString}
+        save={autoSaveFunc} />
+      <TextField
+        label="System Prompt"
+        help=""
+        bind:value={$preset.systemPrompt}
+        save={autoSaveFunc} />
       <h1 class="text-lg font-semibold mb-1 mt-3 col-span-3">Chat Messages Wrapping</h1>
       <TextField
         label="System prefix"

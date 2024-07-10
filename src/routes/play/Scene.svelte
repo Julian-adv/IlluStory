@@ -21,7 +21,7 @@
   import { saveSessionAuto } from '$lib/session'
   import { assistantRole } from '$lib/api'
   import { dirnameOf } from '$lib/fs'
-  import { tcConvertImageSrc, tcLog } from '$lib/tauriCompat'
+  import { tcConvertImageSrc } from '$lib/tauriCompat'
   import CharIcon from '../common/CharIcon.svelte'
 
   export let scene: SceneType
@@ -75,7 +75,6 @@
 
   function generateNewImage() {
     let imageSource = imageDescription($preset, scene)
-    tcLog('DEBUG', imageSource)
     info.imageFromSD = generateImage(
       $settings,
       info.imageSize.width,

@@ -23,7 +23,7 @@ goto :show_log
 :run_server
 cd %CUR_DIR%
 %PYTHON% -m pip install -r requirements.txt
-uvicorn.exe main:app --port 8001 --reload
+uvicorn.exe main:app --port 8001 --log-level critical --reload
 
 :show_log
 

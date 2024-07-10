@@ -7,6 +7,7 @@ import urllib.request
 import urllib.parse
 import base64
 import random
+from .logging import print_log
 
 router = APIRouter(prefix="/api/gen_image")
 
@@ -60,7 +61,7 @@ def get_images(ws, prompt):
     while True:
         out = ws.recv()
         if isinstance(out, str):
-            print(out)
+            print_log("DEBUG", out)
             message = json.loads(out)
             if message["type"] == "executing":
                 data = message["data"]
@@ -83,7 +84,7 @@ prompt_text = """
   "3": {
     "inputs": {
       "seed": 365447695490082,
-      "steps": 10,
+      "steps": 40,
       "cfg": 4,
       "sampler_name": "dpmpp_2m_sde_gpu",
       "scheduler": "karras",
@@ -109,7 +110,7 @@ prompt_text = """
   },
   "4": {
     "inputs": {
-      "ckpt_name": "ARAZmixPony033.fp16.safetensors"
+      "ckpt_name": "sdxl.fp16.safetensors"
     },
     "class_type": "CheckpointLoaderSimple"
   },
@@ -123,7 +124,7 @@ prompt_text = """
   },
   "6": {
     "inputs": {
-      "text": "score_9,score_8,score_7, 8k uhd resolution,beautiful girl",
+      "text": "score_9,score_8,score_7, 8k uhd resolution",
       "clip": [
         "4",
         1
@@ -133,7 +134,7 @@ prompt_text = """
   },
   "7": {
     "inputs": {
-      "text": "embedding:zPDXL2-neg,bad anatomy",
+      "text": "",
       "clip": [
         "4",
         1
@@ -174,8 +175,8 @@ prompt_text = """
   },
   "13": {
     "inputs": {
-      "weight": 0.8,
-      "weight_type": "ease in-out",
+      "weight": 0.45,
+      "weight_type": "linear",
       "combine_embeds": "concat",
       "start_at": 0,
       "end_at": 1,
@@ -215,23 +216,23 @@ prompt_text = """
   },
   "22": {
     "inputs": {
-      "guide_size": 512,
-      "guide_size_for": true,
+      "guide_size": 768,
+      "guide_size_for": false,
       "max_size": 1024,
       "seed": 774163909736209,
       "steps": 10,
       "cfg": 4,
-      "sampler_name": "dpmpp_2m_sde_gpu",
+      "sampler_name": "dpmpp_sde_gpu",
       "scheduler": "karras",
-      "denoise": 0.5,
+      "denoise": 0.35,
       "feather": 5,
       "noise_mask": true,
-      "force_inpaint": true,
-      "bbox_threshold": 0.5,
+      "force_inpaint": false,
+      "bbox_threshold": 0.4,
       "bbox_dilation": 10,
-      "bbox_crop_factor": 3,
+      "bbox_crop_factor": 1.5,
       "sam_detection_hint": "center-1",
-      "sam_dilation": 0,
+      "sam_dilation": 10,
       "sam_threshold": 0.93,
       "sam_bbox_expansion": 0,
       "sam_mask_hint_threshold": 0.7,
@@ -309,8 +310,8 @@ async def comfy(req: ComfyReq):
     prompt["4"]["inputs"]["ckpt_name"] = req.model
     prompt["6"]["inputs"]["text"] = req.prompt
     prompt["7"]["inputs"]["text"] = req.negative_prompt
-    print(f"prompt: {req.prompt}")
-    print(f"size: {req.width}x{req.height}")
+    print_log("DEBUG", "prompt:", req.prompt)
+    print_log("DEBUG", "size:", f"{req.width}x{req.height}")
 
     # set the seed for our KSampler node
     prompt["3"]["inputs"]["seed"] = random.randint(1, 1000000000000000)
@@ -320,10 +321,10 @@ async def comfy(req: ComfyReq):
     prompt["22"]["inputs"]["seed"] = random.randint(1, 1000000000000000)
 
     prompt["3"]["inputs"]["steps"] = req.steps
-    prompt["22"]["inputs"]["steps"] = req.steps
+    # prompt["22"]["inputs"]["steps"] = req.steps
 
     prompt["3"]["inputs"]["cfg"] = req.cfg
-    prompt["22"]["inputs"]["cfg"] = req.cfg
+    # prompt["22"]["inputs"]["cfg"] = req.cfg
 
     ws = websocket.WebSocket()
     ws.connect("ws://{}/ws?clientId={}".format(req.server_address, client_id))

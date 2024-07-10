@@ -2,13 +2,13 @@ import chromadb
 from fastapi import APIRouter
 from pydantic import BaseModel
 import re
-import logging
+from .logging import print_log
 
 router = APIRouter(prefix="/api/memory")
 
 path = "data/memory.chromadb"
 client = chromadb.PersistentClient(path=path)
-print(f"chromadb at {path}")
+print_log("INFO", f"chromadb at {path}")
 
 
 class Memory(BaseModel):

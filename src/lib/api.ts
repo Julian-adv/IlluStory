@@ -11,13 +11,14 @@ import { loadModelsOpenAi, sendChatOpenAi, sendChatOpenAiStream } from './apiOpe
 import { isWithinTokenLimit } from 'gpt-tokenizer'
 import llamaTokenizer from 'llama-tokenizer-js'
 import { loadModelsKoboldAi, sendChatKoboldAi, sendChatKoboldAiStream } from './apiKoboldAi'
-import { getStartEndIndex } from '$lib'
+import { getStartEndIndex, lastScene } from '$lib'
 import { get } from 'svelte/store'
 import { sessionPath, settings, lorebook } from './store'
 import { basenameOf } from './fs'
-import { tcSaveMemory } from './tauriCompat'
+import { tcLog, tcSaveMemory } from './tauriCompat'
 import { loadModelsInfermatic, sendChatInfermatic, sendChatInfermaticStream } from './apiInfermatic'
 import { makeReplaceDict, replaceName } from './session'
+import Handlebars from 'handlebars'
 
 export const systemRole = 'system'
 export const assistantRole = 'assistant'
@@ -209,55 +210,69 @@ export function generatePrompt(
   }
   const dict = makeReplaceDict(char, user)
   let sentChatHistory = false
-  for (const scene of prompts) {
-    switch (scene.role) {
-      case startStory:
-        break
-      case charSetting:
-        prompt += replaceName(char.description, dict)
-        break
-      case userSetting:
-        prompt += replaceName(user.description, dict)
-        break
-      case chatHistory: {
-        const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
-        for (const mesg of dialogues.slice(start, end)) {
-          prompt += addRolePrefix(preset, mesg, dialogues) + mesg.textContent + '\n'
-        }
-        sentChatHistory = true
-        break
-      }
-      case assocMemory: {
-        if (memories) {
-          prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
-          prompt += memories
-        }
-        break
-      }
-      case lorebookRole:
-        for (const rule of get(lorebook).rules) {
-          if (rule.triggered) {
-            prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
-            prompt += rule.textContent
+  if (preset.storyString !== '') {
+    const compiled = Handlebars.compile(preset.storyString, { noEscape: true })
+    const output = compiled({
+      system: preset.systemPrompt,
+      description: char.description,
+      persona: user.description
+    })
+    prompt += replaceName(output, dict) + '\n'
+  } else {
+    for (const scene of prompts) {
+      switch (scene.role) {
+        case startStory:
+          break
+        case charSetting:
+          prompt += replaceName(char.description, dict)
+          break
+        case userSetting:
+          prompt += replaceName(user.description, dict)
+          break
+        case chatHistory: {
+          const { start, end } = getStartEndIndex(scene, dialogues, preset.streaming)
+          for (const mesg of dialogues.slice(start, end)) {
+            prompt += addRolePrefix(preset, mesg, dialogues) + mesg.textContent + '\n'
           }
+          sentChatHistory = true
+          break
         }
-        break
-      default:
-        prompt +=
-          addRolePrefix(preset, scene, dialogues) +
-          replaceName(scene.content, dict) +
-          addRolePostfix(preset, scene, dialogues) +
-          '\n'
+        case assocMemory: {
+          if (memories) {
+            prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+            prompt += memories
+          }
+          break
+        }
+        case lorebookRole:
+          for (const rule of get(lorebook).rules) {
+            if (rule.triggered) {
+              prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+              prompt += rule.textContent
+            }
+          }
+          break
+        default:
+          prompt +=
+            addRolePrefix(preset, scene, dialogues) +
+            replaceName(scene.content, dict) +
+            addRolePostfix(preset, scene, dialogues) +
+            '\n'
+      }
     }
   }
   if (!sentChatHistory) {
     for (const scene of dialogues) {
-      prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+      prompt += addRolePrefix(preset, scene, dialogues) + scene.name + ': ' + scene.textContent
+      if (scene !== lastScene(dialogues)) {
+        prompt += addRolePostfix(preset, scene, dialogues)
+      }
     }
   }
   if (oneInstruction) {
     prompt += assistantPrefix(preset)
   }
+  tcLog('INFO', 'prompt:', prompt)
   return prompt
 }
 

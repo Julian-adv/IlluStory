@@ -144,6 +144,8 @@ export interface Preset {
   visualizePrompt: string
   summarizePrompt: string
   narratorMode: boolean
+  storyString: string
+  systemPrompt: string
   systemPrefix: string
   systemPostfix: string
   assistantPrefix: string
