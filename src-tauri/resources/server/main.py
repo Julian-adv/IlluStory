@@ -3,6 +3,20 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import os
+import sys
+from pathlib import Path
+import uvicorn
+
+# Get the project root directory
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+SRC_DIR = Path(__file__).resolve().parents[0]
+BUILD_DIR = Path(__file__).resolve().parents[3] / "build"
+
+print(PROJECT_ROOT)
+print(SRC_DIR)
+
+# Add the server directory to sys.path
+sys.path.append(str(SRC_DIR))
 
 from src import fs
 from src import fonts
@@ -36,17 +50,26 @@ app.include_router(logging.router)
 app.include_router(process.router)
 app.include_router(gen_image.router)
 
-if os.path.exists("../../../build/_app"):
-    app.mount("/_app", StaticFiles(directory="../../../build/_app"))
+if os.path.exists(str(BUILD_DIR / "_app")):
+    app.mount("/_app", StaticFiles(directory=str(BUILD_DIR / "_app")))
 
-app.mount("/static", StaticFiles(directory="../../../../IlluStory/Data"))
+# Create 'data' directory if it doesn't exist
+data_dir = PROJECT_ROOT / "data"
+data_dir.mkdir(exist_ok=True)
+
+# Mount the 'data' directory to '/static'
+app.mount("/static", StaticFiles(directory=str(data_dir)))
 
 
 @app.get("/")
 def index():
-    return FileResponse("../../../build/index.html")
+    return FileResponse(str(BUILD_DIR / "index.html"))
 
 
 @app.get("/play")
 def get_play():
-    return FileResponse("../../../build/play.html")
+    return FileResponse(str(BUILD_DIR / "play.html"))
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8001)
