@@ -41,28 +41,28 @@
     if (!$command) {
       try {
         message('INFO', 'Checking server...')
-        await tcPost('http://localhost:8000/api/fs/exists', { path: 'dummy' })
+        await tcPost('http://localhost:8001/api/fs/exists', { path: 'dummy' })
         message('INFO', 'Server is already running.', 3)
       } catch (error) {
         message('ERROR', error)
-        $command = new Command('run-bat', ['/c', 'resources\\server\\start_server.bat'])
-        const _child = await $command.spawn()
-        $command.on('close', data => {
-          message('INFO', data)
-        })
-        $command.on('error', error => {
-          message('ERROR', error)
-        })
-        $command.stdout.on('data', data => {
-          message('INFO', data)
-        })
-        $command.stderr.on('data', data => {
-          message('ERROR', data)
-        })
-        message('INFO', 'server started', 3)
-        appWindow.onCloseRequested(async _ev => {
-          await killServer()
-        })
+        // $command = new Command('run-bat', ['/c', 'resources\\server\\start_server.bat'])
+        // const _child = await $command.spawn()
+        // $command.on('close', data => {
+        //   message('INFO', data)
+        // })
+        // $command.on('error', error => {
+        //   message('ERROR', error)
+        // })
+        // $command.stdout.on('data', data => {
+        //   message('INFO', data)
+        // })
+        // $command.stderr.on('data', data => {
+        //   message('ERROR', data)
+        // })
+        // message('INFO', 'server started', 3)
+        // appWindow.onCloseRequested(async _ev => {
+        //   await killServer()
+        // })
       }
     }
   }
