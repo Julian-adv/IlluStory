@@ -19,11 +19,16 @@ if os.path.exists(local_path):
             if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE:
                 print("Already up to date.")
             elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD:
-                repo.checkout_tree(repo.get(remote_main_id))
-                main_ref = repo.lookup_reference("refs/heads/main")
-                main_ref.set_target(remote_main_id)
-                repo.head.set_target(remote_main_id)
-                print("Fast-forward pull completed.")
+                try:
+                    repo.checkout_tree(repo.get(remote_main_id))
+                    main_ref = repo.lookup_reference("refs/heads/main")
+                    main_ref.set_target(remote_main_id)
+                    repo.head.set_target(remote_main_id)
+                    print("Fast-forward pull completed.")
+                except Exception as e:
+                    print(e)
+                    print("Fast-forward is not possible. Manual merge may be required.")
+                    exit(1)
             else:
                 print("Fast-forward is not possible. Manual merge may be required.")
 else:
