@@ -3,7 +3,7 @@
   import { Navbar, NavBrand, NavUl, NavHamburger, NavLi, Popover, Toast } from 'flowbite-svelte'
   import { page } from '$app/stores'
   import { slide } from 'svelte/transition'
-  import { tcLog, tcPost } from '$lib/tauriCompat'
+  import { tcExists, tcLog } from '$lib/tauriCompat'
   import { command } from '$lib/store'
   import { Command } from '@tauri-apps/api/shell'
   import { appWindow } from '@tauri-apps/api/window'
@@ -41,7 +41,8 @@
     if (!$command) {
       try {
         message('INFO', 'Checking server...')
-        await tcPost('http://localhost:8001/api/fs/exists', { path: 'dummy' })
+        // await tcPost('http://localhost:8001/api/fs/exists', { path: 'dummy' })
+        await tcExists('dummy')
         message('INFO', 'Server is already running.', 3)
       } catch (error) {
         message('ERROR', error)
