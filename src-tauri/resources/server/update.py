@@ -45,8 +45,7 @@ if os.path.exists(requirements_file):
         python_home = sys.exec_prefix
         scripts_path = os.path.join(python_home, "Scripts")
         os.environ["PATH"] = scripts_path + os.pathsep + os.environ["PATH"]
-        print(os.environ["PATH"])
-        subprocess.check_call(
+        result = subprocess.check_output(
             [
                 sys.executable,
                 "-m",
@@ -54,8 +53,15 @@ if os.path.exists(requirements_file):
                 "install",
                 "-r",
                 requirements_file,
-            ]
+            ],
+            stderr=subprocess.STDOUT,
+            text=True,
         )
+        for line in result.split("\n"):
+            if "Requirement already satisfied" in line:
+                pass
+            else:
+                print(line)
         print("Python packages updated successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while updating packages: {e}")
