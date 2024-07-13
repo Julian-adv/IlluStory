@@ -53,7 +53,7 @@ if os.path.exists(str(BUILD_DIR / "_app")):
 data_dir = PROJECT_ROOT / "data"
 data_dir.mkdir(exist_ok=True)
 
-# Mount the 'data' directory to '/static'
+# Mount the 'data' directory to '/static'.
 app.mount("/static", StaticFiles(directory=str(data_dir)))
 
 
