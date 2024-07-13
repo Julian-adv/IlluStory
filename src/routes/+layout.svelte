@@ -46,29 +46,31 @@
         message('INFO', 'Server is already running.', 3)
       } catch (error) {
         message('ERROR', error)
-        // $command = new Command('run-bat', ['/c', 'resources\\server\\start_server.bat'])
-        // const _child = await $command.spawn()
-        // $command.on('close', data => {
-        //   message('INFO', data)
-        // })
-        // $command.on('error', error => {
-        //   message('ERROR', error)
-        // })
-        // $command.stdout.on('data', data => {
-        //   message('INFO', data)
-        // })
-        // $command.stderr.on('data', data => {
-        //   message('ERROR', data)
-        // })
-        // message('INFO', 'server started', 3)
-        // appWindow.onCloseRequested(async _ev => {
-        //   await killServer()
-        // })
+        $command = new Command('run-bat', ['/c', 'resources\\server\\start_server.bat'])
+        const _child = await $command.spawn()
+        $command.on('close', data => {
+          message('INFO', data)
+        })
+        $command.on('error', error => {
+          message('ERROR', error)
+        })
+        $command.stdout.on('data', data => {
+          message('INFO', data)
+        })
+        $command.stderr.on('data', data => {
+          message('ERROR', data)
+        })
+        message('INFO', 'server started', 3)
+        appWindow.onCloseRequested(async _ev => {
+          await killServer()
+        })
       }
     }
   }
 
-  checkServer()
+  if (window.__TAURI__) {
+    checkServer()
+  }
 </script>
 
 <Navbar class="sticky top-0 bg-stone-100 z-30" let:hidden let:toggle color="primary">

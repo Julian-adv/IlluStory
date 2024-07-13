@@ -37,7 +37,7 @@ function dataURIToBlob(dataURI: string) {
 }
 
 export function saveImageToFile(dataURI: string, filename: string) {
-  if (window.__TAURI_METADATA__) {
+  if (window.__TAURI__) {
     const byteString = atob(dataURI.split(',')[1])
     const arrayBuffer = new ArrayBuffer(byteString.length)
     const uint8Array = new Uint8Array(arrayBuffer)
