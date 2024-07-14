@@ -77,14 +77,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [
-        "resources/server/src/*.*",
-        "resources/server/system/git/*",
-        "resources/server/system/python/DLLs/*",
-        "resources/server/system/python/*.*",
-        "resources/server/*.*",
-        "resources/*.*"
-      ],
+      "resources": ["resources/server/src/*.*", "resources/server/*.*", "resources/*.*"],
       "shortDescription": "",
       "targets": "all",
       "windows": {
