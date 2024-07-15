@@ -44,6 +44,7 @@
   } from '$lib/fs'
   import {
     chooseCharByName,
+    findLastScene,
     killServer,
     lastScene,
     newSceneId,
@@ -183,34 +184,34 @@
 
   let shortSessionPath = ''
 
-  function chooseChar(chars: Char[], char: string | undefined, dialogues: SceneType[]): Char {
-    if (char === 'auto') {
-      var userInp = ''
-      for (let i = dialogues.length - 1; i >= 0; i--) {
-        if (dialogues[i].role === userRole) {
-          userInp = dialogues[i].content
-          break
-        }
+  function findLastSpeaker(dialogues: SceneType[]): Char {
+    const name = findLastScene(dialogues, assistantRole).name
+    for (const char of $chars) {
+      if (char.name === name) {
+        return char
       }
+    }
+    return $chars[0]
+  }
+
+  function chooseChar(
+    chars: Char[],
+    char: string | undefined,
+    dialogues: SceneType[],
+    userInp: string
+  ): Char {
+    if (char === 'auto' || char === undefined) {
+      // Did user mention any character?
       for (const ch of chars) {
         if (userInp.indexOf(ch.name) !== -1) {
           return ch
         }
       }
       // User didn't mention any character, we keep previous speaker
-      for (let i = dialogues.length - 1; i >= 0; i--) {
-        if (dialogues[i].role === assistantRole && dialogues[i].name) {
-          char = dialogues[i].name
-          break
-        }
-      }
+      return findLastSpeaker(dialogues)
+    } else {
+      return chooseCharByName(chars, $user, char)
     }
-    for (const ch of chars) {
-      if (ch.name === char) {
-        return ch
-      }
-    }
-    return chars[0]
   }
 
   async function loadSessionCommon(path: string) {
@@ -293,9 +294,10 @@
     if ($dialogues.length < 2) {
       return
     }
-    let speaker = nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues).name : nextChar
     $dialogues.pop()
-    const orgContent = getUserInput(lastScene($dialogues))
+    const userInp = getUserInput(lastScene($dialogues))
+    let speaker =
+      nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues, userInp).name : nextChar
     const sceneId = newSceneId($dialogues)
     const waitingScene = {
       id: sceneId + 1,
@@ -308,7 +310,7 @@
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
-    sendDialogue(orgContent, false)
+    sendDialogue(userInp, false)
   }
 
   async function summarize() {
@@ -323,7 +325,7 @@
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
-    $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues)
+    $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues, '')
     let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     const result = $preset.streaming
       ? await sendChatStream(
@@ -707,7 +709,7 @@
           content: '\n</Story>\n<Question>\n' + rule.condition
         }
       ]
-      $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues)
+      $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues, '')
       lorebookAnswer = ''
 
       if ($preset.streaming) {
@@ -835,7 +837,7 @@
       content = `*(${content})*`
     }
     const sceneId = newSceneId($dialogues)
-    $curChar = chooseChar($chars, nextChar, $dialogues)
+    $curChar = chooseChar($chars, nextChar, $dialogues, orgContent)
     if (content) {
       const userScene = {
         id: sceneId,

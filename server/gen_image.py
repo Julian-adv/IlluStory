@@ -21,6 +21,7 @@ class ComfyReq(BaseModel):
     negative_prompt: str
     steps: int
     cfg: float
+    ip_weight: float
 
 
 # This is an example that uses the websockets api and the SaveImageWebsocket node to get images directly without
@@ -325,6 +326,8 @@ async def comfy(req: ComfyReq):
 
     prompt["3"]["inputs"]["cfg"] = req.cfg
     # prompt["22"]["inputs"]["cfg"] = req.cfg
+
+    prompt["13"]["inputs"]["weight"] = req.ip_weight
 
     ws = websocket.WebSocket()
     ws.connect("ws://{}/ws?clientId={}".format(req.server_address, client_id))

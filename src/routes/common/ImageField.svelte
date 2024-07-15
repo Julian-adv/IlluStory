@@ -52,7 +52,6 @@
 
   function onMouseDown(e: MouseEvent) {
     isDragging = true
-    console.log('onMouseDown')
     if (iconHandle && imageWrapper) {
       const boundingRect = iconHandle.getBoundingClientRect()
       offsetX = e.clientX - boundingRect.left

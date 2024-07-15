@@ -220,6 +220,7 @@ export interface Settings {
   imageSizes: string
   steps: number
   cfgScale: number
+  ipWeight: number
   prompt: string
   negativePrompt: string
   sampler: string

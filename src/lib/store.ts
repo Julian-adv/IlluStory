@@ -216,6 +216,7 @@ export const defaultSettings: Settings = {
   imageSizes: '512x768, 768x512, 1024x512',
   steps: 30,
   cfgScale: 7.0,
+  ipWeight: 0.5,
   prompt: '(masterpiece, best quality, realistic, finely detailed)',
   negativePrompt: '(worst quality, low quality, normal quality)',
   sampler: 'DPM++ SDE Karras',

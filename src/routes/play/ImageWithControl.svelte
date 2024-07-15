@@ -21,13 +21,17 @@
 
   function regenerateImage() {
     imageSize = getRandomSize($settings.imageSizes)
-    imageFromSD = generateImage($settings, imageSize.width, imageSize.height, tooltip).then(
-      result => {
-        image = result
-        imageSize = imageSize
-        return result
-      }
-    )
+    imageFromSD = generateImage(
+      $settings,
+      imageSize.width,
+      imageSize.height,
+      tooltip,
+      $settings.ipWeight
+    ).then(result => {
+      image = result
+      imageSize = imageSize
+      return result
+    })
   }
 
   async function saveImage() {

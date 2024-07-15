@@ -21,6 +21,15 @@ export function lastScene(scenes: SceneType[]): SceneType {
   return scenes[scenes.length - 1]
 }
 
+export function findLastScene(scenes: SceneType[], role: string): SceneType {
+  for (let i = scenes.length - 1; i >= 0; i--) {
+    if (scenes[i].role === role) {
+      return scenes[i]
+    }
+  }
+  return scenes[0]
+}
+
 export function countLines(str: string): number {
   let count = 1
   for (let i = 0; i < str.length; i++) {

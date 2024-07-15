@@ -320,7 +320,8 @@ export async function tcGetComfyImage(
   prompt: string,
   negativePrompt: string,
   steps: number,
-  cfg: number
+  cfg: number,
+  ipWeight: number
 ) {
   return await fetchPost('gen_image/comfy', {
     server_address: serverAddr,
@@ -330,6 +331,7 @@ export async function tcGetComfyImage(
     prompt: prompt,
     negative_prompt: negativePrompt,
     steps: steps,
-    cfg: cfg
+    cfg: cfg,
+    ip_weight: ipWeight
   })
 }

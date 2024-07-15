@@ -247,14 +247,12 @@
     bind:ext={$fileDialog.ext}
     bind:value={$fileDialog.value}
     bind:title={$fileDialog.title} />
-  <Toast
-    color="purple"
-    transition={slide}
-    open={!!toastMessage}
-    class="fixed mx-auto my-8 top-auto inset-x-0 z-30">
-    <InfoCircleSolid name="info-circle-solid" slot="icon" class="w-4 h-4" />
-    {toastMessage}
-  </Toast>
+  {#if toastMessage !== ''}
+    <Toast color="purple" transition={slide} class="fixed mx-auto my-8 top-auto inset-x-0 z-30">
+      <InfoCircleSolid name="info-circle-solid" slot="icon" class="w-4 h-4" />
+      {toastMessage}
+    </Toast>
+  {/if}
   <div class="mt-2 mb-5 flex gap-2">
     <Button color="alternative" size="sm" on:click={load}>
       <svg

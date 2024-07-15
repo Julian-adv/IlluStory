@@ -29,10 +29,6 @@ class CopyFile(BaseModel):
     dest: str
 
 
-directory = "data"
-resource_directory = "../src-tauri"
-
-
 @router.post("/exists")
 async def exists(path: Path):
     result = {"exists": os.path.exists(path.path)}
@@ -56,8 +52,7 @@ async def home_dir():
 
 @router.post("/createDir")
 async def create_dir(path: Path):
-    path = os.path.join(directory, path.path)
-    path = path.replace("\\", "/")
+    path = path.path.replace("\\", "/")
     print_log("DEBUG", "create dir:", path)
     os.makedirs(path, exist_ok=True)
     return {"success": True}
@@ -73,8 +68,7 @@ async def resolve_resource(path: Path):
 
 @router.post("/copyFile")
 async def copy_file(path: CopyFile):
-    dest_path = os.path.join(directory, path.dest)
-    dest_path = dest_path.replace("\\", "/")
+    dest_path = path.dest.replace("\\", "/")
     print_log("DEBUG", "copy file:", path.src, dest_path)
     shutil.copyfile(path.src, dest_path)
     return {"success": True}
@@ -82,8 +76,7 @@ async def copy_file(path: CopyFile):
 
 @router.post("/readTextFile")
 async def read_text_file(path: Path):
-    path = os.path.join(directory, path.path)
-    path = path.replace("\\", "/")
+    path = path.path.replace("\\", "/")
     print_log("DEBUG", "read:", path)
     try:
         with open(path, "r") as f:
@@ -96,8 +89,7 @@ async def read_text_file(path: Path):
 
 @router.post("/readBinaryFile")
 async def read_binary_file(path: Path):
-    path = os.path.join(directory, path.path)
-    path = path.replace("\\", "/")
+    path = path.path.replace("\\", "/")
     print_log("DEBUG", "Read binary:", path)
     try:
         with open(path, "rb") as f:
@@ -110,8 +102,7 @@ async def read_binary_file(path: Path):
 
 @router.post("/writeTextFile")
 async def write_text_file(content: PathText):
-    path = os.path.join(directory, content.path)
-    path = path.replace("\\", "/")
+    path = content.path.replace("\\", "/")
     print_log("DEBUG", "write:", path)
     try:
         with open(path, "w") as f:
@@ -124,8 +115,7 @@ async def write_text_file(content: PathText):
 
 @router.post("/writeBinaryFile")
 async def write_binary_file(content: PathText):
-    path = os.path.join(directory, content.path)
-    path = path.replace("\\", "/")
+    path = content.path.replace("\\", "/")
     print_log("DEBUG", "write binary:", path)
     try:
         text = content.text.split(",")[1]
@@ -142,7 +132,6 @@ def scan_dir(
     path: str,
 ) -> List[Union[Dict[str, str], Dict[str, Union[str, List[Dict[str, str]]]]]]:
     result = []
-    prefix = directory + "/"
     for entry in os.scandir(path):
         stat_info = entry.stat()
         entry_info = {
@@ -161,7 +150,6 @@ def scan_dir(
 
 @router.post("/readDir")
 async def read_dir(path: Path):
-    # path = os.path.join(directory, path.path)
     path = path.path.replace("\\", "/")
     print_log("DEBUG", "read directory:", path)
     try:
@@ -176,7 +164,6 @@ async def read_dir(path: Path):
 
 @router.post("/metadata")
 async def metadata(path: Path):
-    # path = os.path.join(directory, path.path)
     path = path.path.replace("\\", "/")
     print_log("DEBUG", "read meta:", path)
     try:
@@ -185,10 +172,3 @@ async def metadata(path: Path):
     except Exception as e:
         print_log("ERROR", str(e))
         return {"modifiedAt": 0, "isDir": False}
-
-
-@router.post("/listFonts")
-async def list_fonts():
-    path = os.path.join(directory, "fonts")
-    result = {"fonts": os.listdir(path)}
-    return result

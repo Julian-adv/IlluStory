@@ -110,7 +110,8 @@ export async function generateImage(
   settings: Settings,
   width: number,
   height: number,
-  prompt: string
+  prompt: string,
+  ipWeight: number
 ): Promise<string> {
   const result = await tcGetComfyImage(
     settings.sdURL,
@@ -120,7 +121,8 @@ export async function generateImage(
     settings.prompt + ',' + prompt,
     settings.negativePrompt,
     settings.steps,
-    settings.cfgScale
+    settings.cfgScale,
+    ipWeight
   )
   return `data:image/png;base64,${result.image}`
 }

@@ -60,7 +60,7 @@
   }
 
   async function regenerateImage() {
-    $curScene.image = await generateImage($settings, width, height, $curScene.scenes[0].content)
+    $curScene.image = await generateImage($settings, width, height, $curScene.scenes[0].content, 0)
     autoSaveFunc()
   }
 

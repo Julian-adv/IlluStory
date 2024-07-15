@@ -74,13 +74,17 @@ export async function generateImageIfNeeded(
           await tick()
           scrollToEnd()
         }
-        imageFromSD = generateImage(settings, imageSize.width, imageSize.height, imageSource).then(
-          result => {
-            scene.image = saveImage(sessionPath, result)
-            scene.imageSize = imageSize
-            return result
-          }
-        )
+        imageFromSD = generateImage(
+          settings,
+          imageSize.width,
+          imageSize.height,
+          imageSource,
+          settings.ipWeight
+        ).then(result => {
+          scene.image = saveImage(sessionPath, result)
+          scene.imageSize = imageSize
+          return result
+        })
       }
     }
   }

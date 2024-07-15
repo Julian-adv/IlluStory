@@ -79,7 +79,8 @@
       $settings,
       info.imageSize.width,
       info.imageSize.height,
-      imageSource
+      imageSource,
+      $settings.ipWeight
     ).then(result => {
       scene.image = saveImage(sessionDir, result)
       scene.imageSize = info.imageSize
