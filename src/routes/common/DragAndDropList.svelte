@@ -33,7 +33,7 @@
     if (!dragList) return
     const draggingItem = document.querySelector('.dragging')
     if (!draggingItem) return
-    const siblings = [...dragList.querySelectorAll('.drag-item')]
+    const siblings = Array.from(dragList.querySelectorAll('.drag-item'))
     let origin = -1
     let target = -1
     for (let i = 0; i < siblings.length; i++) {

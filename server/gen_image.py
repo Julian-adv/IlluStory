@@ -7,7 +7,7 @@ import urllib.request
 import urllib.parse
 import base64
 import random
-from .logging import print_log
+from my_logging import print_log
 
 router = APIRouter(prefix="/api/gen_image")
 

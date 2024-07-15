@@ -104,7 +104,7 @@ export function normalizePath(path: string) {
 export async function killServer() {
   try {
     await tcPost('http://localhost:8001/api/process/kill', { dummy: 0 })
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

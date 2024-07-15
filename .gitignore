@@ -1,18 +1,24 @@
 .DS_Store
 node_modules
 /build
+# Output
+.output
+.vercel
 /.svelte-kit
-/package
+
+# OS
+Thumbs.db
+
+# Env
 .env
 .env.*
 !.env.example
+!.env.test
+
+# Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 memo.md
 package-lock.json
-src/lib/secrets.ts
 __pycache__
-server/data
 target/
-/venv
-server/illustory

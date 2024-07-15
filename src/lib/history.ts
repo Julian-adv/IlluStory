@@ -6,7 +6,7 @@ export async function loadHistory() {
   try {
     const text = await tcReadTextFile('history.json')
     return JSON.parse(text)
-  } catch (e) {
+  } catch {
     return []
   }
 }

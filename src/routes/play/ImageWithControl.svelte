@@ -4,8 +4,7 @@
   import { generateImage } from '$lib/imageApi'
   import type { ImageSize } from '$lib/interfaces'
   import { settings } from '$lib/store'
-  import { save } from '@tauri-apps/api/dialog'
-  import { basename, downloadDir } from '@tauri-apps/api/path'
+  import { tcSave } from '$lib/tauriCompat'
   import { Button, Popover, Spinner } from 'flowbite-svelte'
 
   export let imageFromSD: Promise<string>
@@ -33,14 +32,13 @@
 
   async function saveImage() {
     if (image) {
-      const downDir = await downloadDir()
-      const filePath = await save({
+      const downDir = $settings.dataDir
+      const filePath = await tcSave({
         defaultPath: downDir,
         filters: [{ name: '*', extensions: ['png'] }]
       })
       if (filePath) {
-        const fileName = await basename(filePath)
-        saveImageToFile(image, fileName)
+        saveImageToFile(image, filePath)
       }
     }
   }

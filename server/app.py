@@ -3,25 +3,20 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import os
-import sys
 from pathlib import Path
 
 # Get the project root directory
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
-PARENT_DIR = Path(__file__).resolve().parents[1]
-BUILD_DIR = Path(__file__).resolve().parents[4] / "build"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+BUILD_DIR = Path(__file__).resolve().parents[1] / "build"
 
-# Add the server directory to sys.path
-sys.path.append(str(PARENT_DIR))
-
-from src import fs
-from src import fonts
-from src import request
-from src import image
-from src import memory
-from src import logging
-from src import process
-from src import gen_image
+import fs
+import fonts
+import request
+import image
+import memory
+import my_logging
+import process
+import gen_image
 
 app = FastAPI()
 
@@ -42,7 +37,7 @@ app.include_router(fonts.router)
 app.include_router(request.router)
 # app.include_router(image.router)
 app.include_router(memory.router)
-app.include_router(logging.router)
+app.include_router(my_logging.router)
 app.include_router(process.router)
 app.include_router(gen_image.router)
 

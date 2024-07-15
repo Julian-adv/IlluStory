@@ -2,7 +2,7 @@
   import { Label, Input, Helper } from 'flowbite-svelte'
   import { onMount } from 'svelte'
   import { helperClassHidden, helperClassVisible, labelColor } from '$lib'
-  import type { FormSizeType } from 'flowbite-svelte/dist/types'
+  import type { FormSizeType } from 'flowbite-svelte'
 
   export let label = ''
   export let value: number[] = []

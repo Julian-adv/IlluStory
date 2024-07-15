@@ -16,7 +16,7 @@
     Spinner,
     Toast
   } from 'flowbite-svelte'
-  import { ChevronDownSolid, InfoCircleSolid } from 'flowbite-svelte-icons'
+  import { ChevronDownOutline, InfoCircleSolid } from 'flowbite-svelte-icons'
   import { FileType, SortOrder, SortType, type StoryCard } from '$lib/interfaces'
   import {
     preset,
@@ -30,10 +30,8 @@
     session
   } from '$lib/store'
   import { extOf, allExts, presetExt, charExt, sessionExt, sceneExt } from '$lib/fs'
-  import { invoke } from '@tauri-apps/api/tauri'
   import { goto } from '$app/navigation'
   import { loadChar } from '$lib/charSettings'
-  import { listen, type UnlistenFn } from '@tauri-apps/api/event'
   import { loadSession } from '$lib/session'
   import { slide } from 'svelte/transition'
   import { loadScene } from '$lib/scene'
@@ -276,7 +274,7 @@
   <div class="my-1 flex gap-2">
     <Button color="alternative" size="sm">
       {$settings.sortType}
-      <ChevronDownSolid
+      <ChevronDownOutline
         class="w-3 h-3 ml-2 text-gray-900 dark:text-white focus:outline-none" /></Button>
     <Dropdown bind:open={sortOpen}>
       <DropdownItem
@@ -330,7 +328,7 @@
   {:else}
     <div class="relative">
       <Toast
-        color="orange"
+        color="purple"
         transition={slide}
         bind:open={toastOpen}
         class="fixed mx-auto my-8 top-auto inset-x-0 z-30">

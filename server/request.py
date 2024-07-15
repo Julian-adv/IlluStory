@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 import requests
-from .logging import print_log
+from my_logging import print_log
 
 router = APIRouter(prefix="/api/request")
 

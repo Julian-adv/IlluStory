@@ -8,7 +8,7 @@ import os
 
 current_dir = os.path.dirname(__file__)
 
-sys.path.append(os.path.join(current_dir, "src"))
+sys.path.append(current_dir)
 
 def open_browser():
     time.sleep(2)

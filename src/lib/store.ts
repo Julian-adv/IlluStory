@@ -1,4 +1,4 @@
-import { writable, type Writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 import type {
   SceneType,
   Preset,
@@ -11,7 +11,6 @@ import type {
 } from './interfaces'
 import { Api, CardType, ImageGeneration, SortOrder, SortType } from './interfaces'
 import { defaultImage } from '$lib'
-import type { Command } from '@tauri-apps/api/shell'
 
 const defaultScenes: SceneType[] = []
 
@@ -282,8 +281,6 @@ export const sceneCard = writable(emptyCard)
 export const lorebookCard = writable(emptyCard)
 
 export const fileDialog = writable({ open: false, ext: '', value: '', title: '' })
-
-export const command: Writable<Command | null> = writable(null)
 
 export const defaultLorebook: Lorebook = {
   title: '',

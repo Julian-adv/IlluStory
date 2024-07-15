@@ -1,4 +1,3 @@
-import { open } from '@tauri-apps/api/dialog'
 import { charExt, loadMetaData, savePath } from './fs'
 import type { Char } from './interfaces'
 import { tcOpen, tcReadTextFile } from './tauriCompat'
@@ -18,7 +17,7 @@ export async function loadCharDialog(): Promise<[Char | null, string]> {
 }
 
 export async function loadMetaDataDialog() {
-  const selected = await open({ filters: [{ name: '*', extensions: ['png'] }] })
+  const selected = await tcOpen({ filters: [{ name: '*', extensions: ['png'] }] })
   if (typeof selected === 'string') {
     return await loadMetaData(selected)
   }

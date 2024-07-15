@@ -248,7 +248,7 @@
     bind:value={$fileDialog.value}
     bind:title={$fileDialog.title} />
   <Toast
-    color="orange"
+    color="purple"
     transition={slide}
     open={!!toastMessage}
     class="fixed mx-auto my-8 top-auto inset-x-0 z-30">

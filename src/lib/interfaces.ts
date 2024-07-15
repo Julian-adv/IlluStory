@@ -329,3 +329,19 @@ export interface Lorebook {
   image: string
   rules: Rule[]
 }
+
+export interface DialogFilter {
+  name: string
+  extensions: string[]
+}
+
+export interface SaveDialogOptions {
+  filters: DialogFilter[]
+  defaultPath?: string
+}
+
+export interface FileEntry {
+  path: string
+  name: string
+  children?: FileEntry[]
+}

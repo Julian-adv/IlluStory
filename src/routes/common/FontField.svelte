@@ -2,7 +2,7 @@
   import { Button, Dropdown, Helper, Label, Search } from 'flowbite-svelte'
   import { onMount } from 'svelte'
   import { helperClassHidden, helperClassVisible } from '$lib'
-  import { ChevronDownSolid } from 'flowbite-svelte-icons'
+  import { ChevronDownOutline } from 'flowbite-svelte-icons'
   import { tcListFonts } from '$lib/tauriCompat'
 
   export let label = ''
@@ -51,7 +51,7 @@
   <span class="block sample-font" style={cssVarStyles}>{sample} {value}</span>
   <div class="flex items-center gap-2">
     <Button color="alternative" size="sm"
-      >Choose font<ChevronDownSolid
+      >Choose font<ChevronDownOutline
         name="chevron-down-solid"
         class="w-3 h-3 ml-2 text-white dark:text-white" /></Button>
     <Dropdown bind:open={dropdownOpen} class="overflow-y-auto px-3 pb-3 text-sm h-60">

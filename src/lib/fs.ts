@@ -1,8 +1,7 @@
-import { writeBinaryFile } from '@tauri-apps/api/fs'
 import type { Preset, Char, FirstScene, Session, Lorebook } from './interfaces'
-import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { readMetadata } from 'png-metadata-writer'
 import {
+  tcConvertFileSrc,
   tcCopyFile,
   tcCreateDir,
   tcExists,
@@ -13,8 +12,6 @@ import {
   tcWriteBinaryFile,
   tcWriteTextFile
 } from './tauriCompat'
-import { get } from 'svelte/store'
-import { settings } from './store'
 
 export async function loadImage(): Promise<string | null> {
   return await tcOpen({
@@ -37,18 +34,7 @@ function dataURIToBlob(dataURI: string) {
 }
 
 export function saveImageToFile(dataURI: string, filename: string) {
-  if (window.__TAURI__) {
-    const byteString = atob(dataURI.split(',')[1])
-    const arrayBuffer = new ArrayBuffer(byteString.length)
-    const uint8Array = new Uint8Array(arrayBuffer)
-
-    for (let i = 0; i < byteString.length; i++) {
-      uint8Array[i] = byteString.charCodeAt(i)
-    }
-    writeBinaryFile(get(settings).dataDir + '/' + filename, uint8Array)
-  } else {
-    tcWriteBinaryFile(filename, dataURI)
-  }
+  tcWriteBinaryFile(filename, dataURI)
 }
 
 export function saveImageToFileOrg(dataURI: string, filename: string) {
@@ -136,7 +122,7 @@ function loadFileAsBlob(path: string): Promise<Blob> {
     xhr.responseType = 'blob'
     xhr.onload = () => resolve(xhr.response)
     xhr.onerror = reject
-    xhr.open('GET', convertFileSrc(path))
+    xhr.open('GET', tcConvertFileSrc(path))
     xhr.send()
   })
 }
@@ -148,19 +134,16 @@ export async function loadMetaData(path: string) {
 }
 
 export async function installDefaults() {
-  const filesToCopy = ['default.preset', 'Julian.char', 'Eliane.char', "Adventurer's Guild.scene"]
-
-  await tcSetDataDir()
-  if (await tcExists(filesToCopy[0])) {
-    return
-  }
-
-  if (!(await tcExists(''))) {
-    await tcCreateDir('')
-  }
-
-  for (const file of filesToCopy) {
-    const filePath = await tcResolveResource('resources/' + file)
-    tcCopyFile(filePath, file)
-  }
+  // const filesToCopy = ['default.preset', 'Julian.char', 'Eliane.char', "Adventurer's Guild.scene"]
+  // await tcSetDataDir()
+  // if (await tcExists(filesToCopy[0])) {
+  //   return
+  // }
+  // if (!(await tcExists(''))) {
+  //   await tcCreateDir('')
+  // }
+  // for (const file of filesToCopy) {
+  //   const filePath = await tcResolveResource('resources/' + file)
+  //   tcCopyFile(filePath, file)
+  // }
 }

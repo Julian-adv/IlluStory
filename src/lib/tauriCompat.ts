@@ -1,34 +1,14 @@
-import { convertFileSrc, invoke } from '@tauri-apps/api/tauri'
-import {
-  copyFile,
-  createDir,
-  exists,
-  readDir,
-  readTextFile,
-  writeTextFile,
-  type FileEntry,
-  readBinaryFile
-} from '@tauri-apps/api/fs'
-import { homeDir, resolveResource } from '@tauri-apps/api/path'
-import { metadata } from 'tauri-plugin-fs-extra-api'
-import { Body, getClient } from '@tauri-apps/api/http'
-import { open, save, type SaveDialogOptions } from '@tauri-apps/api/dialog'
 import { fileDialog, sessionPath, settings } from './store'
 import { get } from 'svelte/store'
-import { normalizePath } from '$lib'
+import type { FileEntry, SaveDialogOptions } from './interfaces'
 
 export async function tcSetDataDir() {
   if (get(settings).dataDir) {
     return
   }
   let dataDirectory = ''
-  if (window.__TAURI__) {
-    dataDirectory = await homeDir()
-  } else {
-    const result = await fetchGet('fs/homeDir')
-    dataDirectory = result.path
-  }
-  dataDirectory = dataDirectory.replaceAll('\\', '/') + 'IlluStory/Data'
+  const result = await fetchGet('fs/appDataDir')
+  dataDirectory = result.path.replaceAll('\\', '/')
   get(settings).dataDir = dataDirectory
 }
 
@@ -58,39 +38,22 @@ async function fetchPost(api: string, body: any) {
 
 export async function tcExists(path: string): Promise<boolean> {
   path = get(settings).dataDir + '/' + path
-  if (window.__TAURI__) {
-    return await exists(path)
-  } else {
-    const result = await fetchPost('fs/exists', { path: path })
-    return result.exists
-  }
+  const result = await fetchPost('fs/exists', { path: path })
+  return result.exists
 }
 
 export async function tcCreateDir(path: string): Promise<void> {
   path = get(settings).dataDir + '/' + path
-  if (window.__TAURI__) {
-    await createDir(path, { recursive: true })
-  } else {
-    await fetchPost('fs/createDir', { path: path })
-  }
+  await fetchPost('fs/createDir', { path: path })
 }
 
 export async function tcResolveResource(path: string): Promise<string> {
-  if (window.__TAURI__) {
-    return await resolveResource(path)
-  } else {
-    const result = await fetchPost('fs/resolveResource', { path: path })
-    return result.path
-  }
+  const result = await fetchPost('fs/resolveResource', { path: path })
+  return result.path
 }
 
 export async function tcCopyFile(src: string, dest: string): Promise<void> {
-  if (window.__TAURI__) {
-    dest = get(settings).dataDir + '/' + dest
-    await copyFile(src, dest)
-  } else {
-    await fetchPost('fs/copyFile', { src: src, dest: dest })
-  }
+  await fetchPost('fs/copyFile', { src: src, dest: dest })
 }
 
 function isAbsolute(path: string) {
@@ -101,35 +64,23 @@ export async function tcReadTextFile(path: string): Promise<string> {
   if (!isAbsolute(path)) {
     path = get(settings).dataDir + '/' + path
   }
-  if (window.__TAURI__) {
-    return await readTextFile(path)
-  } else {
-    const result = await fetchPost('fs/readTextFile', { path: path })
-    return result.text
-  }
+  const result = await fetchPost('fs/readTextFile', { path: path })
+  return result.text
 }
 
 export async function tcReadBinaryFile(path: string): Promise<Uint8Array> {
   if (!isAbsolute(path)) {
     path = get(settings).dataDir + '/' + path
   }
-  if (window.__TAURI__) {
-    return await readBinaryFile(path)
-  } else {
-    const result = await fetchPost('fs/readBinaryFile', { path: path })
-    return result.data
-  }
+  const result = await fetchPost('fs/readBinaryFile', { path: path })
+  return result.data
 }
 
 export async function tcWriteTextFile(path: string, text: string): Promise<void> {
   if (!isAbsolute(path)) {
     path = get(settings).dataDir + '/' + path
   }
-  if (window.__TAURI__) {
-    await writeTextFile(path, text)
-  } else {
-    await fetchPost('fs/writeTextFile', { path: path, text: text })
-  }
+  await fetchPost('fs/writeTextFile', { path: path, text: text })
 }
 
 export async function tcWriteBinaryFile(path: string, data: string): Promise<void> {
@@ -143,29 +94,16 @@ export async function tcReadDir(path: string): Promise<FileEntry[]> {
   if (!isAbsolute(path)) {
     path = get(settings).dataDir + '/' + path
   }
-  if (window.__TAURI__) {
-    try {
-      return await readDir(path, { recursive: true })
-    } catch (e) {
-      tcLog('ERROR', 'readDir', String(e))
-      return []
-    }
-  } else {
-    const result = await fetchPost('fs/readDir', { path: path })
-    return result.entries
-  }
+  const result = await fetchPost('fs/readDir', { path: path })
+  return result.entries
 }
 
 export async function tcMetadata(path: string) {
   if (!isAbsolute(path)) {
     path = get(settings).dataDir + '/' + path
   }
-  if (window.__TAURI__) {
-    return await metadata(path)
-  } else {
-    const result = await fetchPost('fs/metadata', { path: path })
-    return result
-  }
+  const result = await fetchPost('fs/metadata', { path: path })
+  return result
 }
 
 interface OpenOption {
@@ -213,62 +151,13 @@ async function openWithInputElement(ext: string, mode: string): Promise<string> 
   })
 }
 
-async function readAsDataURL(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
-}
-
 export async function tcOpen(option: OpenOption): Promise<string> {
-  if (window.__TAURI__) {
-    const path = await open(option)
-    if (typeof path === 'string' && path) {
-      if (option.mode === 'text') {
-        return await tcReadTextFile(path)
-      } else if (option.mode === 'image') {
-        return new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest()
-          xhr.responseType = 'blob'
-          xhr.onload = () => resolve(readAsDataURL(xhr.response))
-          xhr.onerror = reject
-          xhr.open('GET', convertFileSrc(path))
-          xhr.send()
-        })
-      } else {
-        return normalizePath(path)
-      }
-    } else {
-      return ''
-    }
+  const ext = option.filters ? option.filters[0].extensions[0] : ''
+  if (option.mode) {
+    return await openWithInputElement(ext, option.mode)
   } else {
-    const ext = option.filters ? option.filters[0].extensions[0] : ''
-    if (option.mode) {
-      return await openWithInputElement(ext, option.mode)
-    } else {
-      const value = option.defaultPath ? option.defaultPath : ''
-      fileDialog.set({ open: true, value: value, ext: ext, title: 'Open' })
-      return new Promise<string>((resolve, _reject) => {
-        const unsub = fileDialog.subscribe(dialog => {
-          if (!dialog.open) {
-            resolve(dialog.value)
-            unsub()
-          }
-        })
-      })
-    }
-  }
-}
-
-export async function tcSave(option: SaveDialogOptions) {
-  if (window.__TAURI__) {
-    return await save(option)
-  } else {
-    const ext = option.filters ? option.filters[0].extensions[0] : ''
     const value = option.defaultPath ? option.defaultPath : ''
-    fileDialog.set({ open: true, value: value, ext: ext, title: 'Save' })
+    fileDialog.set({ open: true, value: value, ext: ext, title: 'Open' })
     return new Promise<string>((resolve, _reject) => {
       const unsub = fileDialog.subscribe(dialog => {
         if (!dialog.open) {
@@ -280,54 +169,45 @@ export async function tcSave(option: SaveDialogOptions) {
   }
 }
 
+export async function tcSave(option: SaveDialogOptions) {
+  const ext = option.filters ? option.filters[0].extensions[0] : ''
+  const value = option.defaultPath ? option.defaultPath : ''
+  fileDialog.set({ open: true, value: value, ext: ext, title: 'Save' })
+  return new Promise<string>((resolve, _reject) => {
+    const unsub = fileDialog.subscribe(dialog => {
+      if (!dialog.open) {
+        resolve(dialog.value)
+        unsub()
+      }
+    })
+  })
+}
+
 export async function tcListFonts(): Promise<string[]> {
-  if (window.__TAURI__) {
-    return await invoke('list_fonts')
-  } else {
-    const result = await fetchGet('fonts/list')
-    return result.fonts
-  }
+  const result = await fetchGet('fonts/list')
+  return result.fonts
 }
 
 export async function tcPost(url: string, body: any, headers?: any) {
-  if (window.__TAURI__) {
-    const client = await getClient()
-    return await client.post(url, Body.json(body), {
-      headers: headers ?? { 'Content-Type': 'application/json' }
-    })
-  } else {
-    const result = await fetchPost('request/post', {
-      url: url,
-      body: body,
-      headers: headers ?? { 'Content-Type': 'application/json' }
-    })
-    return result
-  }
+  const result = await fetchPost('request/post', {
+    url: url,
+    body: body,
+    headers: headers ?? { 'Content-Type': 'application/json' }
+  })
+  return result
 }
 
 export async function tcGet(url: string, headers?: any) {
-  if (window.__TAURI__) {
-    // TODO: test it
-    const client = await getClient()
-    return await client.get(url, {
-      headers: headers ?? { 'Content-Type': 'application/json' }
-    })
-  } else {
-    const result = await fetchPost('request/get', {
-      url: url,
-      body: {},
-      headers: headers ?? { 'Content-Type': 'application/json' }
-    })
-    return result
-  }
+  const result = await fetchPost('request/get', {
+    url: url,
+    body: {},
+    headers: headers ?? { 'Content-Type': 'application/json' }
+  })
+  return result
 }
 
 export function tcConvertFileSrc(path: string) {
-  if (window.__TAURI__) {
-    return convertFileSrc(path)
-  } else {
-    return path.replace('\\', '/')
-  }
+  return path.replace('\\', '/')
 }
 
 function splitText(text: string) {
@@ -425,19 +305,11 @@ export async function tcLog(level: LogLevel, ...messages: string[]) {
     console.log(messages.join(' '))
     return
   }
-  if (window.__TAURI__) {
-    await invoke('log', { path: logPath, level: level, msg: messages.join(' ') })
-  } else {
-    await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
-  }
+  await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
 }
 
 export function tcConvertImageSrc(src: string | undefined) {
-  if (window.__TAURI__) {
-    return convertFileSrc(get(settings).dataDir + '/' + src)
-  } else {
-    return 'http://localhost:8001/static/' + src
-  }
+  return 'http://localhost:8001/static/' + src
 }
 
 export async function tcGetComfyImage(
@@ -450,19 +322,14 @@ export async function tcGetComfyImage(
   steps: number,
   cfg: number
 ) {
-  if (window.__TAURI__) {
-    // not implemented
-    return ''
-  } else {
-    return await fetchPost('gen_image/comfy', {
-      server_address: serverAddr,
-      model: model,
-      width: width,
-      height: height,
-      prompt: prompt,
-      negative_prompt: negativePrompt,
-      steps: steps,
-      cfg: cfg
-    })
-  }
+  return await fetchPost('gen_image/comfy', {
+    server_address: serverAddr,
+    model: model,
+    width: width,
+    height: height,
+    prompt: prompt,
+    negative_prompt: negativePrompt,
+    steps: steps,
+    cfg: cfg
+  })
 }

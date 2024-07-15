@@ -1,5 +1,5 @@
 import { settings, defaultSettings, inputHistory } from './store'
-import type { Settings } from './interfaces'
+import { ImageGeneration, type Settings } from './interfaces'
 import { get } from 'svelte/store'
 import { settingsFile } from './fs'
 import { tcCreateDir, tcExists, tcReadTextFile, tcSetDataDir, tcWriteTextFile } from './tauriCompat'
@@ -7,9 +7,12 @@ import { loadHistory } from './history'
 
 let currentSettings: Settings
 
-settings.subscribe(s => (currentSettings = s))
+settings.subscribe((s) => (currentSettings = s))
 
 function fixSettings(settings: Settings) {
+  if (!settings.dataDir) {
+    tcSetDataDir()
+  }
   if (!settings.sortOrder) {
     settings.sortOrder = defaultSettings.sortOrder
   }
@@ -35,10 +38,18 @@ function fixSettings(settings: Settings) {
     settings.fontSize = defaultSettings.fontSize
   }
   if (!settings.sdURL) {
-    settings.sdURL = defaultSettings.sdURL
+    if (settings.imageGeneration === ImageGeneration.ComfyUI) {
+      settings.sdURL = 'localhost:8188'
+    } else {
+      settings.sdURL = defaultSettings.sdURL
+    }
   }
   if (!settings.imageSizes) {
-    settings.imageSizes = defaultSettings.imageSizes
+    if (settings.imageGeneration === ImageGeneration.ComfyUI) {
+      settings.imageSizes = '832x1152, 1152x832, 1408x704'
+    } else {
+      settings.imageSizes = defaultSettings.imageSizes
+    }
   }
   if (!settings.steps) {
     settings.steps = defaultSettings.steps

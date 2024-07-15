@@ -13,8 +13,7 @@ export async function sendChatInfermatic(
   memories: string,
   session: Session
 ): Promise<ChatResult | null> {
-  const url = new URL(preset.infermatic.apiUrl + apiUrl(false))
-  url
+  const _url = new URL(preset.infermatic.apiUrl + apiUrl(false))
   const { messages } = await generateMessagesCheck(
     preset,
     prompts,
@@ -24,9 +23,7 @@ export async function sendChatInfermatic(
     memories,
     session
   )
-  messages
-  const userName = user.name
-  userName
+  const _dummy = messages
   return null
 }
 

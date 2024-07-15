@@ -232,6 +232,8 @@
     if (mostRecentPath) {
       $session = await loadSession(mostRecentPath)
       await loadSessionCommon(mostRecentPath)
+    } else {
+      saveSessionNew()
     }
   }
 

@@ -7,7 +7,7 @@ import os
 import shutil
 import base64
 import stat
-from .logging import print_log
+from my_logging import print_log
 
 
 router = APIRouter(
@@ -41,7 +41,10 @@ async def exists(path: Path):
 
 @router.get("/appDataDir")
 async def app_data_dir():
-    return {"path": ""}
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    data_dir = os.path.join(root_dir, "data")
+    print_log("DEBUG", "data dir:", data_dir)
+    return {"path": data_dir}
 
 
 @router.get("/homeDir")
@@ -144,7 +147,7 @@ def scan_dir(
         stat_info = entry.stat()
         entry_info = {
             "name": entry.name,
-            "path": entry.path.replace("\\", "/").replace(prefix, "", 1),
+            "path": entry.path.replace("\\", "/"),
             "modifiedAt": stat_info.st_mtime,
         }
 
