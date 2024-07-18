@@ -167,7 +167,8 @@ export function newScene(
   role: 'assistant' | 'user',
   speaker: string,
   content: string,
-  done: boolean
+  done: boolean,
+  isDialogueOnly = false
 ): SceneType {
   return {
     id: id,
@@ -179,6 +180,7 @@ export function newScene(
     name: speaker,
     visualContent: '',
     textContent: content,
-    translatedContent: ''
+    translatedContent: '',
+    isDialogueOnly: isDialogueOnly
   }
 }

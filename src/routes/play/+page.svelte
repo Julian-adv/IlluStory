@@ -542,6 +542,20 @@
     }
   }
 
+  // Find most mentioned character
+  function mostMentionedChar(scene: SceneType): Char | null {
+    let mostMentioned = null
+    let maxCount = 0
+    for (const char of $chars) {
+      const count = (scene.content.match(new RegExp(char.name, 'g')) || []).length
+      if (count > maxCount && scene.name !== char.name) {
+        maxCount = count
+        mostMentioned = char
+      }
+    }
+    return mostMentioned
+  }
+
   function finishVisual() {
     const scene = lastScene($dialogues)
     tcLog('INFO', 'visual description:', scene.visualContent ?? '')
@@ -549,6 +563,14 @@
     $dialogues = $dialogues
     // chooseNextChar(true)
     saveSession()
+    if (!scene.isDialogueOnly) {
+      // Does it mention other characters?
+      let otherChar = mostMentionedChar(scene)
+      if (otherChar !== null) {
+        $curChar = otherChar
+        sendInput(assistantRole, '', false, true)
+      }
+    }
   }
 
   let visualDescription = ''
@@ -737,8 +759,6 @@
     scrollToEnd()
   }
 
-  let sentOther = false
-
   async function closed() {
     let scene = lastScene($dialogues)
     tcLog('INFO', 'streaming done:', scene.content)
@@ -755,21 +775,8 @@
     scene = await extractImagePrompt($settings, scene)
     $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
-    // Does it mention other characters?
-    let otherChar = ''
-    $chars.forEach(char => {
-      if (scene.content.includes(char.name) && scene.name !== char.name) {
-        otherChar = char.name
-      }
-    })
-    if (otherChar && !sentOther) {
-      sentOther = true
-      $curChar = chooseCharByName($chars, $user, otherChar)
-      sendInput(assistantRole, '', false)
-    } else {
-      sentOther = false
-      await checkLorebook()
-    }
+
+    await checkLorebook()
   }
 
   async function processCommands(input: string) {
@@ -826,7 +833,12 @@
     saveSession()
   }
 
-  async function sendInput(role: string, orgContent: string, continueGen: boolean) {
+  async function sendInput(
+    role: string,
+    orgContent: string,
+    continueGen: boolean,
+    isDialogueOnly = false
+  ) {
     if (orgContent.startsWith('/')) {
       processCommands(orgContent)
       return
@@ -839,7 +851,7 @@
       content = `*(${content})*`
     }
     const sceneId = newSceneId($dialogues)
-    if (!sentOther) {
+    if (!isDialogueOnly) {
       $curChar = chooseChar($chars, nextChar, $dialogues, orgContent)
     }
     if (content) {
@@ -847,7 +859,14 @@
       const waitingScene = newScene(sceneId + 1, assistantRole, $curChar.name, '', false)
       $dialogues = [...$dialogues, userScene, waitingScene]
     } else {
-      const waitingScene = newScene(sceneId, assistantRole, $curChar.name, '', false)
+      const waitingScene = newScene(
+        sceneId,
+        assistantRole,
+        $curChar.name,
+        '',
+        false,
+        isDialogueOnly
+      )
       $dialogues = [...$dialogues, waitingScene]
     }
     await tick()

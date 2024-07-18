@@ -86,6 +86,7 @@ export interface SceneType extends BasePrompt {
   textContent: string
   visualContent: string
   translatedContent: string
+  isDialogueOnly: boolean
 }
 
 export type Prompt =

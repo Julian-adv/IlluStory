@@ -29,7 +29,7 @@
   let translated: boolean
   const last = lastScene($dialogues).id == scene.id
   let info: SceneResult =
-    scene.role === assistantRole
+    scene.role === assistantRole && !scene.isDialogueOnly
       ? {
           showImage: true,
           imageSize: getRandomSize($settings.imageSizes),
@@ -50,7 +50,13 @@
       ? 'clear-both flex justify-center items-end z-10 wrapper'
       : 'wrapper float-left flex items-end pl-4 mr-4'
 
-  $: if (!scene.image && scene.role === assistantRole && scene.done && !waitingImage) {
+  $: if (
+    !scene.image &&
+    scene.role === assistantRole &&
+    scene.done &&
+    !scene.isDialogueOnly &&
+    !waitingImage
+  ) {
     waitingImage = true
     generateNewImage()
     if (last) {
@@ -64,7 +70,7 @@
 
   onMount(async () => {
     sessionDir = dirnameOf($sessionPath)
-    if (scene.done) {
+    if (scene.done && !scene.isDialogueOnly) {
       info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
     }
     translated = !!scene.translatedContent
