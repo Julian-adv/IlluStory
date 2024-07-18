@@ -60,7 +60,7 @@
     Api,
     type Char
   } from '$lib/interfaces'
-  import type { Prompt, SceneType, SystemPrompt } from '$lib/promptInterface'
+  import type { Prompt, SaveScene, SceneType } from '$lib/promptInterface'
   import { loadSession, loadSessionDialog, prepareForSave, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '$lib/CommonCard.svelte'
@@ -74,6 +74,7 @@
   import { goto } from '$app/navigation'
   import DropSelect from '../common/DropSelect.svelte'
   import {
+    tcConvertImageSrc,
     tcCreateDir,
     tcExists,
     tcGetMemory,
@@ -90,12 +91,25 @@
   let nextChar = 'random'
   let numMemory = 1
 
-  async function convertScenes(newScenes: SceneType[]) {
+  async function convertScenes(newScenes: SaveScene[]) {
     let scenes = []
     for (let i = 0; i < newScenes.length; i++) {
-      let scene = newScenes[i]
-      scene = await extractImagePrompt($settings, newScenes[i])
-      scene.done = true
+      let scene: SceneType = {
+        ...newScenes[i],
+        imageSize: { width: 0, height: 0 },
+        done: true,
+        textContent: '',
+        visualContent: ''
+      }
+      scene = await extractImagePrompt($settings, scene)
+      if (scene.image) {
+        const img = new Image()
+        img.onload = function () {
+          scene.imageSize.width = (this as HTMLImageElement).width
+          scene.imageSize.height = (this as HTMLImageElement).height
+        }
+        img.src = tcConvertImageSrc(scene.image)
+      }
       scenes.push(scene)
     }
     return scenes
@@ -202,14 +216,25 @@
     userInp: string
   ): Char {
     if (char === 'auto' || char === undefined) {
-      // Did user mention any character?
-      for (const ch of chars) {
-        if (userInp.indexOf(ch.name) !== -1) {
-          return ch
+      if (userInp !== '') {
+        // Did user mention any character?
+        for (const ch of chars) {
+          if (userInp.indexOf(ch.name) !== -1) {
+            return ch
+          }
         }
+        // User said something but didn't mention any character, we keep previous speaker
+        return findLastSpeaker(dialogues)
       }
-      // User didn't mention any character, we keep previous speaker
-      return findLastSpeaker(dialogues)
+      // User didn't say anything, it's next turn
+      const last = findLastScene(dialogues, assistantRole)
+      const mostMentioned = mostMentionedChar(last)
+      if (mostMentioned !== null) {
+        return mostMentioned
+      }
+      // Choose a random character except last speaker
+      const filtered = chars.filter(char => char.name !== last.name)
+      return filtered[Math.floor(Math.random() * filtered.length)]
     } else {
       return chooseCharByName(chars, $user, char)
     }
@@ -306,39 +331,39 @@
     sendDialogue(userInp, false)
   }
 
-  async function summarize() {
-    const waitingScene = newScene(newSceneId($dialogues), 'assistant', '', '', false)
-    $dialogues = [...$dialogues, waitingScene]
-    await tick()
-    scrollToEnd()
-    $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues, '')
-    let prologs: SystemPrompt[] = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
-    const result = $preset.streaming
-      ? await sendChatStream(
-          $preset,
-          prologs,
-          $dialogues,
-          $curChar,
-          $user,
-          '',
-          $session,
-          false,
-          received,
-          closed
-        )
-      : await sendChat($preset, prologs, $dialogues, $curChar, $user, '', $session)
-    if (result) {
-      $usage = result.usage
-      let scene = lastScene($dialogues)
-      scene.role = result.scene.role
-      scene.content = result.scene.content
-      scene.done = result.scene.done
-      scene = await extractImagePrompt($settings, scene)
-      $dialogues = $dialogues
-      await tick()
-      scrollToEnd()
-    }
-  }
+  // async function summarize() {
+  //   const waitingScene = newScene(newSceneId($dialogues), 'assistant', '', '', false)
+  //   $dialogues = [...$dialogues, waitingScene]
+  //   await tick()
+  //   scrollToEnd()
+  //   $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues, '')
+  //   let prologs: SystemPrompt[] = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
+  //   const result = $preset.streaming
+  //     ? await sendChatStream(
+  //         $preset,
+  //         prologs,
+  //         $dialogues,
+  //         $curChar,
+  //         $user,
+  //         '',
+  //         $session,
+  //         false,
+  //         received,
+  //         closed
+  //       )
+  //     : await sendChat($preset, prologs, $dialogues, $curChar, $user, '', $session)
+  //   if (result) {
+  //     $usage = result.usage
+  //     let scene = lastScene($dialogues)
+  //     scene.role = result.scene.role
+  //     scene.content = result.scene.content
+  //     scene.done = result.scene.done
+  //     scene = await extractImagePrompt($settings, scene)
+  //     $dialogues = $dialogues
+  //     await tick()
+  //     scrollToEnd()
+  //   }
+  // }
 
   async function getMemory(text: string) {
     if ($session.startIndex === 0) {
@@ -877,6 +902,10 @@
   async function continueDialogue() {
     await sendInput(userRole, '', true)
   }
+
+  async function nextTurn() {
+    await sendInput(userRole, '', false)
+  }
 </script>
 
 <main>
@@ -1082,7 +1111,7 @@
           </svg>
           <span class="pl-2">Continue</span>
         </Button>
-        <Button color="alternative" size="sm" on:click={summarize}>
+        <Button color="alternative" size="sm" on:click={nextTurn}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -1093,9 +1122,9 @@
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+              d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
           </svg>
-          <span class="pl-2">Summarize</span>
+          <span class="pl-2">Next turn</span>
         </Button>
         <span>AI role:</span>
         <DropSelect

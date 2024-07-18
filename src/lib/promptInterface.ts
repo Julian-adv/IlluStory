@@ -89,6 +89,14 @@ export interface SceneType extends BasePrompt {
   isDialogueOnly: boolean
 }
 
+export interface SaveScene extends BasePrompt {
+  role: 'system' | 'assistant' | 'user'
+  name: string
+  image: string
+  translatedContent: string
+  isDialogueOnly: boolean
+}
+
 export type Prompt =
   | SceneType
   | SystemPrompt

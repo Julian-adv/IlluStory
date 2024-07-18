@@ -1,7 +1,8 @@
 import { saveObjQuietly, sessionExt } from './fs'
-import type { Char, Lorebook, SceneType, Session, StringDictionary } from './interfaces'
+import type { Char, Lorebook, Session, StringDictionary } from './interfaces'
+import type { Prompt, SceneType } from './promptInterface'
 import { charSetting, systemRole, userSetting } from './api'
-import { tcConvertImageSrc, tcOpen, tcReadTextFile } from './tauriCompat'
+import { tcOpen, tcReadTextFile } from './tauriCompat'
 
 export async function loadSession(path: string) {
   const json = await tcReadTextFile(path)
@@ -12,19 +13,6 @@ export async function loadSession(path: string) {
   if (!session.lorebookTriggers) {
     session.lorebookTriggers = []
   }
-  session.scenes.forEach(scene => {
-    scene.done = true
-    if (scene.image) {
-      const img = new Image()
-      img.onload = function () {
-        scene.imageSize = {
-          width: (this as HTMLImageElement).width,
-          height: (this as HTMLImageElement).height
-        }
-      }
-      img.src = tcConvertImageSrc(scene.image)
-    }
-  })
   return session
 }
 
@@ -43,7 +31,9 @@ export function prepareForSave(session: Session, dialogues: SceneType[], loreboo
       role: scene.role,
       content: scene.content,
       image: scene.image,
-      name: scene.name
+      name: scene.name,
+      translatedContent: scene.translatedContent,
+      isDialogueOnly: scene.isDialogueOnly
     }
   })
   session.lorebookTriggers = lorebook.rules.map(rule => {
@@ -92,8 +82,8 @@ function generateCharSetting(tag: string | undefined, char: Char, user: Char) {
   return replaceName(charDesc, dict)
 }
 
-export function replaceChars(prompts: SceneType[], chars: Char[], speaker: Char, user: Char) {
-  const newPrompts: SceneType[] = []
+export function replaceChars(prompts: Prompt[], chars: Char[], speaker: Char, user: Char) {
+  const newPrompts: Prompt[] = []
   for (const prompt of prompts) {
     if (prompt.role === charSetting) {
       if (prompt.allChars) {

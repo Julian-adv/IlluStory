@@ -1,4 +1,4 @@
-import type { ImageSize, Prompt, SceneType } from './promptInterface'
+import type { ImageSize, Prompt, SceneType, SaveScene } from './promptInterface'
 
 export interface Message {
   role: string
@@ -272,7 +272,7 @@ export interface Session {
   sceneCard: string
   lorebookCard: string
   startIndex: number
-  scenes: SceneType[]
+  scenes: SaveScene[]
   lorebookTriggers: Trigger[]
 }
 
