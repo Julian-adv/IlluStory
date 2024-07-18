@@ -2,7 +2,7 @@
   import { getRandomSize, getUniqueId, realImageSize } from '$lib'
   import { saveImageToFile } from '$lib/fs'
   import { generateImage } from '$lib/imageApi'
-  import type { ImageSize } from '$lib/interfaces'
+  import type { ImageSize } from '$lib/promptInterface'
   import { settings } from '$lib/store'
   import { tcSave } from '$lib/tauriCompat'
   import { Button, Popover, Spinner } from 'flowbite-svelte'

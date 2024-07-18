@@ -1,11 +1,5 @@
-import {
-  Api,
-  type Char,
-  type Message,
-  type Preset,
-  type SceneType,
-  type Session
-} from './interfaces'
+import { Api, type Char, type Message, type Preset, type Session } from './interfaces'
+import type { Prompt, SceneType } from './promptInterface'
 import { loadModelsOobabooga, sendChatOobabooga, sendChatOobaboogaStream } from './apiOobabooga'
 import { loadModelsOpenAi, sendChatOpenAi, sendChatOpenAiStream } from './apiOpenAi'
 import { isWithinTokenLimit } from 'gpt-tokenizer'
@@ -155,7 +149,7 @@ function userPostfix(preset: Preset) {
   }
 }
 
-function addRolePrefix(preset: Preset, scene: SceneType, dialogues: SceneType[]) {
+function addRolePrefix(preset: Preset, scene: Prompt, dialogues: SceneType[]) {
   const oneInstruction = get(settings).oneInstruction
   const last =
     dialogues[dialogues.length - 1] === scene ||
@@ -175,7 +169,7 @@ function addRolePrefix(preset: Preset, scene: SceneType, dialogues: SceneType[])
   return ''
 }
 
-function addRolePostfix(preset: Preset, scene: SceneType, dialogues: SceneType[]) {
+function addRolePostfix(preset: Preset, scene: Prompt, dialogues: SceneType[]) {
   const oneInstruction = get(settings).oneInstruction
   const last =
     dialogues[dialogues.length - 1] === scene ||
@@ -197,7 +191,7 @@ function addRolePostfix(preset: Preset, scene: SceneType, dialogues: SceneType[]
 
 export function generatePrompt(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -239,7 +233,7 @@ export function generatePrompt(
         }
         case assocMemory: {
           if (memories) {
-            prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+            prompt += addRolePrefix(preset, scene, dialogues) + scene.content + '\n'
             prompt += memories
           }
           break
@@ -247,7 +241,7 @@ export function generatePrompt(
         case lorebookRole:
           for (const rule of get(lorebook).rules) {
             if (rule.triggered) {
-              prompt += addRolePrefix(preset, scene, dialogues) + scene.textContent + '\n'
+              prompt += addRolePrefix(preset, scene, dialogues) + scene.content + '\n'
               prompt += rule.textContent
             }
           }
@@ -296,7 +290,7 @@ export async function saveMemory(scene: SceneType) {
 
 export async function generatePromptCheck(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -343,7 +337,7 @@ function convertRole(role: string) {
 
 export function generateMessages(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -367,10 +361,10 @@ export function generateMessages(
       }
       case assocMemory: {
         if (memories) {
-          messages.push({ role: systemRole, content: scene.textContent + '\n' + memories })
+          messages.push({ role: systemRole, content: scene.content + '\n' + memories })
           const nextScene = prompts[i + 1]
           if (nextScene.role === endTag) {
-            messages.push({ role: systemRole, content: nextScene.textContent ?? '' })
+            messages.push({ role: systemRole, content: nextScene.content ?? '' })
             i++
           }
         } else {
@@ -383,8 +377,8 @@ export function generateMessages(
       case lorebookRole: {
         for (const rule of get(lorebook).rules) {
           if (rule.triggered) {
-            if (scene.textContent) {
-              messages.push({ role: systemRole, content: scene.textContent })
+            if (scene.content) {
+              messages.push({ role: systemRole, content: scene.content })
             }
             messages.push({ role: systemRole, content: rule.textContent })
           }
@@ -408,7 +402,7 @@ export function generateMessages(
 
 export async function generateMessagesCheck(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,

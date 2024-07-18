@@ -1,25 +1,4 @@
-export interface ImageSize {
-  width: number
-  height: number
-}
-
-export interface SceneType {
-  id: number
-  role: string
-  content: string
-
-  name?: string
-  textContent?: string
-  visualContent?: string
-  translatedContent?: string
-  image?: string
-  imageSize?: ImageSize
-  rangeStart?: number
-  rangeEnd?: string
-  done?: boolean
-  tag?: string
-  allChars?: boolean
-}
+import type { ImageSize, Prompt, SceneType } from './promptInterface'
 
 export interface Message {
   role: string
@@ -157,7 +136,7 @@ export interface Preset {
   koboldAi: KoboldAiParam
   infermatic: InfermaticParam
 
-  prompts: SceneType[]
+  prompts: Prompt[]
 }
 
 export interface Usage {

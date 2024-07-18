@@ -1,12 +1,14 @@
 import { get } from 'svelte/store'
-import { apiUrl, assistantRole, generateMessagesCheck, generatePromptCheck } from './api'
-import type { Char, ChatResult, Preset, SceneType, Session } from './interfaces'
+import { apiUrl, generateMessagesCheck, generatePromptCheck } from './api'
+import type { Char, ChatResult, Preset, Session } from './interfaces'
+import type { Prompt, SceneType } from './promptInterface'
 import { settings } from './store'
 import { tcGet, tcLog } from './tauriCompat'
+import { newScene } from '$lib'
 
 export async function sendChatInfermatic(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -29,7 +31,7 @@ export async function sendChatInfermatic(
 
 export async function sendChatInfermaticStream(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -105,13 +107,8 @@ export async function sendChatInfermaticStream(
       }
       return reader?.read().then(processText)
     })
-    const scene = {
-      id: 0,
-      role: assistantRole,
-      content: ''
-    }
     return {
-      scene,
+      scene: newScene(0, 'assistant', char.name, '', false),
       usage: { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
     }
   } else {

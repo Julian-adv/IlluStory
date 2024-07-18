@@ -4,9 +4,9 @@
   import ImageField from '../common/ImageField.svelte'
   import DropSelect from '../common/DropSelect.svelte'
   import { curScene, curScenePath, settings, fileDialog } from '$lib/store'
-  import { assistantRole, chatRoles, countTokensApi, systemRole } from '$lib/api'
+  import { chatRoles, countTokensApi } from '$lib/api'
   import FlexibleTextarea from '../common/FlexibleTextarea.svelte'
-  import { decodeBase64, getUniqueId } from '$lib'
+  import { decodeBase64, getUniqueId, newScene } from '$lib'
   import { tick } from 'svelte'
   import { saveObjQuietly } from '$lib/fs'
   import { generateImage } from '$lib/imageApi'
@@ -35,11 +35,9 @@
       const charStr = decodeBase64(metadata.tEXt.chara)
       const char = JSON.parse(charStr)
       if (char.spec === 'chara_card_v2') {
-        $curScene.scenes.push({
-          id: $curScene.scenes.length,
-          role: assistantRole,
-          content: char.data.first_mes
-        })
+        $curScene.scenes.push(
+          newScene($curScene.scenes.length, 'assistant', char.data.name, char.data.first_mes, true)
+        )
         $curScene = $curScene
         totalTokens = 0
       }
@@ -77,7 +75,7 @@
     await tick()
     $curScene.scenes = [
       ...$curScene.scenes,
-      { id: $curScene.scenes.length, role: systemRole, content: '' }
+      newScene($curScene.scenes.length, 'assistant', '', '', true)
     ]
   }
 </script>

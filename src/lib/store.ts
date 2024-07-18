@@ -1,14 +1,6 @@
 import { writable } from 'svelte/store'
-import type {
-  SceneType,
-  Preset,
-  Settings,
-  Char,
-  FirstScene,
-  StoryCard,
-  Session,
-  Lorebook
-} from './interfaces'
+import type { Preset, Settings, Char, FirstScene, StoryCard, Session, Lorebook } from './interfaces'
+import type { SceneType } from './promptInterface'
 import { Api, CardType, ImageGeneration, SortOrder, SortType } from './interfaces'
 import { defaultImage } from '$lib'
 

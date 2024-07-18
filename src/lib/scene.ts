@@ -1,5 +1,6 @@
 import { saveImageToFile, savePath, sceneExt } from './fs'
-import type { FirstScene, Preset, SceneResult, SceneType, Settings } from './interfaces'
+import type { FirstScene, Preset, SceneResult, Settings } from './interfaces'
+import type { SceneType } from './promptInterface'
 import { assistantRole, systemRole } from './api'
 import { getRandomSize, scrollToEnd } from '$lib'
 import { tick } from 'svelte'

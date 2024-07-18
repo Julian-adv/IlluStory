@@ -1,6 +1,7 @@
 import { get } from 'svelte/store'
 import { translateText } from './deepLApi'
-import type { Preset, SceneType, Settings } from './interfaces'
+import type { Preset, Settings } from './interfaces'
+import type { SceneType } from './promptInterface'
 import { chars } from './store'
 
 export const visualStart = '<Visual>'

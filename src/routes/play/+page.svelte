@@ -47,12 +47,12 @@
     findLastScene,
     killServer,
     lastScene,
+    newScene,
     newSceneId,
     normalizePath,
     scrollToEnd
   } from '$lib'
   import {
-    type SceneType,
     type Preset,
     type StoryCard,
     type Lorebook,
@@ -60,6 +60,7 @@
     Api,
     type Char
   } from '$lib/interfaces'
+  import type { Prompt, SceneType, SystemPrompt } from '$lib/promptInterface'
   import { loadSession, loadSessionDialog, prepareForSave, saveSessionAuto } from '$lib/session'
   import CardList from '../common/CardList.svelte'
   import CommonCard from '$lib/CommonCard.svelte'
@@ -298,15 +299,7 @@
     const userInp = getUserInput(lastScene($dialogues))
     let speaker =
       nextChar === 'auto' ? chooseChar($chars, nextChar, $dialogues, userInp).name : nextChar
-    const sceneId = newSceneId($dialogues)
-    const waitingScene = {
-      id: sceneId + 1,
-      role: assistantRole,
-      content: '',
-      textContent: '',
-      name: speaker,
-      done: false
-    }
+    const waitingScene = newScene(newSceneId($dialogues), 'assistant', speaker, '', false)
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
@@ -314,19 +307,12 @@
   }
 
   async function summarize() {
-    const sceneId = newSceneId($dialogues)
-    const waitingScene = {
-      id: sceneId,
-      role: assistantRole,
-      content: '',
-      textContent: '',
-      done: false
-    }
+    const waitingScene = newScene(newSceneId($dialogues), 'assistant', '', '', false)
     $dialogues = [...$dialogues, waitingScene]
     await tick()
     scrollToEnd()
     $curChar = chooseChar($chars, $session.nextSpeaker, $dialogues, '')
-    let prologs = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
+    let prologs: SystemPrompt[] = [{ id: 0, role: systemRole, content: $preset.summarizePrompt }]
     const result = $preset.streaming
       ? await sendChatStream(
           $preset,
@@ -465,7 +451,7 @@
   function findNumberOfMemory(preset: Preset) {
     for (const scene of preset.prompts) {
       if (scene.role === assocMemory) {
-        return scene.rangeStart ?? 1
+        return scene.count ?? 1
       }
     }
     return 1
@@ -595,7 +581,7 @@
     } else {
       prevVisualPrompt = `<Visual>${prevVisualPrompt}</Visual>`
     }
-    const instructions = [
+    const instructions: Prompt[] = [
       {
         id: 1,
         role: systemRole,
@@ -695,7 +681,7 @@
     let lorebookSent = false
     for (const rule of $lorebook.rules) {
       if (rule.triggered) continue
-      const instructions = [
+      const instructions: Prompt[] = [
         {
           id: 1,
           role: systemRole,
@@ -751,6 +737,8 @@
     scrollToEnd()
   }
 
+  let sentOther = false
+
   async function closed() {
     let scene = lastScene($dialogues)
     tcLog('INFO', 'streaming done:', scene.content)
@@ -767,7 +755,21 @@
     scene = await extractImagePrompt($settings, scene)
     $usage.completion_tokens = countTokensApi(scene.textContent ?? '')
     $usage.total_tokens = $usage.prompt_tokens + $usage.completion_tokens
-    await checkLorebook()
+    // Does it mention other characters?
+    let otherChar = ''
+    $chars.forEach(char => {
+      if (scene.content.includes(char.name) && scene.name !== char.name) {
+        otherChar = char.name
+      }
+    })
+    if (otherChar && !sentOther) {
+      sentOther = true
+      $curChar = chooseCharByName($chars, $user, otherChar)
+      sendInput(assistantRole, '', false)
+    } else {
+      sentOther = false
+      await checkLorebook()
+    }
   }
 
   async function processCommands(input: string) {
@@ -837,34 +839,15 @@
       content = `*(${content})*`
     }
     const sceneId = newSceneId($dialogues)
-    $curChar = chooseChar($chars, nextChar, $dialogues, orgContent)
+    if (!sentOther) {
+      $curChar = chooseChar($chars, nextChar, $dialogues, orgContent)
+    }
     if (content) {
-      const userScene = {
-        id: sceneId,
-        role: role,
-        content: content,
-        textContent: content,
-        name: $user.name,
-        done: true
-      }
-      const waitingScene = {
-        id: sceneId + 1,
-        role: assistantRole,
-        content: '',
-        textContent: '',
-        name: $curChar.name,
-        done: false
-      }
+      const userScene = newScene(sceneId, userRole, $user.name, content, true)
+      const waitingScene = newScene(sceneId + 1, assistantRole, $curChar.name, '', false)
       $dialogues = [...$dialogues, userScene, waitingScene]
     } else {
-      const waitingScene = {
-        id: sceneId,
-        role: assistantRole,
-        content: '',
-        textContent: '',
-        name: $curChar.name,
-        done: false
-      }
+      const waitingScene = newScene(sceneId, assistantRole, $curChar.name, '', false)
       $dialogues = [...$dialogues, waitingScene]
     }
     await tick()

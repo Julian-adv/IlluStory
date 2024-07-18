@@ -1,5 +1,6 @@
 import { get } from 'svelte/store'
-import type { Char, ImageSize, SceneType } from './interfaces'
+import type { Char } from './interfaces'
+import type { ChatHistoryPrompt, ImageSize, SceneType } from './promptInterface'
 import { settings } from './store'
 import { tcPost } from './tauriCompat'
 
@@ -82,7 +83,11 @@ export function getRandomSize(sizes: string): ImageSize {
   return { width, height }
 }
 
-export function getStartEndIndex(scene: SceneType, dialogues: SceneType[], streaming: boolean) {
+export function getStartEndIndex(
+  scene: ChatHistoryPrompt,
+  dialogues: SceneType[],
+  streaming: boolean
+) {
   let start = scene.rangeStart ?? 0
   let end = scene.rangeEnd === 'end' ? length : Number(scene.rangeEnd)
   if (streaming) {
@@ -155,4 +160,25 @@ export function chooseCharByName(chars: Char[], user: Char, name: string): Char 
     return user
   }
   return chars[0]
+}
+
+export function newScene(
+  id: number,
+  role: 'assistant' | 'user',
+  speaker: string,
+  content: string,
+  done: boolean
+): SceneType {
+  return {
+    id: id,
+    role: role,
+    content: content,
+    image: '',
+    imageSize: { width: 0, height: 0 },
+    done: done,
+    name: speaker,
+    visualContent: '',
+    textContent: content,
+    translatedContent: ''
+  }
 }

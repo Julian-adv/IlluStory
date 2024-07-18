@@ -1,10 +1,12 @@
-import type { SceneType, Preset, Usage, ChatResult, Session, Char } from './interfaces'
-import { assistantRole, countTokensApi, generatePromptCheck } from './api'
+import type { Preset, Usage, ChatResult, Session, Char } from './interfaces'
+import type { Prompt, SceneType } from './promptInterface'
+import { countTokensApi, generatePromptCheck } from './api'
 import { tcLog } from './tauriCompat'
+import { newScene } from '$lib'
 
 export async function sendChatKoboldAi(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -72,12 +74,7 @@ export async function sendChatKoboldAi(
   const dataFromKobold = await respFromKobold.json()
   tcLog('INFO', 'dataFromKobold', dataFromKobold)
   if (respFromKobold.ok && respFromKobold.status >= 200 && respFromKobold.status < 300) {
-    const scene: SceneType = {
-      id: 0,
-      role: assistantRole,
-      content: dataFromKobold.results[0].text,
-      done: true
-    }
+    const scene = newScene(0, 'assistant', char.name, dataFromKobold.results[0].text, true)
     usage.completion_tokens = countTokensApi(dataFromKobold.results[0].text)
     usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
     return { scene, usage }
@@ -88,7 +85,7 @@ export async function sendChatKoboldAi(
 
 export async function sendChatKoboldAiStream(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -177,14 +174,8 @@ export async function sendChatKoboldAiStream(
       }
       return reader?.read().then(processText)
     })
-    const scene = {
-      id: 0,
-      role: assistantRole,
-      content: '',
-      done: false
-    }
     return {
-      scene,
+      scene: newScene(0, 'assistant', char.name, '', false),
       usage: { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
     }
   } else {

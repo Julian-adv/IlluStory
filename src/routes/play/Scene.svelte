@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { SceneType, SceneResult } from '$lib/interfaces'
+  import type { SceneResult } from '$lib/interfaces'
+  import type { SceneType } from '$lib/promptInterface'
   import { onMount, tick } from 'svelte'
   import Markdown from '../common/Markdown.svelte'
   import {

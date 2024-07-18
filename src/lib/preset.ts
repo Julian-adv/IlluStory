@@ -1,4 +1,13 @@
-import { Api, type Preset, type SceneType } from './interfaces'
+import { Api, type Preset } from './interfaces'
+import type {
+  AssistantPrompt,
+  AssocMemoryPrompt,
+  ChatHistoryPrompt,
+  EndTagPrompt,
+  Prompt,
+  SystemPrompt,
+  UserPrompt
+} from './promptInterface'
 import { presetExt } from './fs'
 import { defaultPreset } from './store'
 import {
@@ -42,22 +51,24 @@ function convertRole(risuRole: string) {
   }
 }
 
-function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
+function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: 'set_char' | 'set_user') {
   const [beforeSlot, afterSlot] = prompt.innerFormat.split('{{slot}}')
-  const scene: SceneType = {
+  const scene: SystemPrompt | AssistantPrompt | UserPrompt = {
     id: sceneId++,
     content: beforeSlot,
     role: convertRole(prompt.role)
   }
   preset.prompts.push(scene)
-  const scene2: SceneType = {
+  const scene2 = {
     id: sceneId++,
     content: '',
-    role: role
+    role: role,
+    tag: '',
+    allChars: false
   }
   preset.prompts.push(scene2)
   if (afterSlot && afterSlot.trim() !== '') {
-    const scene3: SceneType = {
+    const scene3: Prompt = {
       id: sceneId++,
       content: afterSlot,
       role: endTag
@@ -67,7 +78,7 @@ function convertCharSetting(preset: Preset, prompt: RisuPrompt, role: string) {
 }
 
 function convertChat(preset: Preset, start: number, end: string) {
-  const scene: SceneType = {
+  const scene: ChatHistoryPrompt = {
     id: sceneId++,
     content: '',
     role: chatHistory,
@@ -80,15 +91,15 @@ function convertChat(preset: Preset, start: number, end: string) {
 function convertMemory(preset: Preset, prompt: RisuPrompt) {
   if (prompt.innerFormat) {
     const [beforeSlot, afterSlot] = prompt.innerFormat.split('{{slot}}')
-    const scene: SceneType = {
+    const scene: AssocMemoryPrompt = {
       id: sceneId++,
       content: beforeSlot,
       role: assocMemory,
-      rangeStart: 5
+      count: 5
     }
     preset.prompts.push(scene)
     if (afterSlot && afterSlot.trim() !== '') {
-      const scene2: SceneType = {
+      const scene2: EndTagPrompt = {
         id: sceneId++,
         content: afterSlot,
         role: endTag
@@ -96,16 +107,20 @@ function convertMemory(preset: Preset, prompt: RisuPrompt) {
       preset.prompts.push(scene2)
     }
   } else {
-    preset.prompts.push({ id: sceneId++, content: '', role: assocMemory, rangeStart: 5 })
+    preset.prompts.push({ id: sceneId++, content: '', role: assocMemory, count: 5 })
   }
 }
 
-function convertNormal(preset: Preset, prompt: RisuPrompt, role?: string) {
-  const scene: SceneType = {
+function convertNormal(
+  preset: Preset,
+  prompt: RisuPrompt,
+  role?: 'system' | 'assistant' | 'user' | 'author_note' | 'lorebook' | 'global_note'
+) {
+  const scene = {
     id: sceneId++,
     content: prompt.text ?? '',
     role: role ? role : convertRole(prompt.role)
-  }
+  } as Prompt
   preset.prompts.push(scene)
 }
 
@@ -129,7 +144,7 @@ function splitWithTokens(input: string): string[] {
 function convertMainPrompt(preset: Preset, prompt: string) {
   const segments = splitWithTokens(prompt)
   for (let i = 0; i < segments.length; ) {
-    let role
+    let role: 'system' | 'assistant' | 'user'
     switch (segments[i]) {
       case '@@@system\n':
         role = systemRole
@@ -147,7 +162,8 @@ function convertMainPrompt(preset: Preset, prompt: string) {
         role = systemRole
         break
     }
-    preset.prompts.push({ id: sceneId++, content: segments[i], role: role })
+    const entry = { id: sceneId++, content: segments[i], role: role } as Prompt
+    preset.prompts.push(entry)
     i++
   }
 }
@@ -241,10 +257,16 @@ async function importPresetObj(risuPreset: any): Promise<Preset> {
             }
             break
           case 'personaPrompt':
-            preset.prompts.push({ id: sceneId++, content: '', role: userSetting })
+            preset.prompts.push({ id: sceneId++, content: '', role: userSetting, tag: '' })
             break
           case 'description':
-            preset.prompts.push({ id: sceneId++, content: '', role: charSetting })
+            preset.prompts.push({
+              id: sceneId++,
+              content: '',
+              role: charSetting,
+              tag: '',
+              allChars: false
+            })
             break
           case 'jailbreak':
             if (risuPreset.jailbreak) {

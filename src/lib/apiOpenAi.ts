@@ -1,9 +1,9 @@
 import { get } from 'svelte/store'
-import type { Preset, SceneType, ChatResult, Session, Char } from './interfaces'
+import type { Preset, ChatResult, Session, Char } from './interfaces'
+import type { Prompt, SceneType } from './promptInterface'
 import { lorebook, settings, zeroUsage } from './store'
 import {
   apiUrl,
-  assistantRole,
   assocMemory,
   chatHistory,
   countTokensApi,
@@ -13,14 +13,14 @@ import {
   startStory,
   tokensOver
 } from './api'
-import { getStartEndIndex } from '$lib'
+import { getStartEndIndex, newScene } from '$lib'
 import { tcLog } from './tauriCompat'
 import OpenAI from 'openai'
 import { makeReplaceDict, replaceName } from './session'
 
 function generatePrompt(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -78,7 +78,7 @@ function generatePrompt(
 
 async function generateOpenAIPromptCheck(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -111,7 +111,7 @@ async function generateOpenAIPromptCheck(
 
 export async function sendChatOpenAi(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -174,11 +174,7 @@ export async function sendChatOpenAi(
   if (respFromGPT.ok && respFromGPT.status >= 200 && respFromGPT.status < 300) {
     let scene: SceneType
     if (instructModel) {
-      scene = {
-        id: 0,
-        role: assistantRole,
-        content: dataFromGPT.choices[0].text
-      }
+      scene = newScene(0, 'assistant', char.name, dataFromGPT.choices[0].text, true)
     } else {
       scene = dataFromGPT.choices[0].message
       scene.id = 0
@@ -192,7 +188,7 @@ export async function sendChatOpenAi(
 
 export async function sendChatOpenAiStream(
   preset: Preset,
-  prompts: SceneType[],
+  prompts: Prompt[],
   dialogues: SceneType[],
   char: Char,
   user: Char,
@@ -282,13 +278,8 @@ export async function sendChatOpenAiStream(
       }
       return reader?.read().then(processText)
     })
-    const scene = {
-      id: 0,
-      role: assistantRole,
-      content: ''
-    }
     return {
-      scene,
+      scene: newScene(0, 'assistant', char.name, '', false),
       usage: { prompt_tokens: numTokens, completion_tokens: 0, total_tokens: numTokens }
     }
   } else {

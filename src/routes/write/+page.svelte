@@ -1123,7 +1123,7 @@
           <div class="flex w-full gap-4">
             <NumberField
               label="Number of scenes"
-              bind:value={$preset.prompts[i].rangeStart}
+              bind:value={$preset.prompts[i].count}
               defaultValue={5}
               save={autoSaveFunc}
               min={1}
