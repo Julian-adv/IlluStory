@@ -7,7 +7,7 @@ import { loadHistory } from './history'
 
 let currentSettings: Settings
 
-settings.subscribe((s) => (currentSettings = s))
+settings.subscribe(s => (currentSettings = s))
 
 function fixSettings(settings: Settings) {
   if (!settings.dataDir) {
@@ -80,6 +80,9 @@ function fixSettings(settings: Settings) {
   }
   if (!settings.enableADetailer) {
     settings.enableADetailer = defaultSettings.enableADetailer
+  }
+  if (!settings.ipWeight) {
+    settings.ipWeight = defaultSettings.ipWeight
   }
   if (!settings.aiLang) {
     settings.aiLang = defaultSettings.aiLang

@@ -80,7 +80,8 @@ export async function generateImageIfNeeded(
           imageSize.width,
           imageSize.height,
           imageSource,
-          settings.ipWeight
+          settings.ipWeight,
+          scene.name + '.png'
         ).then(result => {
           scene.image = saveImage(sessionPath, result)
           scene.imageSize = imageSize

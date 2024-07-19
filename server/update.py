@@ -7,7 +7,7 @@ import sys
 repo_url = "https://github.com/Julian-adv/IlluStory.git"
 
 current_path = Path(__file__).resolve()
-local_path = current_path.parent.parent.parent.parent
+local_path = current_path.parent.parent
 
 if os.path.exists(local_path):
     repo = pygit2.Repository(local_path)

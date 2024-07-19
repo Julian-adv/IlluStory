@@ -6,3 +6,4 @@ chromadb==0.4.14
 psutil==5.9.5
 websocket-client==1.8.0
 colorama==0.4.6
+requests-toolbelt==1.0.0

@@ -13,6 +13,7 @@
   export let tooltip = ''
   let className = ''
   export { className as class }
+  export let name = ''
 
   let popoverId = getUniqueId()
 
@@ -26,7 +27,8 @@
       imageSize.width,
       imageSize.height,
       tooltip,
-      $settings.ipWeight
+      $settings.ipWeight,
+      name + '.png'
     ).then(result => {
       image = result
       imageSize = imageSize

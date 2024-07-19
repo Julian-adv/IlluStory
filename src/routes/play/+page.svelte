@@ -80,7 +80,8 @@
     tcGetMemory,
     tcLog,
     tcMetadata,
-    tcReadDir
+    tcReadDir,
+    tcUploadImage
   } from '$lib/tauriCompat'
   import FileDialog from '$lib/FileDialog.svelte'
   import { initLorebook, loadLorebook } from '$lib/lorebook'
@@ -298,16 +299,13 @@
   }
 
   async function goBack() {
-    while ($dialogues.length > 1) {
+    if ($dialogues.length > 1) {
       const lastS = lastScene($dialogues)
       $session.startIndex--
       if (lastS.role === userRole) {
         userInput = getUserInput(lastS)
-        $dialogues.pop()
-        break
-      } else {
-        $dialogues.pop()
       }
+      $dialogues.pop()
     }
     if ($session.startIndex < 0) {
       $session.startIndex = 0
@@ -497,6 +495,12 @@
     started = true
   }
 
+  async function uploadCharImages() {
+    for (const char of $chars) {
+      await tcUploadImage($settings.sdURL, char.name + '.png', char.image)
+    }
+  }
+
   async function start() {
     tcLog('INFO', 'start new session')
     await loadVarsFromPath()
@@ -508,6 +512,7 @@
     $session.startIndex = 0
     fillCharacters()
     await saveSessionNew()
+    await uploadCharImages()
     await updateInitialScenes()
     $usage = calcUsage()
   }

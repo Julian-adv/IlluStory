@@ -70,9 +70,9 @@
 
   onMount(async () => {
     sessionDir = dirnameOf($sessionPath)
-    if (scene.done && !scene.isDialogueOnly) {
-      info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
-    }
+    // if (scene.done && !scene.isDialogueOnly) {
+    //   info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
+    // }
     translated = !!scene.translatedContent
     info.imageFromSD.then(() => {
       saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
@@ -87,7 +87,8 @@
       info.imageSize.width,
       info.imageSize.height,
       imageSource,
-      $settings.ipWeight
+      $settings.ipWeight,
+      scene.name + '.png'
     ).then(result => {
       scene.image = saveImage(sessionDir, result)
       scene.imageSize = info.imageSize

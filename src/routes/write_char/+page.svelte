@@ -106,7 +106,7 @@
   }
 
   async function regenerateImage() {
-    $curChar.image = await generateImage($settings, 512, 768, $curChar.visual, 0)
+    $curChar.image = await generateImage($settings, 512, 768, $curChar.visual, 0, '')
     await autoSaveFunc()
   }
 

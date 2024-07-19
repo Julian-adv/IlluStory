@@ -8,6 +8,7 @@ import urllib.parse
 import base64
 import random
 from my_logging import print_log
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 router = APIRouter(prefix="/api/gen_image")
 
@@ -22,6 +23,7 @@ class ComfyReq(BaseModel):
     steps: int
     cfg: float
     ip_weight: float
+    name: str
 
 
 # This is an example that uses the websockets api and the SaveImageWebsocket node to get images directly without
@@ -62,7 +64,7 @@ def get_images(ws, prompt):
     while True:
         out = ws.recv()
         if isinstance(out, str):
-            print_log("DEBUG", out)
+            # print_log("DEBUG", out)
             message = json.loads(out)
             if message["type"] == "executing":
                 data = message["data"]
@@ -191,7 +193,7 @@ prompt_text = """
         1
       ],
       "image": [
-        "15",
+        "14",
         0
       ]
     },
@@ -199,7 +201,7 @@ prompt_text = """
   },
   "14": {
     "inputs": {
-      "image": "Stellar.png",
+      "image": "Stellar (1).png",
       "upload": "image"
     },
     "class_type": "LoadImage"
@@ -329,6 +331,8 @@ async def comfy(req: ComfyReq):
 
     prompt["13"]["inputs"]["weight"] = req.ip_weight
 
+    prompt["14"]["inputs"]["image"] = req.name
+
     ws = websocket.WebSocket()
     ws.connect("ws://{}/ws?clientId={}".format(req.server_address, client_id))
     images = get_images(ws, prompt)
@@ -337,3 +341,32 @@ async def comfy(req: ComfyReq):
             base64_bytes = base64.b64encode(image_data)
             base64_string = base64_bytes.decode("utf-8")
             return {"image": base64_string}
+
+
+class ComfyUploadReq(BaseModel):
+    server_address: str
+    name: str
+    image: str
+
+
+@router.post("/upload")
+async def upload_image(param: ComfyUploadReq):
+    upload_url = f"http://{param.server_address}/upload/image"
+    image = base64.b64decode(param.image[22:])
+    data = MultipartEncoder(
+        fields={
+            "image": (
+                param.name,
+                image,
+                "image/png",
+            ),
+            "overwrite": "true",
+            "type": "input",
+        }
+    )
+    req = urllib.request.Request(
+        upload_url, data=data, headers={"Content-Type": data.content_type}
+    )
+    response = json.loads(urllib.request.urlopen(req).read())
+    print_log("DEBUG", "upload image:", response)
+    return {"name": response["name"]}
