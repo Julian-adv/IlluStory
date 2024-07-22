@@ -12,9 +12,9 @@ class LogMessage(BaseModel):
     msg: str
 
 
-def print_log(level: str, *args):
+def print_log(level: str, *args, end="\n"):
     msg = " ".join(str(arg) for arg in args)
-    print(f"{Fore.YELLOW}{level}{Style.RESET_ALL}: {msg}")
+    print(f"{Fore.YELLOW}{level}{Style.RESET_ALL}: {msg}", end=end)
 
 
 @router.post("/log")

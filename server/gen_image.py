@@ -61,10 +61,11 @@ def get_images(ws, prompt):
     prompt_id = queue_prompt(prompt)["prompt_id"]
     output_images = {}
     current_node = ""
+    print_log("DEBUG", "working: ", end="")
     while True:
         out = ws.recv()
         if isinstance(out, str):
-            # print_log("DEBUG", out)
+            print(".", end="", flush=True)
             message = json.loads(out)
             if message["type"] == "executing":
                 data = message["data"]
@@ -79,6 +80,7 @@ def get_images(ws, prompt):
                 images_output.append(out[8:])
                 output_images[current_node] = images_output
 
+    print("done")
     return output_images
 
 
@@ -89,23 +91,23 @@ prompt_text = """
       "seed": 365447695490082,
       "steps": 40,
       "cfg": 4,
-      "sampler_name": "dpmpp_2m_sde_gpu",
-      "scheduler": "karras",
+      "sampler_name": "euler",
+      "scheduler": "normal",
       "denoise": 1,
       "model": [
-        "13",
+        "37",
         0
       ],
       "positive": [
-        "6",
-        0
+        "50",
+        2
       ],
       "negative": [
         "7",
         0
       ],
       "latent_image": [
-        "5",
+        "42",
         0
       ]
     },
@@ -116,24 +118,6 @@ prompt_text = """
       "ckpt_name": "sdxl.fp16.safetensors"
     },
     "class_type": "CheckpointLoaderSimple"
-  },
-  "5": {
-    "inputs": {
-      "width": 1024,
-      "height": 1280,
-      "batch_size": 1
-    },
-    "class_type": "EmptyLatentImage"
-  },
-  "6": {
-    "inputs": {
-      "text": "score_9,score_8,score_7, 8k uhd resolution",
-      "clip": [
-        "4",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode"
   },
   "7": {
     "inputs": {
@@ -160,7 +144,7 @@ prompt_text = """
   },
   "11": {
     "inputs": {
-      "vae_name": "sdxl_vae.safetensors"
+      "vae_name": "fixFP16ErrorsSDXLLowerMemoryUse_v10.safetensors"
     },
     "class_type": "VAELoader"
   },
@@ -170,34 +154,11 @@ prompt_text = """
       "lora_strength": 0.6,
       "provider": "CPU",
       "model": [
-        "4",
+        "50",
         0
       ]
     },
     "class_type": "IPAdapterUnifiedLoaderFaceID"
-  },
-  "13": {
-    "inputs": {
-      "weight": 0.45,
-      "weight_type": "linear",
-      "combine_embeds": "concat",
-      "start_at": 0,
-      "end_at": 1,
-      "embeds_scaling": "V only",
-      "model": [
-        "12",
-        0
-      ],
-      "ipadapter": [
-        "12",
-        1
-      ],
-      "image": [
-        "14",
-        0
-      ]
-    },
-    "class_type": "IPAdapterAdvanced"
   },
   "14": {
     "inputs": {
@@ -205,17 +166,6 @@ prompt_text = """
       "upload": "image"
     },
     "class_type": "LoadImage"
-  },
-  "15": {
-    "inputs": {
-      "crop_padding_factor": 0.25,
-      "cascade_xml": "lbpcascade_animeface.xml",
-      "image": [
-        "14",
-        0
-      ]
-    },
-    "class_type": "Image Crop Face"
   },
   "22": {
     "inputs": {
@@ -225,8 +175,8 @@ prompt_text = """
       "seed": 774163909736209,
       "steps": 10,
       "cfg": 4,
-      "sampler_name": "dpmpp_sde_gpu",
-      "scheduler": "karras",
+      "sampler_name": "euler",
+      "scheduler": "normal",
       "denoise": 0.35,
       "feather": 5,
       "noise_mask": true,
@@ -250,11 +200,11 @@ prompt_text = """
         0
       ],
       "model": [
-        "4",
+        "37",
         0
       ],
       "clip": [
-        "4",
+        "50",
         1
       ],
       "vae": [
@@ -262,8 +212,8 @@ prompt_text = """
         0
       ],
       "positive": [
-        "6",
-        0
+        "50",
+        2
       ],
       "negative": [
         "7",
@@ -301,6 +251,68 @@ prompt_text = """
       ]
     },
     "class_type": "SaveImageWebsocket"
+  },
+  "37": {
+    "inputs": {
+      "weight": 0,
+      "weight_type": "linear",
+      "combine_embeds": "concat",
+      "start_at": 0,
+      "end_at": 1,
+      "embeds_scaling": "V only",
+      "model": [
+        "12",
+        0
+      ],
+      "ipadapter": [
+        "12",
+        1
+      ],
+      "image": [
+        "51",
+        0
+      ]
+    },
+    "class_type": "IPAdapterAdvanced"
+  },
+  "42": {
+    "inputs": {
+      "width": 1024,
+      "height": 1280,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage"
+  },
+  "50": {
+    "inputs": {
+      "wildcard_text": "",
+      "populated_text": "",
+      "mode": true,
+      "Select to add LoRA": "Select the LoRA to add to the text",
+      "Select to add Wildcard": "Select the Wildcard to add to the text",
+      "seed": 768380842095243,
+      "model": [
+        "4",
+        0
+      ],
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "ImpactWildcardEncode"
+  },
+  "51": {
+    "inputs": {
+      "x": 0,
+      "y": 0,
+      "size": 512,
+      "image": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "Image Crop Square Location"
   }
 }
 """
@@ -311,15 +323,15 @@ async def comfy(req: ComfyReq):
     prompt = json.loads(prompt_text)
 
     prompt["4"]["inputs"]["ckpt_name"] = req.model
-    prompt["6"]["inputs"]["text"] = req.prompt
+    prompt["50"]["inputs"]["wildcard_text"] = req.prompt
     prompt["7"]["inputs"]["text"] = req.negative_prompt
     print_log("DEBUG", "prompt:", req.prompt)
     print_log("DEBUG", "size:", f"{req.width}x{req.height}")
 
     # set the seed for our KSampler node
     prompt["3"]["inputs"]["seed"] = random.randint(1, 1000000000000000)
-    prompt["5"]["inputs"]["width"] = req.width
-    prompt["5"]["inputs"]["height"] = req.height
+    prompt["42"]["inputs"]["width"] = req.width
+    prompt["42"]["inputs"]["height"] = req.height
 
     prompt["22"]["inputs"]["seed"] = random.randint(1, 1000000000000000)
 
@@ -329,7 +341,7 @@ async def comfy(req: ComfyReq):
     prompt["3"]["inputs"]["cfg"] = req.cfg
     # prompt["22"]["inputs"]["cfg"] = req.cfg
 
-    prompt["13"]["inputs"]["weight"] = req.ip_weight
+    prompt["37"]["inputs"]["weight"] = req.ip_weight
 
     prompt["14"]["inputs"]["image"] = req.name
 

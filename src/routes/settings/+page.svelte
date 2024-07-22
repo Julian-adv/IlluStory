@@ -154,6 +154,14 @@
       help="Example: Euler a, DPM++ SDE Karras, DPM++ 2M SDE Karras"
       bind:value={$settings.sampler}
       {save} />
+    <NumberField
+      label="IP weight"
+      help="Weight of IP adapter."
+      bind:value={$settings.ipWeight}
+      min={0}
+      max={1}
+      step={0.01}
+      {save} />
     <CheckField
       label="Enable Hires"
       help="Whether to enable Hires.fix. It will upscale the image."

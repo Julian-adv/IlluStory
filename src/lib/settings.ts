@@ -13,28 +13,28 @@ function fixSettings(settings: Settings) {
   if (!settings.dataDir) {
     tcSetDataDir()
   }
-  if (!settings.sortOrder) {
+  if (settings.sortOrder === undefined) {
     settings.sortOrder = defaultSettings.sortOrder
   }
-  if (!settings.sortType) {
+  if (settings.sortType === undefined) {
     settings.sortType = defaultSettings.sortType
   }
-  if (!settings.dialogSettings) {
+  if (settings.dialogSettings === undefined) {
     settings.dialogSettings = defaultSettings.dialogSettings
   }
-  if (!settings.descriptionSettings) {
+  if (settings.descriptionSettings === undefined) {
     settings.descriptionSettings = defaultSettings.descriptionSettings
   }
-  if (!settings.userNameSettings) {
+  if (settings.userNameSettings === undefined) {
     settings.userNameSettings = defaultSettings.userNameSettings
   }
-  if (!settings.charNameSettings) {
+  if (settings.charNameSettings === undefined) {
     settings.charNameSettings = defaultSettings.charNameSettings
   }
   if (!settings.fontFamily) {
     settings.fontFamily = defaultSettings.fontFamily
   }
-  if (!settings.fontSize) {
+  if (settings.fontSize === undefined) {
     settings.fontSize = defaultSettings.fontSize
   }
   if (!settings.sdURL) {
@@ -51,10 +51,10 @@ function fixSettings(settings: Settings) {
       settings.imageSizes = defaultSettings.imageSizes
     }
   }
-  if (!settings.steps) {
+  if (settings.steps === undefined) {
     settings.steps = defaultSettings.steps
   }
-  if (!settings.cfgScale) {
+  if (settings.cfgScale === undefined) {
     settings.cfgScale = defaultSettings.cfgScale
   }
   if (!settings.prompt) {
@@ -66,22 +66,22 @@ function fixSettings(settings: Settings) {
   if (!settings.sampler) {
     settings.sampler = defaultSettings.sampler
   }
-  if (!settings.enableHires) {
+  if (settings.enableHires === undefined) {
     settings.enableHires = defaultSettings.enableHires
   }
-  if (!settings.denoisingStrength) {
+  if (settings.denoisingStrength === undefined) {
     settings.denoisingStrength = defaultSettings.denoisingStrength
   }
-  if (!settings.hiresScale) {
+  if (settings.hiresScale === undefined) {
     settings.hiresScale = defaultSettings.hiresScale
   }
-  if (!settings.hiresUpscaler) {
+  if (settings.hiresUpscaler === undefined) {
     settings.hiresUpscaler = defaultSettings.hiresUpscaler
   }
-  if (!settings.enableADetailer) {
+  if (settings.enableADetailer === undefined) {
     settings.enableADetailer = defaultSettings.enableADetailer
   }
-  if (!settings.ipWeight) {
+  if (settings.ipWeight === undefined) {
     settings.ipWeight = defaultSettings.ipWeight
   }
   if (!settings.aiLang) {
