@@ -101,7 +101,7 @@ export async function generateImageAutomatic1111(
       return ''
     }
   } catch (error) {
-    tcLog('ERROR', 'generateImage: ', String(error))
+    tcLog('ERROR', 'generateImage:', String(error))
     return ''
   }
 }

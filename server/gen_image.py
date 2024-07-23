@@ -61,7 +61,7 @@ def get_images(ws, prompt):
     prompt_id = queue_prompt(prompt)["prompt_id"]
     output_images = {}
     current_node = ""
-    print_log("DEBUG", "working: ", end="")
+    print_log("working", end="")
     while True:
         out = ws.recv()
         if isinstance(out, str):
@@ -325,8 +325,8 @@ async def comfy(req: ComfyReq):
     prompt["4"]["inputs"]["ckpt_name"] = req.model
     prompt["50"]["inputs"]["wildcard_text"] = req.prompt
     prompt["7"]["inputs"]["text"] = req.negative_prompt
-    print_log("DEBUG", "prompt:", req.prompt)
-    print_log("DEBUG", "size:", f"{req.width}x{req.height}")
+    print_log("image prompt", req.prompt)
+    print_log("size", f"{req.width}x{req.height}")
 
     # set the seed for our KSampler node
     prompt["3"]["inputs"]["seed"] = random.randint(1, 1000000000000000)
@@ -380,5 +380,5 @@ async def upload_image(param: ComfyUploadReq):
         upload_url, data=data, headers={"Content-Type": data.content_type}
     )
     response = json.loads(urllib.request.urlopen(req).read())
-    print_log("DEBUG", "upload image:", response)
+    print_log("upload image", response)
     return {"name": response["name"]}

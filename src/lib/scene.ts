@@ -50,6 +50,7 @@ export async function generateImageIfNeeded(
   let showImage = false
   let imageFromSD = new Promise<string>((_resolve, _reject) => {})
   let imageSize = { width: 0, height: 0 }
+  let generated = false
   if (scene.image) {
     showImage = true
 
@@ -87,8 +88,9 @@ export async function generateImageIfNeeded(
           scene.imageSize = imageSize
           return result
         })
+        generated = true
       }
     }
   }
-  return { showImage, imageFromSD, imageSize }
+  return { showImage, imageFromSD, imageSize, generated }
 }

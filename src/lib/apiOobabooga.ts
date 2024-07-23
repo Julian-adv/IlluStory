@@ -47,7 +47,7 @@ export async function sendChatOobabooga(
     ],
     messages: messages
   }
-  tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
+  tcLog('request', JSON.stringify(request, null, 2))
   const respFromOoga = await fetch(url, {
     body: JSON.stringify(request),
     headers: {
@@ -231,7 +231,7 @@ export async function sendChatOobaboogaStream(
       `\n${userName} `
     ]
   }
-  tcLog('INFO', 'prompt:', JSON.stringify(request, null, 2))
+  tcLog('INFO', 'prompt', JSON.stringify(request, null, 2))
   const respFromOoga = await fetch(url, {
     body: JSON.stringify(request),
     headers: {

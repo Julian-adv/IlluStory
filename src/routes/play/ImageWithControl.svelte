@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { getRandomSize, getUniqueId, realImageSize } from '$lib'
+  import { getUniqueId, realImageSize } from '$lib'
   import { saveImageToFile } from '$lib/fs'
-  import { generateImage } from '$lib/imageApi'
   import type { ImageSize } from '$lib/promptInterface'
   import { settings } from '$lib/store'
   import { tcSave } from '$lib/tauriCompat'
@@ -13,28 +12,11 @@
   export let tooltip = ''
   let className = ''
   export { className as class }
-  export let name = ''
 
   let popoverId = getUniqueId()
 
   $: imageWidth = realImageSize(imageSize.width)
   $: imageHeight = realImageSize(imageSize.height)
-
-  function regenerateImage() {
-    imageSize = getRandomSize($settings.imageSizes)
-    imageFromSD = generateImage(
-      $settings,
-      imageSize.width,
-      imageSize.height,
-      tooltip,
-      $settings.ipWeight,
-      name + '.png'
-    ).then(result => {
-      image = result
-      imageSize = imageSize
-      return result
-    })
-  }
 
   async function saveImage() {
     if (image) {
@@ -73,23 +55,6 @@
     </Popover>
   {/await}
   <div class="flex flex-col gap-2">
-    <Button
-      color="alternative"
-      class="w-8 h-8 mb-1 p-0 bg-transparent z-20 text-stone-600 border-0 focus:ring-0 hover:bg-transparent"
-      on:click={regenerateImage}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-5 h-5">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
-      </svg>
-    </Button>
     <Button
       color="alternative"
       class="w-8 h-8 mb-1 p-0 bg-transparent z-20 text-stone-600 border-0 focus:ring-0 hover:bg-transparent"

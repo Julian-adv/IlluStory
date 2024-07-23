@@ -285,6 +285,7 @@ export interface SceneResult {
   showImage: boolean
   imageFromSD: Promise<string>
   imageSize: ImageSize
+  generated: boolean
 }
 
 export enum RuleType {

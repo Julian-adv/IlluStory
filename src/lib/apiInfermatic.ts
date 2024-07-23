@@ -67,7 +67,7 @@ export async function sendChatInfermaticStream(
     prompt: prompt,
     stop: stopping_strings
   }
-  tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
+  tcLog('request', JSON.stringify(request, null, 2))
   const respFromInfermatic = await fetch(url, {
     body: JSON.stringify(request),
     headers: {

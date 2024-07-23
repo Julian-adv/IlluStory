@@ -159,7 +159,7 @@ export async function sendChatOpenAi(
       messages: messages
     }
   }
-  tcLog('INFO', 'request:', JSON.stringify(request))
+  tcLog('request', JSON.stringify(request))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {
@@ -242,7 +242,7 @@ export async function sendChatOpenAiStream(
     }
     numTokens = tokens
   }
-  tcLog('INFO', 'request:', JSON.stringify(request, null, 2))
+  tcLog('INFO', 'request', JSON.stringify(request, null, 2))
   const respFromGPT = await fetch(url, {
     body: JSON.stringify(request),
     headers: {

@@ -24,7 +24,7 @@ export async function sendChatKoboldAi(
     memories,
     session
   )
-  tcLog('INFO', 'prompt:', prompt)
+  tcLog('prompt', prompt)
   const usage: Usage = { prompt_tokens: tokens, completion_tokens: 0, total_tokens: tokens }
   const userName = user.name
 
@@ -107,7 +107,7 @@ export async function sendChatKoboldAiStream(
     memories,
     session
   )
-  tcLog('INFO', 'prompt:', prompt)
+  tcLog('prompt', prompt)
   const userName = user.name
 
   const respFromKobold = await fetch(url, {

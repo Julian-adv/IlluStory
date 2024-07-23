@@ -211,7 +211,7 @@ export function generatePrompt(
       description: char.description,
       persona: user.description
     })
-    prompt += replaceName(output, dict) + '\n'
+    prompt += replaceName(output, dict)
   } else {
     for (const scene of prompts) {
       switch (scene.role) {
@@ -266,7 +266,7 @@ export function generatePrompt(
   if (oneInstruction) {
     prompt += assistantPrefix(preset)
   }
-  tcLog('INFO', 'prompt:', prompt)
+  tcLog('prompt', prompt)
   return prompt
 }
 

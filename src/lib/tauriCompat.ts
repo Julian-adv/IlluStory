@@ -293,7 +293,8 @@ export async function tcGetMemory(collection: string, text: string, n: number) {
 }
 
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'
-export async function tcLog(level: LogLevel, ...messages: string[]) {
+
+export async function tcLog(kind: string, ...messages: string[]) {
   const path = get(sessionPath)
   const dataDir = get(settings).dataDir
   let logPath = ''
@@ -305,7 +306,7 @@ export async function tcLog(level: LogLevel, ...messages: string[]) {
     console.log(messages.join(' '))
     return
   }
-  await fetchPost('log', { path: logPath, level: level, msg: messages.join(' ') })
+  await fetchPost('log', { path: logPath, level: 'INFO', kind: kind, msg: messages.join(' ') })
 }
 
 export function tcConvertImageSrc(src: string | undefined) {

@@ -33,12 +33,14 @@
       ? {
           showImage: true,
           imageSize: getRandomSize($settings.imageSizes),
-          imageFromSD: new Promise((_resolve, _reject) => {})
+          imageFromSD: new Promise((_resolve, _reject) => {}),
+          generated: false
         }
       : {
           showImage: false,
           imageSize: { width: 0, height: 0 },
-          imageFromSD: new Promise((_resolve, _reject) => {})
+          imageFromSD: new Promise((_resolve, _reject) => {}),
+          generated: false
         }
   let sessionDir = ''
   let imageUrl = tcConvertImageSrc(scene.image)
@@ -70,13 +72,16 @@
 
   onMount(async () => {
     sessionDir = dirnameOf($sessionPath)
-    // if (scene.done && !scene.isDialogueOnly) {
-    //   info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
-    // }
+    if (scene.done && imageUrl && !scene.isDialogueOnly) {
+      info = await generateImageIfNeeded($settings, $preset, scene, sessionDir, last)
+      if (info.generated) {
+        saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
+      }
+    }
     translated = !!scene.translatedContent
-    info.imageFromSD.then(() => {
-      saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
-    })
+    // info.imageFromSD.then(() => {
+    //   saveSessionAuto($sessionPath, $session, $dialogues, $lorebook)
+    // })
     speaker = chooseCharByName($chars, $user, scene.name ?? '')
   })
 
@@ -122,7 +127,7 @@
       imageFromSD={info.imageFromSD}
       bind:imageSize={info.imageSize}
       bind:image={imageUrl}
-      tooltip={scene.visualContent}
+      tooltip={scene.visualContent ? scene.visualContent : scene.textContent}
       class={imageClass} />
   {/if}
   <div class="px-4">

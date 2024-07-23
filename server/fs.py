@@ -39,21 +39,21 @@ async def exists(path: Path):
 async def app_data_dir():
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     data_dir = os.path.join(root_dir, "data")
-    print_log("DEBUG", "data dir:", data_dir)
+    print_log("data dir", data_dir)
     return {"path": data_dir}
 
 
 @router.get("/homeDir")
 async def home_dir():
     home_directory = os.path.expanduser("~") + "\\"
-    print_log("DEBUG", "home dir:", home_directory)
+    print_log("home dir", home_directory)
     return {"path": home_directory}
 
 
 @router.post("/createDir")
 async def create_dir(path: Path):
     path = path.path.replace("\\", "/")
-    print_log("DEBUG", "create dir:", path)
+    print_log("create dir", path)
     os.makedirs(path, exist_ok=True)
     return {"success": True}
 
@@ -62,14 +62,14 @@ async def create_dir(path: Path):
 async def resolve_resource(path: Path):
     path = os.path.join(resource_directory, path.path)
     path = path.replace("\\", "/")
-    print_log("DEBUG", "resolve resource:", path)
+    print_log("resolve resource", path)
     return {"path": path}
 
 
 @router.post("/copyFile")
 async def copy_file(path: CopyFile):
     dest_path = path.dest.replace("\\", "/")
-    print_log("DEBUG", "copy file:", path.src, dest_path)
+    print_log("copy file", path.src, dest_path)
     shutil.copyfile(path.src, dest_path)
     return {"success": True}
 
@@ -77,7 +77,7 @@ async def copy_file(path: CopyFile):
 @router.post("/readTextFile")
 async def read_text_file(path: Path):
     path = path.path.replace("\\", "/")
-    print_log("DEBUG", "read:", path)
+    print_log("read", path)
     try:
         with open(path, "r") as f:
             result = {"text": f.read()}
@@ -90,7 +90,7 @@ async def read_text_file(path: Path):
 @router.post("/readBinaryFile")
 async def read_binary_file(path: Path):
     path = path.path.replace("\\", "/")
-    print_log("DEBUG", "Read binary:", path)
+    print_log("read binary", path)
     try:
         with open(path, "rb") as f:
             data = f.read()
@@ -103,7 +103,7 @@ async def read_binary_file(path: Path):
 @router.post("/writeTextFile")
 async def write_text_file(content: PathText):
     path = content.path.replace("\\", "/")
-    print_log("DEBUG", "write:", path)
+    print_log("write", path)
     try:
         with open(path, "w") as f:
             f.write(content.text)
@@ -116,7 +116,7 @@ async def write_text_file(content: PathText):
 @router.post("/writeBinaryFile")
 async def write_binary_file(content: PathText):
     path = content.path.replace("\\", "/")
-    print_log("DEBUG", "write binary:", path)
+    print_log("write binary", path)
     try:
         text = content.text.split(",")[1]
         data = base64.b64decode(text)
@@ -151,7 +151,7 @@ def scan_dir(
 @router.post("/readDir")
 async def read_dir(path: Path):
     path = path.path.replace("\\", "/")
-    print_log("DEBUG", "read directory:", path)
+    print_log("read directory", path)
     try:
         entries = scan_dir(path)
         # for entry in entries:
@@ -165,7 +165,7 @@ async def read_dir(path: Path):
 @router.post("/metadata")
 async def metadata(path: Path):
     path = path.path.replace("\\", "/")
-    print_log("DEBUG", "read meta:", path)
+    print_log("read meta", path)
     try:
         info = os.stat(path)
         return {"modifiedAt": info.st_mtime, "isDir": stat.S_ISDIR(info.st_mode)}

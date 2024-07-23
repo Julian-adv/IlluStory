@@ -9,6 +9,7 @@ router = APIRouter(prefix="/api")
 class LogMessage(BaseModel):
     path: str
     level: str
+    kind: str
     msg: str
 
 
@@ -19,7 +20,7 @@ def print_log(level: str, *args, end="\n"):
 
 @router.post("/log")
 async def log(param: LogMessage):
-    print_log(param.level, param.msg)
+    print_log(param.kind, param.msg)
     logging.basicConfig(filename=param.path, level=logging.DEBUG)
     log_level = getattr(logging, param.level)
     logging.log(log_level, param.msg)

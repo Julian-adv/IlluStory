@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/memory")
 
 path = "data/memory.chromadb"
 client = chromadb.PersistentClient(path=path)
-print_log("INFO", f"chromadb at {path}")
+print_log("chromadb", path)
 
 
 class Memory(BaseModel):

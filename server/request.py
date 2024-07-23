@@ -15,7 +15,7 @@ class UrlBody(BaseModel):
 @router.post("/post")
 async def proxy(req: UrlBody):
     try:
-        print_log("DEBUG", "req.url = " + req.url)
+        print_log("post", req.url)
         response = requests.post(req.url, json=req.body, headers=req.headers)
         json = response.json()
         return {"ok": True, "data": json}
@@ -27,7 +27,7 @@ async def proxy(req: UrlBody):
 @router.post("/get")
 async def getProxy(req: UrlBody):
     try:
-        print("req.url = " + req.url)
+        print_log("get", req.url)
         response = requests.get(req.url, headers=req.headers)
         json = response.json()
         return {"ok": True, "data": json}

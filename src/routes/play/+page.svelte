@@ -588,7 +588,7 @@
 
   function finishVisual() {
     const scene = lastScene($dialogues)
-    tcLog('INFO', 'visual description:', scene.visualContent ?? '')
+    tcLog('visual description', scene.visualContent ?? '')
     scene.done = true
     $dialogues = $dialogues
     // chooseNextChar(true)
@@ -716,11 +716,11 @@
   }
 
   function closedLorebook() {
-    tcLog('INFO', 'lorebook answer:', lorebookAnswer)
+    tcLog('lorebook answer', lorebookAnswer)
     for (const rule of $lorebook.rules) {
       if (rule.triggered) continue
       if (lorebookAnswer.slice(0, 10).trim().toLowerCase().includes(rule.answer.toLowerCase())) {
-        tcLog('INFO', 'lorebook triggered:', rule.condition)
+        tcLog('lorebook triggered', rule.condition)
         rule.triggered = true
       }
       break
@@ -791,7 +791,7 @@
 
   async function closed() {
     let scene = lastScene($dialogues)
-    tcLog('INFO', 'streaming done:', scene.content)
+    tcLog('streaming done', scene.content)
     const stopWords = [`\n${$user.name}:$`, `\n${$user.name} \\w+$`]
     for (const word of stopWords) {
       const regex = new RegExp(word)

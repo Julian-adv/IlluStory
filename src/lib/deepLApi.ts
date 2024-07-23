@@ -19,7 +19,7 @@ export async function translateText(
     }
   )
   if (response.ok) {
-    tcLog('INFO', 'data from deepL:', JSON.stringify(response.data))
+    tcLog('data from deepL', JSON.stringify(response.data))
     return response.data.translations[0].text
   } else {
     tcLog('ERROR', 'error from deepl', JSON.stringify(response))
